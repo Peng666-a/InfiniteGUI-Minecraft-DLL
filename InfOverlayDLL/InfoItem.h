@@ -11,6 +11,7 @@
 
 
 static const float SNAP_DISTANCE = 15.0f;
+static bool isSnapping = false;
 
 class InfoItem {
 public:
@@ -115,6 +116,10 @@ public:
         // 判断拖动/修改大小事件
         if (isMoving)
         {
+            if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
+                isSnapping = true;
+            else
+				isSnapping = false;
 
             // 当前窗口位置大小
             ImVec2 pos = ImGui::GetWindowPos();
@@ -126,14 +131,19 @@ public:
             float sw = (float)rc.right;
             float sh = (float)rc.bottom;
 
-            // 计算吸附
-            auto snap = WindowSnapper::ComputeSnap(pos, sz, sw, sh, SNAP_DISTANCE);
+            SnapResult snap;
+            if (isSnapping)
+            {
+                // 计算吸附
+                snap = WindowSnapper::ComputeSnap(pos, sz, sw, sh, SNAP_DISTANCE);
+                // 画吸附线
+                WindowSnapper::DrawGuides(snap, sw, sh);
+            }
+            else
+                snap = WindowSnapper::ComputeSnap(pos, sz, sw, sh, 0.0f);
 
             // 设置吸附后的位置
             ImGui::SetWindowPos(snap.snappedPos, ImGuiCond_Always);
-
-            // 画吸附线
-            WindowSnapper::DrawGuides(snap, sw, sh);
 
             // 保存到 InfoItem
             x = snap.snappedPos.x;

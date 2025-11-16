@@ -208,35 +208,35 @@ void InitImGuiForContext(HWND hwnd)
     io.FontDefault = font;
 }
 
-// 恢复鼠标限制（释放）
-void ReleaseCursorClip()
-{
-    if (g_cursorClipped)
-    {
-        ClipCursor(NULL);
-        g_cursorClipped = false;
-    }
-}
-
-// 应用或释放鼠标限制（当 UI 激活时可选）
-void ApplyCursorClip(bool enable)
-{
-    if (!g_hwnd) return;
-    if (enable && !g_cursorClipped)
-    {
-        RECT rc;
-        GetClientRect(g_hwnd, &rc);
-        // 将客户端坐标转换为屏幕坐标
-        MapWindowPoints(g_hwnd, NULL, (POINT*)&rc, 2);
-        ClipCursor(&rc);
-        g_cursorClipped = true;
-    }
-    else if (!enable && g_cursorClipped)
-    {
-        ClipCursor(NULL);
-        g_cursorClipped = false;
-    }
-}
+//// 恢复鼠标限制（释放）
+//void ReleaseCursorClip()
+//{
+//    if (g_cursorClipped)
+//    {
+//        ClipCursor(NULL);
+//        g_cursorClipped = false;
+//    }
+//}
+//
+//// 应用或释放鼠标限制（当 UI 激活时可选）
+//void ApplyCursorClip(bool enable)
+//{
+//    if (!g_hwnd) return;
+//    if (enable && !g_cursorClipped)
+//    {
+//        RECT rc;
+//        GetClientRect(g_hwnd, &rc);
+//        // 将客户端坐标转换为屏幕坐标
+//        MapWindowPoints(g_hwnd, NULL, (POINT*)&rc, 2);
+//        ClipCursor(&rc);
+//        g_cursorClipped = true;
+//    }
+//    else if (!enable && g_cursorClipped)
+//    {
+//        ClipCursor(NULL);
+//        g_cursorClipped = false;
+//    }
+//}
 
 // Hooked SwapBuffers - 每次换帧都会被调用
 BOOL WINAPI MySwapBuffers(HDC hdc)
@@ -262,16 +262,16 @@ BOOL WINAPI MySwapBuffers(HDC hdc)
         if (g_uiActive)
         {
             io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // 允许 ImGui 处理鼠标
-            io.MouseDrawCursor = true;
+            //io.MouseDrawCursor = true;
             // 限制鼠标到游戏窗口（可选，方便 UI 拖动）
-            ApplyCursorClip(true);
+            //ApplyCursorClip(true);
         }
         else
         {
             io.ConfigFlags |= ImGuiConfigFlags_NoMouse;  // 禁止 ImGui 捕获鼠标
-            io.MouseDrawCursor = false;
+            //io.MouseDrawCursor = false;
             // 释放鼠标
-            ApplyCursorClip(false);
+            //ApplyCursorClip(false);
         }
     }
 
@@ -291,7 +291,7 @@ BOOL WINAPI MySwapBuffers(HDC hdc)
         // 如果 UI 激活，弹出交互主界面
         if (g_uiActive)
         {
-        mainUI.Render(&globalConfig); 
+        mainUI.Render(&globalConfig, &g_uiActive);
 
         }
     }
@@ -364,7 +364,7 @@ void Uninit()
     }
 
     // 释放鼠标限制
-    ReleaseCursorClip();
+     //ReleaseCursorClip();
 
     // 卸载 MinHook
     if (g_mhInitialized)

@@ -13,7 +13,7 @@ public:
 
     MainUI(InfoManager* manager);
 
-    void Render(GlobalConfig* global);
+    void Render(GlobalConfig* global, bool* p_open);
 
 private:
     InfoManager* manager;

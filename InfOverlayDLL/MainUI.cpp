@@ -79,7 +79,7 @@ MainUI::MainUI(InfoManager* manager)
 {
 }
 
-void MainUI::Render(GlobalConfig* globalConfig)
+void MainUI::Render(GlobalConfig* globalConfig, bool* p_open)
 {
 
     // 首次渲染时，记录圆角状态
@@ -113,7 +113,12 @@ void MainUI::Render(GlobalConfig* globalConfig)
 
     if (ImGui::Button("  X  "))
     {
-        PostQuitMessage(0);
+        //PostQuitMessage(0);
+        *p_open = false;
+        // 切换 ImGui 鼠标捕获设置
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NoMouse;  // 禁止 ImGui 捕获鼠标
+        //io.MouseDrawCursor = false;
     }
 
     ImGui::SameLine();
