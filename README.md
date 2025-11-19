@@ -12,8 +12,9 @@
 - 自定义文本  
 - 当前时间  
 - 粉丝数  
+- 计数器  
 - 游戏 FPS  
-- B 站直播弹幕（⚠ 存在未知偶发性崩端问题）
+- B 站直播弹幕
   
 适用于 **主播、视频作者、服务器玩家、工具开发者** 等希望在游戏中加入 HUD 信息显示的人群。
 
@@ -37,10 +38,11 @@ Useful for streamers, content creators, server players, and developers who want 
 - 游戏帧率（FPS）显示  
 - 自定义信息编辑  
 - 时间显示  
+- 计数器
 
 ### ✔ 直播相关功能
 - B 站粉丝数显示  
-- B 站直播间弹幕实时显示（实验性）
+- B 站直播间弹幕实时显示（需要配合第三方弹幕姬使用：https://www.danmuji.org/）
 
 ### ✔ 技术特性
 - 支持多版本 Java Minecraft  
