@@ -21,6 +21,8 @@ struct Danmaku {
 
 struct danmaku_element {
     ImVec4 color;
+    float curHeight = 0;
+    float tarHeight = 0;
 };
 
 
@@ -61,6 +63,7 @@ protected:
     //std::mutex danmakuMutex;
     FILETIME lastWriteTime = {};
     bool isScrollable = false;
+
 public:
     // 最大弹幕数量
     int maxDanmakuCount = 50;
