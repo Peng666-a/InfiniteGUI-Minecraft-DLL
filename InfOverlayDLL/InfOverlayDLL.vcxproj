@@ -138,9 +138,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AffixModule.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BilibiliFansItem.h" />
+    <ClInclude Include="Clock.h" />
     <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="CounterItem.h" />
     <ClInclude Include="DanmakuItem.h" />
@@ -167,17 +169,23 @@
     <ClInclude Include="MainUI.h" />
     <ClInclude Include="minHook\MinHook.h" />
     <ClInclude Include="miniaudio\miniaudio.h" />
+    <ClInclude Include="Module.h" />
+    <ClInclude Include="ModuleManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="TextItem.h" />
     <ClInclude Include="TimeItem.h" />
     <ClInclude Include="StringConverter.h" />
+    <ClInclude Include="UpdateModule.h" />
     <ClInclude Include="VK_Keymap.h" />
+    <ClInclude Include="WindowModule.h" />
     <ClInclude Include="WindowSnapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="BilibiliFansItem.cpp" />
+    <ClCompile Include="Clock.cpp" />
     <ClCompile Include="ConfigManager.cpp" />
     <ClCompile Include="CounterItem.cpp" />
     <ClCompile Include="DanmakuItem.cpp" />
@@ -196,12 +204,14 @@
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="infoManager.cpp" />
     <ClCompile Include="MainUI.cpp" />
+    <ClCompile Include="ModuleManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextItem.cpp" />
     <ClCompile Include="TimeItem.cpp" />
     <ClCompile Include="StringConverter.cpp" />
@@ -209,6 +219,9 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="minHook\libMinHook.x64.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ModuleFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

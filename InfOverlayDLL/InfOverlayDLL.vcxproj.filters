@@ -52,6 +52,21 @@
     <Filter Include="源文件\App">
       <UniqueIdentifier>{f414afce-aa5f-4d73-b2d5-4d3e097231c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\core2">
+      <UniqueIdentifier>{3ba17e60-0528-4c2d-b81f-3df4d1ace975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\core2\Features">
+      <UniqueIdentifier>{4677fc72-efce-4453-a9d0-e2918064412d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\core2\Modules">
+      <UniqueIdentifier>{fa331abf-085b-4cbf-98d4-1390af954af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\core2\Modules\Hud">
+      <UniqueIdentifier>{d0680d02-3b29-47f9-8953-bfe90a4b0584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\core2\Modules\Util">
+      <UniqueIdentifier>{23f66bf6-5096-4376-b5f6-6ee974650961}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="minHook\MinHook.h">
@@ -159,6 +174,27 @@
     <ClInclude Include="App.h">
       <Filter>源文件\App</Filter>
     </ClInclude>
+    <ClInclude Include="UpdateModule.h">
+      <Filter>源文件\core2\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="AffixModule.h">
+      <Filter>源文件\core2\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowModule.h">
+      <Filter>源文件\core2\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
+      <Filter>源文件\core2\Modules\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>源文件\core2\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Clock.h">
+      <Filter>源文件\core2\Modules\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleManager.h">
+      <Filter>源文件\core2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -239,10 +275,24 @@
     <ClCompile Include="App.cpp">
       <Filter>源文件\App</Filter>
     </ClCompile>
+    <ClCompile Include="Text.cpp">
+      <Filter>源文件\core2\Modules\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Clock.cpp">
+      <Filter>源文件\core2\Modules\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleManager.cpp">
+      <Filter>源文件\core2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="minHook\libMinHook.x64.lib">
       <Filter>minHook</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ModuleFactory.h">
+      <Filter>源文件\core2</Filter>
+    </None>
   </ItemGroup>
 </Project>

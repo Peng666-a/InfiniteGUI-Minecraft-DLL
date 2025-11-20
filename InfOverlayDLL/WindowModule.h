@@ -7,70 +7,40 @@
 #pragma comment(lib, "dwmapi.lib")
 #include "GlobalConfig.h"
 #include "WindowSnapper.h"
-#include <chrono>
-
+#include "Module.h"
 static const float SNAP_DISTANCE = 15.0f;
 static bool isSnapping = false;
 
-class InfoItem {
+class WindowModule
+{
 public:
-    virtual ~InfoItem() {
-    }
-
-    // ---------------------------
-    //   必须被子类实现的接口
-    // ---------------------------
-    virtual void Update() = 0;            // 刷新数据（按 Scheduler 调用）
     virtual void DrawContent() = 0;       // 绘制内容（文本、图形等）
 
-    virtual void Load(const nlohmann::json& j) = 0;
-    virtual void Save(nlohmann::json& j) const = 0;
-
-    void LoadInfoItemConfig(const nlohmann::json& j)
+    void DrawWindowSettings()
     {
-        if (j.contains("isEnabled")) isEnabled = j["isEnabled"];
-        if (j.contains("isCustomSize")) isCustomSize = j["isCustomSize"];
-        if (j.contains("x")) x = j["x"];
-        if (j.contains("y")) y = j["y"];
-        if (j.contains("width")) width = j["width"];
-        if (j.contains("height")) height = j["height"];
+        ImGui::Checkbox(u8"固定", &clickThrough);
 
-        if (j.contains("alpha")) alpha = j["alpha"];
-        if (j.contains("showBorder")) showBorder = j["showBorder"];
-        if (j.contains("fontSize")) fontSize = j["fontSize"];
-        if (j.contains("clickThrough")) clickThrough = j["clickThrough"];
+        ImGui::Checkbox(u8"显示边框", &showBorder);
 
-        if (j.contains("prefix")) prefix = j["prefix"];
-        if (j.contains("suffix")) suffix = j["suffix"];
 
-        if (j.contains("interval")) refreshIntervalMs = j["interval"];
-    }
-    void SaveInfoItemConfig(nlohmann::json& j) const
-    {
+        ImGui::SliderFloat(u8"背景透明度", &alpha, 0.0f, 1.0f, "%.1f");
 
-        j["isEnabled"] = isEnabled;
-        j["isCustomSize"] = isCustomSize;
-        j["x"] = x;
-        j["y"] = y;
-        j["width"] = width;
-        j["height"] = height;
+        ImGui::Checkbox(u8"自定义窗口大小", &isCustomSize);
+        if (isCustomSize) {
+            ImGui::InputFloat(u8"宽度", &width, 1.0f, 1.0f, "%.1f");
+            ImGui::InputFloat(u8"高度", &height, 1.0f, 1.0f, "%.1f");
+        }
+        ImGui::InputFloat(u8"窗口 X", &x, 1.0f, 1.0f, "%.1f");
+        ImGui::InputFloat(u8"窗口 Y", &y, 1.0f, 1.0f, "%.1f");
 
-        j["alpha"] = alpha;
-        j["showBorder"] = showBorder;
-        j["fontSize"] = fontSize;
-        j["clickThrough"] = clickThrough;
-
-        j["prefix"] = prefix;
-        j["suffix"] = suffix;
-
-        j["interval"] = refreshIntervalMs;
+        ImGui::InputFloat(u8"字体大小", &fontSize, 1.0f, 1.0f, "%.1f");
     }
 
     // ---------------------------
-    //   渲染整个窗口（统一逻辑）
-    // ---------------------------
+//   渲染整个窗口（统一逻辑）
+// ---------------------------
     std::string GetActualWindowName() const {
-        return windowTitle + "##" + std::to_string((uintptr_t)this);
+        return "##" + std::to_string((uintptr_t)this);
     }
 
     void HandleDrag(HWND g_hwnd)
@@ -115,8 +85,6 @@ public:
 
     virtual void RenderWindow(GlobalConfig* globalConfig, HWND g_hwnd)
     {
-        if (!isEnabled) return;
-
         if (!isCustomSize)
             //ImGui::SetNextWindowSizeConstraints(ImVec2(10, 10), ImVec2(2560, 1440));
             ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_Always);
@@ -127,7 +95,7 @@ public:
             if (isCustomSize)
                 ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
         }
-            
+
 
         ImGui::SetNextWindowBgAlpha(alpha); // 半透明
         if (!showBorder) ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 边框透明
@@ -135,7 +103,7 @@ public:
         ImGuiWindowFlags flags = 0;
         //if (!allowResize) flags |= ImGuiWindowFlags_NoResize;
         //if (!allowMove)   flags |= ImGuiWindowFlags_NoMove;
-        if(!isCustomSize) flags |= ImGuiWindowFlags_NoResize;
+        if (!isCustomSize) flags |= ImGuiWindowFlags_NoResize;
         flags |= ImGuiWindowFlags_NoTitleBar;
         flags |= ImGuiWindowFlags_NoScrollbar;
         flags |= ImGuiWindowFlags_NoSavedSettings;
@@ -163,25 +131,32 @@ public:
         if (!showBorder) ImGui::PopStyleColor(); // 边框透明
     }
 
-    // 检查是否到了更新的时间
-    bool ShouldUpdate() {
-        if (refreshIntervalMs == -1) return false;
-        auto now = std::chrono::steady_clock::now();
-        auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdateTime).count();
-        return elapsedTime >= refreshIntervalMs;
+    void LoadWindowConfig(const nlohmann::json& j)
+    {
+        if (j.contains("isCustomSize")) isCustomSize = j["isCustomSize"];
+        if (j.contains("x")) x = j["x"];
+        if (j.contains("y")) y = j["y"];
+        if (j.contains("width")) width = j["width"];
+        if (j.contains("height")) height = j["height"];
+
+        if (j.contains("alpha")) alpha = j["alpha"];
+        if (j.contains("showBorder")) showBorder = j["showBorder"];
+        if (j.contains("fontSize")) fontSize = j["fontSize"];
+        if (j.contains("clickThrough")) clickThrough = j["clickThrough"];
     }
+    void SaveWindowConfig(nlohmann::json& j) const
+    {
+        j["isCustomSize"] = isCustomSize;
+        j["x"] = x;
+        j["y"] = y;
+        j["width"] = width;
+        j["height"] = height;
 
-    // 更新操作
-    void MarkUpdated() {
-        lastUpdateTime = std::chrono::steady_clock::now();
+        j["alpha"] = alpha;
+        j["showBorder"] = showBorder;
+        j["fontSize"] = fontSize;
+        j["clickThrough"] = clickThrough;
     }
-
-    // ---------------------------
-    // 公共属性（所有信息项继承）
-    // ---------------------------
-    std::string windowTitle = "InfoItem";
-
-    bool isEnabled = true;
 
     bool isCustomSize = false;    //是否自定义大小
     float x = 100.0f;
@@ -201,10 +176,5 @@ public:
     bool isMoving = false;
     bool isHovered = true;
 
-    std::string prefix = "";
-    std::string suffix = "";
-
-    int refreshIntervalMs = 1000;    // 默认 1 秒
-    std::chrono::steady_clock::time_point lastUpdateTime;  // 记录最后更新时间
 
 };

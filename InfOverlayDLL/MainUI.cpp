@@ -81,8 +81,10 @@ MainUI::MainUI(InfoManager* manager)
 {
 }
 
-void MainUI::Render(GlobalConfig* globalConfig, bool* p_open)
+void MainUI::Render(GlobalConfig* globalConfig)
 {
+    if(!open)
+        return;
 
     // 首次渲染时，记录圆角状态
     static int firstRender = 5;
@@ -96,7 +98,7 @@ void MainUI::Render(GlobalConfig* globalConfig, bool* p_open)
 
     //使窗口显示在屏幕中间
     ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-
+    ImGui::SetNextWindowSize(ImVec2(1000, 618), ImGuiCond_Once);
 
     ImGui::Begin(u8"主控制面板", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar);
 
@@ -115,12 +117,7 @@ void MainUI::Render(GlobalConfig* globalConfig, bool* p_open)
 
     if (ImGui::Button("  X  "))
     {
-        //PostQuitMessage(0);
-        *p_open = false;
-        // 切换 ImGui 鼠标捕获设置
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NoMouse;  // 禁止 ImGui 捕获鼠标
-        //io.MouseDrawCursor = false;
+        Toggle();
     }
 
     ImGui::SameLine();
@@ -210,40 +207,61 @@ void MainUI::Render(GlobalConfig* globalConfig, bool* p_open)
         std::string appVersion = std::to_string(App::Instance().appVersion.major) + "." + std::to_string(App::Instance().appVersion.minor) + "." + std::to_string(App::Instance().appVersion.build);
         ImGuiStd::TextShadow(("v" + appVersion).c_str());
         ImGui::SameLine();
+        static std::atomic<bool> checkingUpdate = false;   // 是否在检查
+        static std::atomic<bool> updateFinished = false;   // 检查是否完成
+        static bool updateHasNew = false;                  // 是否发现新版本
+        static std::thread updateThread;                   // 工作线程
+        // 点击按钮：开始异步检查
         if (ImGui::Button(u8"检查更新"))
         {
-            if (!App::Instance().CheckUpdate())
-            {
-                ImGui::OpenPopup(u8"发现新版本");
-            }
-            else
-            {
-                ImGui::OpenPopup(u8"目前已是最新版本");
-            }
+            // 打开“正在检查”窗口
+            ImGui::OpenPopup(u8"-->检查更新...");
+
+            checkingUpdate = true;
+            updateFinished = false;
+
+            // 启动后台线程
+            updateThread = std::thread([]()
+                {
+                    bool result = App::Instance().CheckUpdate();
+                    updateHasNew = !result;   // result=false => 有新版本
+                    updateFinished = true;
+                    checkingUpdate = false;
+                });
+
+            updateThread.detach();
         }
-        if (ImGui::BeginPopup(u8"发现新版本"))
+        if (ImGui::BeginPopupModal(u8"-->检查更新...", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            ImGuiStd::TextShadow(u8"发现新版本！");
-            std::string cloudVersion = std::to_string(App::Instance().cloudVersion.major) + "." + std::to_string(App::Instance().cloudVersion.minor) + "." + std::to_string(App::Instance().cloudVersion.build);
-            ImGuiStd::TextShadow((u8"最新版本：" + cloudVersion).c_str());
-            if (ImGui::Button(u8"确定"))
+            if (checkingUpdate)
             {
-                ImGui::CloseCurrentPopup();
+                ImGuiStd::TextShadow(u8"正在检查更新，请稍候...");
             }
+            else if (updateFinished)
+            {
+                if (updateHasNew)
+                {
+                    ImGuiStd::TextShadow(u8"发现新版本！");
+                    std::string cloudVersion =
+                        std::to_string(App::Instance().cloudVersion.major) + "." +
+                        std::to_string(App::Instance().cloudVersion.minor) + "." +
+                        std::to_string(App::Instance().cloudVersion.build);
+
+                    ImGuiStd::TextShadow((u8"最新版本：" + cloudVersion).c_str());
+                }
+                else
+                    ImGuiStd::TextShadow(u8"目前已是最新版本");
+                if (ImGui::Button(u8"确定"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+
             ImGui::EndPopup();
         }
-        if (ImGui::BeginPopup(u8"目前已是最新版本"))
-        {
-            ImGuiStd::TextShadow(u8"目前已是最新版本");
-            if (ImGui::Button(u8"确定"))
-            {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-        ImGuiStd::TextShadow((u8"作者：" + App::Instance().appAuthor).c_str());
+        ImGuiStd::TextShadow(u8"作者：");
         ImGui::SameLine();
-        if (ImGui::Button(u8"Bilibili"))
+        if (ImGui::Button(App::Instance().appAuthor.c_str()))
         {
             ShellExecute(NULL, NULL, L"https://space.bilibili.com/399194206", NULL, NULL, SW_SHOWNORMAL);
         }
@@ -430,4 +448,14 @@ void MainUI::Draw_DanmakuItemSettings(DanmakuItem* item)
 {
     ImGuiStd::InputTextStd(u8"弹幕日志文件路径", item->logPath);
     ImGui::InputInt(u8"最大弹幕数", &item->maxDanmakuCount);
+}
+
+void MainUI::Toggle(bool open)
+{
+    this->open = open;
+}
+
+void MainUI::Toggle()
+{
+    open = !open;
 }

@@ -26,10 +26,8 @@ OldSwapBuffers fpSwapBuffers = NULL;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
 // 全局状态
-static HWND g_hwnd = NULL;
 static bool g_isInit = false;
 static WNDPROC g_oldWndProc = NULL;
-static bool g_uiActive = false;       // F1 切换 UI 激活
 static bool g_cursorClipped = false;  // 是否已限制鼠标
 static RECT g_clipRectBackup;         // 备份 cliprect（可选）
 
@@ -40,13 +38,49 @@ static bool g_mhInitialized = false;
 // 仅当 uiActive=true 时，让 ImGui 处理 Win32 消息
 LRESULT CALLBACK HookedWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (g_uiActive)
+    // 1. 按键检测
+    if (message == WM_KEYDOWN)
     {
-        // 只有 UI 激活时才把消息交给 ImGui 处理
-        if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
-            return TRUE;
+        if (wParam == globalConfig.menuKey)
+            mainUI.Toggle();
+
+        if (wParam == VK_ESCAPE && mainUI.open)
+            mainUI.Toggle();
     }
 
+    if (mainUI.open)
+    {
+        // 只有 UI 激活时才把消息交给 ImGui 处理
+        ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+        //if ((message >= WM_MOUSEFIRST && message <= WM_MOUSELAST) || message == WM_INPUT)
+        //{
+        //    return TRUE;
+        //}
+        switch (message)
+        {
+        case WM_IME_STARTCOMPOSITION:
+        case WM_IME_ENDCOMPOSITION:
+        case WM_IME_COMPOSITION:
+
+        case WM_IME_SETCONTEXT:
+        case WM_IME_NOTIFY:
+        case WM_IME_CONTROL:
+        case WM_IME_COMPOSITIONFULL:
+        case WM_IME_SELECT:
+        case WM_IME_CHAR:
+        case WM_IME_REQUEST:
+        case WM_IME_KEYDOWN:
+        case WM_IME_KEYUP:
+
+        case WM_INPUTLANGCHANGEREQUEST:
+        case WM_INPUTLANGCHANGE:
+            goto end;
+        default:
+            return TRUE;
+        }
+
+    }
+end:
     // 始终把消息交回原来的窗口过程（不管 UI 是否激活）
     return CallWindowProc(g_oldWndProc, hWnd, message, wParam, lParam);
 }
@@ -121,6 +155,7 @@ void setStyle()
 
 // 线程函数：更新所有 item 状态
 void UpdateThread() {
+    App::Instance().GetAnnouncement();
     while (true) {
         infoManager.UpdateAll();  // 调用UpdateAll()来更新所有item
         std::this_thread::sleep_for(std::chrono::milliseconds(1));  // 休眠100ms，可以根据实际需求调整
@@ -134,15 +169,18 @@ void StartUpdateThread() {
 }
 
 // 在找到有效 HDC/窗口后初始化 ImGui（只初始化一次）
-void InitImGuiForContext(HWND hwnd)
+void InitImGuiForContext()
 {
+    while (!wglGetCurrentContext())
+    {
+        Sleep(100);  // 等待 GL 线程初始化
+    }
     if (g_isInit) return;
-    if (!hwnd) return;
+    if (!App::Instance().clientHwnd) return;
 
-    g_hwnd = hwnd;
 
     // 替换窗口过程以便我们可以在 UI 激活时处理消息
-    g_oldWndProc = (WNDPROC)SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)HookedWndProc);
+    g_oldWndProc = (WNDPROC)SetWindowLongPtr(App::Instance().clientHwnd, GWLP_WNDPROC, (LONG_PTR)HookedWndProc);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -159,7 +197,7 @@ void InitImGuiForContext(HWND hwnd)
     setStyle();
 
     // 初始化平台/渲染绑定。GLSL 版本根据 MC 的 GL context 版本可调整
-    ImGui_ImplWin32_Init(g_hwnd);
+    ImGui_ImplWin32_Init(App::Instance().clientHwnd);
 
     //ImGui_ImplOpenGL3_Init("#version 130"); // 如果你的 MC 是较新 GL，可改为 "#version 330 core"
      // 尝试获取当前 OpenGL 上下文信息
@@ -168,7 +206,7 @@ void InitImGuiForContext(HWND hwnd)
 
     if (!glVersionStr)
     {
-        MessageBoxA(hwnd, "OpenGL context not ready! Please call after SwapBuffers hook is active.", "Error", MB_ICONERROR);
+        MessageBoxA(App::Instance().clientHwnd, "OpenGL context not ready! Please call after SwapBuffers hook is active.", "Error", MB_ICONERROR);
         return;
     }
 
@@ -208,7 +246,6 @@ void InitImGuiForContext(HWND hwnd)
     ConfigManager::Load(FileManager::GetConfigPath(), globalConfig, infoManager);
     //初始化音频管理器
     AudioManager::Instance().Init();
-    App::Instance().GetAnnouncement();
     StartUpdateThread();  // 启动更新线程
 }
 
@@ -216,42 +253,30 @@ void InitImGuiForContext(HWND hwnd)
 BOOL WINAPI MySwapBuffers(HDC hdc)
 {
     // 获取与当前 HDC 关联的顶层窗口（只在首次时用于初始化）
-    if (!g_hwnd)
+    if (!App::Instance().clientHwnd)
     {
         HWND possible = WindowFromDC(hdc);
-        if (possible) g_hwnd = possible;
+        if (possible) App::Instance().clientHwnd = possible;
     }
 
     // 在首次有有效窗口时初始化 ImGui（安全）
-    if (!g_isInit && g_hwnd)
-        InitImGuiForContext(g_hwnd);
-
-    // 切换 UI 激活开关（按下一次切换）
-    if (GetAsyncKeyState(globalConfig.menuKey) & 1)
-    {
-        g_uiActive = !g_uiActive;
-
-        // 切换 ImGui 鼠标捕获设置
-        ImGuiIO& io = ImGui::GetIO();
-        if (g_uiActive)
-        {
-            io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // 允许 ImGui 处理鼠标
-            //io.MouseDrawCursor = true;
-            // 限制鼠标到游戏窗口（可选，方便 UI 拖动）
-            //ApplyCursorClip(true);
-        }
-        else
-        {
-            io.ConfigFlags |= ImGuiConfigFlags_NoMouse;  // 禁止 ImGui 捕获鼠标
-            //io.MouseDrawCursor = false;
-            // 释放鼠标
-            //ApplyCursorClip(false);
-        }
-    }
+    if (!g_isInit && App::Instance().clientHwnd)
+        InitImGuiForContext();
 
     // 如果 ImGui 未初始化，直接调用原 SwapBuffers
     if (!g_isInit)
         return fpSwapBuffers(hdc);
+
+    // 切换 ImGui 鼠标捕获设置
+    ImGuiIO& io = ImGui::GetIO();
+    if (mainUI.open)
+    {
+        io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // 允许 ImGui 处理鼠标
+    }
+    else
+    {
+        io.ConfigFlags |= ImGuiConfigFlags_NoMouse;  // 禁止 ImGui 捕获鼠标
+    }
 
     // --- 新帧 ---
     ImGui_ImplOpenGL3_NewFrame(); // 如果不可用，可省略（一些版本没有此函数，但通常有）
@@ -259,15 +284,8 @@ BOOL WINAPI MySwapBuffers(HDC hdc)
     ImGui::NewFrame();
 
     {
-
-        infoManager.RenderAll(&globalConfig, g_hwnd); 
-
-        // 如果 UI 激活，弹出交互主界面
-        if (g_uiActive)
-        {
-        mainUI.Render(&globalConfig, &g_uiActive);
-
-        }
+        infoManager.RenderAll(&globalConfig, App::Instance().clientHwnd);
+        mainUI.Render(&globalConfig);
     }
 
     // 渲染 ImGui
@@ -331,9 +349,9 @@ void Uninit()
     }
 
     // 恢复窗口过程
-    if (g_hwnd && g_oldWndProc)
+    if (App::Instance().clientHwnd && g_oldWndProc)
     {
-        SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)g_oldWndProc);
+        SetWindowLongPtr(App::Instance().clientHwnd, GWLP_WNDPROC, (LONG_PTR)g_oldWndProc);
         g_oldWndProc = NULL;
     }
 

@@ -12,9 +12,15 @@
 class MainUI {
 public:
 
+    bool open = false;
+
     MainUI(InfoManager* manager);
 
-    void Render(GlobalConfig* global, bool* p_open);
+    void Render(GlobalConfig* global);
+
+    void Toggle(bool open);
+
+    void Toggle();
 
 private:
     InfoManager* manager;
