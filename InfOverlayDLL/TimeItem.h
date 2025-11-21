@@ -1,18 +1,27 @@
 #pragma once
-#include "InfoItem.h"
+#include "Item.h"
+#include "AffixModule.h"
+#include "UpdateModule.h"
+#include "WindowModule.h"
+#include "nlohmann/json.hpp"
+
 #include <string>
 #include <chrono>
 #include <ctime>
 
-class TimeItem : public InfoItem {
+class TimeItem : public Item, public AffixModule , public UpdateModule, public WindowModule {
 public:
     TimeItem() {
-        windowTitle = "Time";
-        refreshIntervalMs = 1000;  // 默认1秒刷新
+        name = u8"时间显示";
+        description = u8"显示当前时间";
+        currentTimeStr = u8"正在获取系统时间...";
+        refreshIntervalMs = 1000;
+        lastUpdateTime = std::chrono::steady_clock::now();
     }
 
     void Update() override;
     void DrawContent() override;
+    void DrawSettings() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
 

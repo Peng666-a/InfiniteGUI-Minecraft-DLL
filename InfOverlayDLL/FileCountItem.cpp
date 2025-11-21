@@ -95,9 +95,28 @@ void FileCountItem::DrawContent()
     ImGuiStd::TextColoredShadow(color.color, (prefix + std::to_string(fileCount) + errorMessage + suffix).c_str());
 }
 
+void FileCountItem::DrawSettings()
+{
+    DrawModuleSettings();
+    ImGuiStd::InputTextStd(u8"文件夹路径", folderPath);
+    ImGui::Checkbox(u8"递归扫描(包括子文件夹)", &recursive);
+    ImGuiStd::InputTextStd(u8"扩展名过滤 (.txt)", extensionFilter);
+
+    if (ImGui::CollapsingHeader(u8"通用设置"))
+    {
+        DrawWindowSettings();
+        DrawAffixSettings();
+        DrawSoundSettings();
+    }
+}
+
 void FileCountItem::Load(const nlohmann::json& j)
 {
 
+    LoadItem(j);
+    LoadAffix(j);
+    LoadWindow(j);
+    LoadSound(j);
 
     if (j.contains("folderPath")) folderPath = j["folderPath"];
 
@@ -107,21 +126,20 @@ void FileCountItem::Load(const nlohmann::json& j)
     if (j.contains("fileCount")) fileCount = j["fileCount"];
     lastFileCount = fileCount;
 
-    if (j.contains("isPlaySound")) isPlaySound = j["isPlaySound"];
-    if (j.contains("soundVolume")) soundVolume = j["soundVolume"];
-    LoadInfoItemConfig(j);
 }
 
 void FileCountItem::Save(nlohmann::json& j) const
 {
     j["type"] = "file_count";
+    SaveItem(j);
+    SaveAffix(j);
+    SaveWindow(j);
+    SaveSound(j);
+
     j["folderPath"] = folderPath;
     j["recursive"] = recursive;
     j["extensionFilter"] = extensionFilter;
     j["fileCount"] = fileCount;
 
-    j["isPlaySound"] = isPlaySound;
-    j["soundVolume"] = soundVolume;
-    SaveInfoItemConfig(j);
 
 }

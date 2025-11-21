@@ -350,127 +350,34 @@ void DanmakuItem::DrawContent()
 
 }
 
-//old scroll method LLL
-//void DanmakuItem::DrawContent()
-//{
-//
-//    std::deque<Danmaku> copy_danmakuList;
-//    std::string copy_bottomMessage;
-//
-//    {
-//        copy_danmakuList = danmakuList;
-//        copy_bottomMessage = bottomMessage;
-//    }
-//
-//
-//    //设置背景透明度
-//    float child_alpha = 1.0f - (1.0f - alpha) * 0.5f;
-//
-//    ImGui::SetNextWindowBgAlpha(alpha);
-//
-//    ImGuiChildFlags child_flags = 0;
-//    if (!isScrollable) {
-//        child_flags |= ImGuiWindowFlags_NoScrollbar;
-//        child_flags |= ImGuiWindowFlags_NoScrollWithMouse;
-//    }
-//
-//    // 绘制弹幕信息
-//    ImGui::BeginChild("DanmakuList", ImVec2(0, -fontSize - 10), true, child_flags);
-//
-//    if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
-//    {
-//        isScrollable = true;
-//    }
-//    else
-//    {
-//        isScrollable = false;
-//    }
-//    ImGui::PushTextWrapPos(0.0f); // 0 表示使用窗口内容区最大宽度
-//    //获取io
-//    ImGuiIO& io = ImGui::GetIO();
-//    float targetScrollY = ImGui::GetScrollMaxY();
-//    float currentScrollY = ImGui::GetScrollY();
-//
-//    // 每次新弹幕加入后，让滚动条慢慢往下滑动
-//    float scrollSpeed = io.DeltaTime * 5.0f;
-//    if (!isScrollable && currentScrollY < targetScrollY)
-//    {
-//        currentScrollY = ImLerp(currentScrollY, targetScrollY, scrollSpeed) + 1.0f;
-//        ImGui::SetScrollY(currentScrollY);
-//    }
-//
-//    for (auto it = copy_danmakuList.rbegin(); it != copy_danmakuList.rend(); ++it) {
-//        auto& danmaku = *it;
-//
-//        auto it_anim = anim.find(danmaku.id);
-//        if (it_anim == anim.end())
-//        {
-//            anim.insert({ danmaku.id,{ ImVec4(0.1f, 1.0f, 0.1f, 1.0f) } });
-//            it_anim = anim.find(danmaku.id);
-//        }
-//
-//        float speed = io.DeltaTime * 3.0f;
-//        //static ImVec4 startColor = ImVec4(0.1f, 1.0f, 0.1f, 1.0f);
-//        ImVec4 endColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
-//        it_anim->second.color = ImLerp(it_anim->second.color, endColor, speed);
-//
-//        ImGui::Separator();
-//        ImGui::SetCursorPosX(10);
-//        ImGui::SetWindowFontScale(fontSize / 20.0f * 0.8f);
-//        //ImGui::TextColored(ImVec4(1.0f, 1.0f , 1.0f, 1.0f), "%s", danmaku.c_str());
-//        ImGuiStd::TextColoredShadow(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), (danmaku.username + " : ").c_str());
-//        ImGui::SetWindowFontScale(fontSize / 20.0f);
-//        ImGui::SetCursorPosX(10 + fontSize);
-//        ImGuiStd::TextColoredShadow(it_anim->second.color, danmaku.message.c_str());
-//    }
-//    ImGui::PopTextWrapPos();
-//    ImGui::EndChild();
-//
-//    //// 渲染层中定期清理
-//    //for (auto id : pendingErase) {
-//    //    anim.erase(id);
-//    //}
-//
-//    //pendingErase.clear();
-//    ImGui::Separator();
-//
-//    // 绘制底部信息
-//
-//    ImGui::SetCursorPosX(10);
-//
-//    switch (bottomMessageType) {
-//    case BTM_GIFT:
-//        ImGuiStd::TextColoredShadow(ImVec4(1.0f, 84.31f, 0.0f, 1.0f), bottomMessage.c_str()); //金色
-//        break;
-//    case BTM_ENTRY:
-//        ImGuiStd::TextColoredShadow(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), bottomMessage.c_str()); //灰色
-//        break;
-//    case BTM_LIKE:
-//        ImGuiStd::TextColoredShadow(ImVec4(0.1f, 1.0f, 0.1f, 1.0f), bottomMessage.c_str()); //绿色
-//        break;
-//    case BTM_CAPTAIN:
-//        ImGuiStd::TextColoredShadow(ImVec4(1.0f, 0.1f, 0.1f, 1.0f), bottomMessage.c_str()); //红色
-//    default:
-//        break;
-//    }
-//
-//}
+void DanmakuItem::DrawSettings()
+{
+    DrawModuleSettings();
+    ImGuiStd::InputTextStd(u8"弹幕日志文件路径", logPath);
+    ImGui::InputInt(u8"最大弹幕数", &maxDanmakuCount);
+    if (ImGui::CollapsingHeader(u8"通用设置"))
+    {
+        DrawWindowSettings();
+    }
+}
 
 void DanmakuItem::Load(const nlohmann::json& j)
 {
+    LoadItem(j);
+    LoadWindow(j);
     if (j.contains("logPath"))  logPath = j["logPath"];
     if (j.contains("maxDanmakuCount")) maxDanmakuCount = j["maxDanmakuCount"];
-
-    LoadInfoItemConfig(j);
 }
 
 void DanmakuItem::Save(nlohmann::json& j) const
 {
     j["type"] = "danmaku";
 
+    SaveItem(j);
+    SaveWindow(j);
+
     j["logPath"] = logPath;
 
     j["maxDanmakuCount"] = maxDanmakuCount;
 
-    SaveInfoItemConfig(j);
 }

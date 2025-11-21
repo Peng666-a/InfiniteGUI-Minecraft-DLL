@@ -4,7 +4,7 @@
 #include "App.h"
 #include "ConfigManager.h"
 #include "GlobalConfig.h"
-#include "FileManager.h"
+#include "FileUtils.h"
 #include "StringConverter.h"
 
 struct FontInfo {
@@ -76,7 +76,7 @@ void ShowFontSelection(GlobalConfig* globalConfig) {
 
 }
 
-MainUI::MainUI(InfoManager* manager)
+MainUI::MainUI(ItemManager* manager)
     : manager(manager)
 {
 }
@@ -107,7 +107,7 @@ void MainUI::Render(GlobalConfig* globalConfig)
     ImGui::SameLine();
 
     if (ImGui::Button(u8"保存配置"))
-        ConfigManager::Save(FileManager::GetConfigPath(), *globalConfig, *manager);
+        ConfigManager::Save(FileUtils::GetConfigPath(), *globalConfig, *manager);
 
 
     ImGui::SameLine();
@@ -289,12 +289,12 @@ void MainUI::DrawItemList()
 
     for (int i = 0; i < items.size(); i++)
     {
-        InfoItem* item = items[i].get();
+        Item* item = items[i].get();
 
         ImGui::Checkbox(("##" + std::to_string(i)).c_str(), &item->isEnabled);
         ImGui::SameLine();
 
-        ImGui::Text("[%d] %s", i, item->windowTitle.c_str());
+        ImGui::Text("[%d] %s", i, item->name.c_str());
         ImGui::SameLine();
         ImGui::PushID(i);
 
@@ -318,136 +318,21 @@ void MainUI::DrawItemList()
         }
 
         ImGui::PopID();
-        ImGui::SameLine();
+        //ImGui::SameLine();
         //避免冲突
 
-        std::string clickThroughStr = u8"固定##" + std::to_string(i);
+        //std::string clickThroughStr = u8"固定##" + std::to_string(i);
 
-        ImGui::Checkbox(clickThroughStr.c_str(), &item->clickThrough);
+        //ImGui::Checkbox(clickThroughStr.c_str(), &item->clickThrough);
     }
 }
 
-void MainUI::DrawItemEditor(InfoItem* item)
+void MainUI::DrawItemEditor(Item* item)
 {
-    ImGui::Text(u8"编辑项：%s", item->windowTitle.c_str());
+    ImGui::Text(u8"编辑项：%s", item->name.c_str());
 
     // 根据不同类型显示不同配置项
-
-    if (auto t = dynamic_cast<TextItem*>(item)) {
-        Draw_TextItemSettings(t);
-    }
-    else if (auto t = dynamic_cast<TimeItem*>(item)) {
-        Draw_TimeItemSettings(t);
-    }
-    else if (auto f = dynamic_cast<FpsItem*>(item)) {
-        Draw_FpsItemSettings(f);
-    }
-    else if (auto f = dynamic_cast<FileCountItem*>(item)) {
-        Draw_FileCountItemSettings(f);
-    }
-    else if (auto b = dynamic_cast<BilibiliFansItem*>(item)) {
-        Draw_BilibiliItemSettings(b);
-    }
-    else if (auto c = dynamic_cast<CounterItem*>(item)) {
-        Draw_CounterItemSettings(c);
-    }
-    else if (auto d = dynamic_cast<DanmakuItem*>(item)) {
-        Draw_DanmakuItemSettings(d);
-    }
-
-    // 通用设置
-    if (ImGui::CollapsingHeader(u8"通用设置"))
-    {
-        ImGui::Checkbox(u8"固定", &item->clickThrough);
-
-        ImGui::Checkbox(u8"显示边框", &item->showBorder);
-
-
-        ImGui::SliderFloat(u8"背景透明度", &item->alpha, 0.0f, 1.0f, "%.1f");
-
-        ImGui::Checkbox(u8"自定义窗口大小", &item->isCustomSize);
-        if (item->isCustomSize) {
-            ImGui::InputFloat(u8"宽度", &item->width, 1.0f, 1.0f, "%.1f");
-            ImGui::InputFloat(u8"高度", &item->height, 1.0f, 1.0f, "%.1f");
-        }
-        ImGui::InputFloat(u8"窗口 X", &item->x, 1.0f, 1.0f, "%.1f");
-        ImGui::InputFloat(u8"窗口 Y", &item->y, 1.0f, 1.0f, "%.1f");
-
-        ImGui::InputFloat(u8"字体大小", &item->fontSize, 1.0f, 1.0f, "%.1f");
-
-
-        ImGui::InputInt(u8"刷新间隔(毫秒)", &item->refreshIntervalMs);
-        ImGuiStd::InputTextStd(u8"前缀", item->prefix);
-        ImGuiStd::InputTextStd(u8"后缀", item->suffix);
-    }
-}
-
-void MainUI::Draw_TextItemSettings(TextItem* item)
-{
-    ImGuiStd::InputTextStd(u8"文本内容", item->text);
-}
-
-void MainUI::Draw_TimeItemSettings(TimeItem* item)
-{
-    ImGui::Text(u8"TimeItem 无额外设置");
-}
-
-void MainUI::Draw_FpsItemSettings(FpsItem* item)
-{
-    ImGui::Text(u8"FpsItem 无额外设置");
-}
-
-void MainUI::Draw_FileCountItemSettings(FileCountItem* item)
-{
-
-    ImGuiStd::InputTextStd(u8"文件夹路径", item->folderPath);
-    ImGui::Checkbox(u8"递归扫描(包括子文件夹)", &item->recursive);
-    ImGuiStd::InputTextStd(u8"扩展名过滤 (.txt)", item->extensionFilter);
-    ImGui::Checkbox(u8"提示音", &item->isPlaySound);
-    if (item->isPlaySound)
-        ImGui::SliderFloat(u8"提示音音量", &item->soundVolume, 0.0f, 1.0f, "%.2f");
-}
-
-void MainUI::Draw_BilibiliItemSettings(BilibiliFansItem* item)
-{
-    static std::string uidStr = std::to_string(item->uid);
-    ImGuiStd::InputTextStd(u8"B站 UID", uidStr);
-    ImGui::SameLine();
-    if (ImGui::Button(u8"确定"))
-    {
-        if (uidStr.empty())
-        {
-            uidStr = u8"不能输入空值"; // 默认设置为你的 UID
-        }
-        else if (uidStr.find_first_not_of("0123456789") != std::string::npos)
-        {
-            uidStr = u8"只能输入数字"; // 输入非数字
-        }
-        else
-            item->uid = std::stoll(uidStr);
-    }
-    ImGui::Checkbox(u8"提示音", &item->isPlaySound);
-    if (item->isPlaySound)
-        ImGui::SliderFloat(u8"提示音音量", &item->soundVolume, 0.0f, 1.0f, "%.2f");
-}
-
-void MainUI::Draw_CounterItemSettings(CounterItem* item)
-{
-    ImGui::InputInt(u8"计数值", &item->count);
-    //设置增加快捷键
-    ImGuiStd::Keybind(u8"增加快捷键：", item->hotkeyAdd);
-//设置减少快捷键
-    ImGuiStd::Keybind(u8"减少快捷键：", item->hotkeySub);
-
-    ImGui::Checkbox(u8"提示音", &item->isPlaySound);
-    if (item->isPlaySound)
-	    ImGui::SliderFloat(u8"提示音音量", &item->soundVolume, 0.0f, 1.0f, "%.2f");
-}
-
-void MainUI::Draw_DanmakuItemSettings(DanmakuItem* item)
-{
-    ImGuiStd::InputTextStd(u8"弹幕日志文件路径", item->logPath);
-    ImGui::InputInt(u8"最大弹幕数", &item->maxDanmakuCount);
+    item->DrawSettings();
 }
 
 void MainUI::Toggle(bool open)

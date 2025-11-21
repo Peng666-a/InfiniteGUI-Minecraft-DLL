@@ -1,4 +1,4 @@
-#include "InfoManager.h"
+#include "ItemManager.h"
 #include "TimeItem.h"
 #include "FpsItem.h"
 #include "BilibiliFansItem.h"
@@ -11,11 +11,18 @@
 #include <chrono>
 
 
-InfoManager::InfoManager()
+ItemManager::ItemManager()
 {
+    // 注册默认信息项
+    //AddItem(std::make_shared<TimeItem>());
+    //AddItem(std::make_shared<FpsItem>());
+    //AddItem(std::make_shared<BilibiliFansItem>());
+    //AddItem(std::make_shared<FileCountItem>());
+    //AddItem(std::make_shared<CounterItem>());
+    //AddItem(std::make_shared<DanmakuItem>());
 }
 
-void InfoManager::AddItem(std::shared_ptr<InfoItem> item)
+void ItemManager::AddItem(std::shared_ptr<Item> item)
 {
     items.push_back(std::move(item));
 }
@@ -24,7 +31,7 @@ void InfoManager::AddItem(std::shared_ptr<InfoItem> item)
 // ---------------------------------------------
 // 删除信息项（简单版）
 // ---------------------------------------------
-void InfoManager::RemoveItem(int index)
+void ItemManager::RemoveItem(int index)
 {
     if (index >= 0 && index < items.size()) {
         items.erase(items.begin() + index);
@@ -33,14 +40,21 @@ void InfoManager::RemoveItem(int index)
 
 }
 
-void InfoManager::UpdateAll()
+void ItemManager::UpdateAll()
 {
     auto now = std::chrono::steady_clock::now();
 
-    for (auto& item : items) {
-        if (item->ShouldUpdate() && item->isEnabled) {
-            item->Update();      // 执行item的更新操作
-            item->MarkUpdated(); // 更新最后更新时间
+    for (auto& item : items)
+    {
+        if (!item->isEnabled) continue; // 跳过禁用的模块
+        if (auto upd = dynamic_cast<UpdateModule*>(item.get()))
+        {
+            if (upd->ShouldUpdate())
+            {
+                upd->Update();
+                upd->MarkUpdated();
+            }
+                
         }
     }
 }
@@ -49,25 +63,28 @@ void InfoManager::UpdateAll()
 // ---------------------------------------------
 // 渲染所有信息项（每帧调用）
 // ---------------------------------------------
-void InfoManager::RenderAll(GlobalConfig* globalConfig, HWND hwnd)
+void ItemManager::RenderAll(GlobalConfig* globalConfig, HWND hwnd)
 {
 
     for (auto& item : items) {
-
-        item->RenderWindow(globalConfig, hwnd);
+        if (!item->isEnabled) continue; // 跳过禁用的模块
+        if (auto win = dynamic_cast<WindowModule*>(item.get()))
+        {
+            win->RenderWindow(hwnd);
+        }
     }
 }
 
 // ---------------------------------------------
 // 从 JSON 加载全部信息项
 // ---------------------------------------------
-void InfoManager::Load(const nlohmann::json& j)
+void ItemManager::Load(const nlohmann::json& j)
 {
-    if (!j.contains("infoItems")) return;
-    for (auto& v : j["infoItems"])
+    if (!j.contains("Items")) return;
+    for (auto& v : j["Items"])
     {
         std::string type = v["type"].get<std::string>();
-        std::unique_ptr<InfoItem> item;
+        std::unique_ptr<Item> item;
 
         if (type == "text")
         {
@@ -103,14 +120,14 @@ void InfoManager::Load(const nlohmann::json& j)
 // ---------------------------------------------
 // 保存所有信息项
 // ---------------------------------------------
-void InfoManager::Save(nlohmann::json& j) const
+void ItemManager::Save(nlohmann::json& j) const
 {
-    j["infoItems"] = nlohmann::json::array();
+    j["Items"] = nlohmann::json::array();
 
     for (auto& item : items)
     {
         nlohmann::json v;
         item->Save(v);
-        j["infoItems"].push_back(v);
+        j["Items"].push_back(v);
     }
 }

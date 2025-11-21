@@ -1,16 +1,22 @@
-#include "InfoItem.h"
-class FpsItem : public InfoItem
+#include "Item.h"
+#include "AffixModule.h"
+#include "UpdateModule.h"
+#include "WindowModule.h"
+
+class FpsItem : public Item, public AffixModule, public UpdateModule, public WindowModule
 {
 public:
     FpsItem() {
-        windowTitle = "FPS Count";
-        refreshIntervalMs = 1000;   // 默认1秒刷新
+        name = u8"帧率显示";
+        description = u8"显示当前帧率";
+        refreshIntervalMs = 1000;
+        lastUpdateTime = std::chrono::steady_clock::now();
     }
-    // InfoItem 接口
-    virtual void Update() override; // 在后台线程调用，计算 smoothedFPS
-    virtual void DrawContent() override; // 在渲染线程调用，绘制内容 (被 RenderWindow 调用)
-    virtual void Load(const nlohmann::json& j) override;
-    virtual void Save(nlohmann::json& j) const override;
+    void Update() override;
+    void DrawContent() override;
+    void DrawSettings() override;
+    void Load(const nlohmann::json& j) override;
+    void Save(nlohmann::json& j) const override;
 
 private:
     // 帧率计数器

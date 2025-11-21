@@ -1,5 +1,9 @@
 #pragma once
-#include "InfoItem.h"
+#include "Item.h"
+#include "AffixModule.h"
+#include "SoundModule.h"
+#include "UpdateModule.h"
+#include "WindowModule.h"
 #include <string>
 
 
@@ -7,15 +11,20 @@ struct bilibili_fans_element {
     ImVec4 color;
 };
 
-class BilibiliFansItem : public InfoItem {
+class BilibiliFansItem : public Item, public AffixModule, public SoundModule, public UpdateModule, public WindowModule {
 public:
     BilibiliFansItem() {
-        windowTitle = "Bilibili Fans";
-        refreshIntervalMs = 30000;   // 默认 30 秒刷一次
+        name = u8"B站粉丝数显示";
+        description = u8"显示B站用户的粉丝数";
+        isPlaySound = true;    // 是否播放声音
+        soundVolume = 0.5f;    // 声音音量（0.0~1.0）
+        refreshIntervalMs = 3000;
+        lastUpdateTime = std::chrono::steady_clock::now();
     }
 
     void Update() override;
     void DrawContent() override;
+    void DrawSettings() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
 
@@ -24,7 +33,5 @@ public:
     int fansCount = 0;    // 粉丝数（从API解析）
     int lastFansCount = 0;    // 粉丝数（从API解析）
 
-    bool isPlaySound = true;    // 是否播放声音
-    float soundVolume = 0.5f;    // 声音音量（0.0~1.0）
     bilibili_fans_element color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
 };

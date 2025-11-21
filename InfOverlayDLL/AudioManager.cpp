@@ -1,7 +1,7 @@
 #include "AudioManager.h"
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
-#include "FileManager.h"
+#include "FileUtils.h"
 AudioManager& AudioManager::Instance()
 {
     static AudioManager instance;
@@ -61,7 +61,7 @@ float AudioManager::GetVolume()
 
 void AudioManager::playSound(std::string soundName, float soundVolume)
 {
-    AudioManager::Instance().LoadSound(FileManager::GetSoundPath(soundName));
+    AudioManager::Instance().LoadSound(FileUtils::GetSoundPath(soundName));
     AudioManager::Instance().SetVolume(soundVolume);
     AudioManager::Instance().Play();
 }

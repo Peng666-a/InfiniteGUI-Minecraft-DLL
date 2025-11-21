@@ -2,14 +2,14 @@
 #include <vector>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "InfoItem.h"
+#include "Item.h"
 #include "GlobalConfig.h"
 
-class InfoManager {
+class ItemManager {
 public:
-    InfoManager();
+    ItemManager();
 
-    void AddItem(std::shared_ptr<InfoItem> item);
+    void AddItem(std::shared_ptr<Item> item);
     void RemoveItem(int index);
 
     void UpdateAll();
@@ -19,8 +19,8 @@ public:
     void Load(const nlohmann::json& j);
     void Save(nlohmann::json& j) const;
 
-    std::vector<std::shared_ptr<InfoItem>>& GetItems() { return items; }
+    std::vector<std::shared_ptr<Item>>& GetItems() { return items; }
 
 private:
-    std::vector<std::shared_ptr<InfoItem>> items;
+    std::vector<std::shared_ptr<Item>> items;
 };

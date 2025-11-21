@@ -47,25 +47,43 @@ void CounterItem::DrawContent()
 
 }
 
+void CounterItem::DrawSettings()
+{
+    DrawModuleSettings();
+    ImGui::InputInt(u8"计数值", &count);
+    //设置增加快捷键
+    ImGuiStd::Keybind(u8"增加快捷键：", hotkeyAdd);
+    //设置减少快捷键
+    ImGuiStd::Keybind(u8"减少快捷键：", hotkeySub);
+    if (ImGui::CollapsingHeader(u8"通用设置"))
+    {
+        DrawWindowSettings();
+        DrawAffixSettings();
+        DrawSoundSettings();
+    }
+}
+
 void CounterItem::Load(const nlohmann::json& j)
 {
+    LoadItem(j);
+    LoadAffix(j);
+    LoadWindow(j);
+    LoadSound(j);
     if (j.contains("count")) count = j["count"];
     lastCount = count;
     if (j.contains("hotkeyAdd")) hotkeyAdd = j["hotkeyAdd"];
     if (j.contains("hotkeySub")) hotkeySub = j["hotkeySub"];
 
-    if (j.contains("isPlaySound")) isPlaySound = j["isPlaySound"];
-    if (j.contains("soundVolume")) soundVolume = j["soundVolume"];
-    LoadInfoItemConfig(j);
 }
 
 void CounterItem::Save(nlohmann::json& j) const
 {
     j["type"] = "counter";
+    SaveItem(j);
+    SaveAffix(j);
+    SaveWindow(j);
+    SaveSound(j);
     j["count"] = count;
     j["hotkeyAdd"] = hotkeyAdd;
     j["hotkeySub"] = hotkeySub;
-    j["isPlaySound"] = isPlaySound;
-    j["soundVolume"] = soundVolume;
-    SaveInfoItemConfig(j);
 }

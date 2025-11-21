@@ -1,20 +1,30 @@
 #pragma once
-#include "InfoItem.h"
+#include "Item.h"
+#include "AffixModule.h"
+#include "SoundModule.h"
+#include "UpdateModule.h"
+#include "WindowModule.h"
 #include <string>
 
 struct file_count_element {
     ImVec4 color;
 };
 
-class FileCountItem : public InfoItem {
+class FileCountItem : public Item, public AffixModule, public SoundModule, public UpdateModule, public WindowModule {
 public:
     FileCountItem() {
-        windowTitle = "File Count";
-        refreshIntervalMs = 3000;   // 默认3秒刷新
+        name = u8"FileCount";
+        description = u8"显示文件夹内文件数量";
+        isPlaySound = true;
+        soundVolume = 0.5f;
+        refreshIntervalMs = 1000;
+        lastUpdateTime = std::chrono::steady_clock::now();
+
     }
 
     void Update() override;
     void DrawContent() override;
+    void DrawSettings() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
 
@@ -24,13 +34,10 @@ private:
 
 public:
     // 配置项
-    std::string folderPath = "";   // 默认路径
+    std::string folderPath = "C:\\Users";   // 默认路径
     std::string errorMessage = "";
     bool recursive = false;           // 是否递归扫描
     std::string extensionFilter = ""; // 例如 ".txt" 为空则全部文件
-
-    bool isPlaySound = true;
-    float soundVolume = 0.5f;
 
     file_count_element color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
 };

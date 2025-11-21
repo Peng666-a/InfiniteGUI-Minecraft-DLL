@@ -2,20 +2,20 @@
 #include "pch.h"
 #include <windows.h>
 
-#include "infoManager.h"
+#include "ItemManager.h"
 #include "ConfigManager.h"
 #include "MainUI.h"
 #include "GlobalConfig.h"
 #include "StringConverter.h"
-#include "FileManager.h"
+#include "FileUtils.h"
 #include "AudioManager.h"
 #include "App.h"
 #include "fonts\Uranus_Pixel_11Px.h"
 
 
     // 全局在 dllmain.cpp 顶部声明（extern 或 static）
-InfoManager infoManager;
-MainUI mainUI(&infoManager);
+ItemManager itemManager;
+MainUI mainUI(&itemManager);
 ConfigManager configManager;
 GlobalConfig globalConfig;
 
@@ -28,8 +28,6 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 // 全局状态
 static bool g_isInit = false;
 static WNDPROC g_oldWndProc = NULL;
-static bool g_cursorClipped = false;  // 是否已限制鼠标
-static RECT g_clipRectBackup;         // 备份 cliprect（可选）
 
 // 为安全：避免重复初始化/卸载
 static bool g_hookInitialized = false;
@@ -157,7 +155,7 @@ void setStyle()
 void UpdateThread() {
     App::Instance().GetAnnouncement();
     while (true) {
-        infoManager.UpdateAll();  // 调用UpdateAll()来更新所有item
+        itemManager.UpdateAll();  // 调用UpdateAll()来更新所有item
         std::this_thread::sleep_for(std::chrono::milliseconds(1));  // 休眠100ms，可以根据实际需求调整
     }
 }
@@ -243,7 +241,7 @@ void InitImGuiForContext()
     g_isInit = true;
 
     //加载配置文件
-    ConfigManager::Load(FileManager::GetConfigPath(), globalConfig, infoManager);
+    ConfigManager::Load(FileUtils::GetConfigPath(), globalConfig, itemManager);
     //初始化音频管理器
     AudioManager::Instance().Init();
     StartUpdateThread();  // 启动更新线程
@@ -284,7 +282,7 @@ BOOL WINAPI MySwapBuffers(HDC hdc)
     ImGui::NewFrame();
 
     {
-        infoManager.RenderAll(&globalConfig, App::Instance().clientHwnd);
+        itemManager.RenderAll(&globalConfig, App::Instance().clientHwnd);
         mainUI.Render(&globalConfig);
     }
 

@@ -3,7 +3,7 @@
 #include <string>
 #include <shlobj.h>
 #include "StringConverter.h"
-namespace FileManager {
+namespace FileUtils {
 
     static std::string GetRunPath()
     {

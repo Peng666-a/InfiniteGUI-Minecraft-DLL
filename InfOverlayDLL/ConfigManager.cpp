@@ -4,11 +4,11 @@
 
 bool ConfigManager::Save(const std::string& filePath,
     const GlobalConfig& global,
-    const InfoManager& info)
+    const ItemManager& info)
 {
     nlohmann::json j;
     global.Save(j["global"]);
-    info.Save(j["info"]);
+    info.Save(j["item"]);
 
     std::ofstream f(filePath);
     if (!f.is_open()) return false;
@@ -18,7 +18,7 @@ bool ConfigManager::Save(const std::string& filePath,
 
 bool ConfigManager::Load(const std::string& filePath,
     GlobalConfig& global,
-    InfoManager& info)
+    ItemManager& info)
 {
     std::ifstream f(filePath);
     if (!f.is_open()) return false;
@@ -27,7 +27,7 @@ bool ConfigManager::Load(const std::string& filePath,
     f >> j;
 
     if (j.contains("global")) global.Load(j["global"]);
-    if (j.contains("info")) info.Load(j["info"]);
+    if (j.contains("item")) info.Load(j["item"]);
 
     return true;
 }

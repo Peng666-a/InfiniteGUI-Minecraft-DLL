@@ -1,5 +1,5 @@
 #pragma once
-#include "InfoManager.h"
+#include "ItemManager.h"
 #include "TextItem.h"
 #include "TimeItem.h"
 #include "FileCountItem.h"
@@ -14,7 +14,7 @@ public:
 
     bool open = false;
 
-    MainUI(InfoManager* manager);
+    MainUI(ItemManager* manager);
 
     void Render(GlobalConfig* global);
 
@@ -23,15 +23,9 @@ public:
     void Toggle();
 
 private:
-    InfoManager* manager;
+    ItemManager* manager;
 
     void DrawItemList();
-    void DrawItemEditor(InfoItem* item);
-    void Draw_TextItemSettings(TextItem* item);
-    void Draw_TimeItemSettings(TimeItem* item);
-    void Draw_FpsItemSettings(FpsItem* item);
-    void Draw_FileCountItemSettings(FileCountItem* item);
-    void Draw_CounterItemSettings(CounterItem* item);
-    void Draw_BilibiliItemSettings(BilibiliFansItem* item);
-    void Draw_DanmakuItemSettings(DanmakuItem* item);
+    void DrawItemEditor(Item* item);
+
 };

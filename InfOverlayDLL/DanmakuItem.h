@@ -1,4 +1,6 @@
-#include "InfoItem.h"
+#include "Item.h"
+#include "UpdateModule.h"
+#include "WindowModule.h"
 #include <vector>
 #include <string>
 #include <deque>
@@ -27,12 +29,14 @@ struct danmaku_element {
 
 
 
-class DanmakuItem : public InfoItem {
+class DanmakuItem : public Item, public UpdateModule, public WindowModule {
 public:
     DanmakuItem()
     {
-        windowTitle = "Bilibili Danmaku";
-        refreshIntervalMs = 1000;   // 默认 1 秒刷一次
+        name = u8"B站弹幕显示";
+        description = u8"显示B站直播间的弹幕(需配合B站弹幕姬)";
+        refreshIntervalMs = 50;
+        lastUpdateTime = std::chrono::steady_clock::now();
     }
 
     virtual ~DanmakuItem();
@@ -47,7 +51,7 @@ public:
 
     void Update() override;
     void DrawContent() override;
-
+    void DrawSettings() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
 

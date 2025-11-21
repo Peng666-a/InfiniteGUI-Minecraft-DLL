@@ -7,7 +7,6 @@
 #pragma comment(lib, "dwmapi.lib")
 #include "GlobalConfig.h"
 #include "WindowSnapper.h"
-#include "Module.h"
 static const float SNAP_DISTANCE = 15.0f;
 static bool isSnapping = false;
 
@@ -74,7 +73,7 @@ public:
         // 设置吸附后的位置
         ImGui::SetWindowPos(snap.snappedPos, ImGuiCond_Always);
 
-        // 保存到 InfoItem
+        // 保存到 Item
         x = snap.snappedPos.x;
         y = snap.snappedPos.y;
 
@@ -83,7 +82,7 @@ public:
         height = ImGui::GetWindowSize().y;
     }
 
-    virtual void RenderWindow(GlobalConfig* globalConfig, HWND g_hwnd)
+    virtual void RenderWindow(HWND g_hwnd)
     {
         if (!isCustomSize)
             //ImGui::SetNextWindowSizeConstraints(ImVec2(10, 10), ImVec2(2560, 1440));
@@ -131,7 +130,7 @@ public:
         if (!showBorder) ImGui::PopStyleColor(); // 边框透明
     }
 
-    void LoadWindowConfig(const nlohmann::json& j)
+    void LoadWindow(const nlohmann::json& j)
     {
         if (j.contains("isCustomSize")) isCustomSize = j["isCustomSize"];
         if (j.contains("x")) x = j["x"];
@@ -144,7 +143,7 @@ public:
         if (j.contains("fontSize")) fontSize = j["fontSize"];
         if (j.contains("clickThrough")) clickThrough = j["clickThrough"];
     }
-    void SaveWindowConfig(nlohmann::json& j) const
+    void SaveWindow(nlohmann::json& j) const
     {
         j["isCustomSize"] = isCustomSize;
         j["x"] = x;

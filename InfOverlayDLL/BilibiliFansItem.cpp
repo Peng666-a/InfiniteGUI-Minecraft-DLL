@@ -67,23 +67,53 @@ void BilibiliFansItem::DrawContent()
     ImGuiStd::TextColoredShadow(color.color, (prefix + std::to_string(fansCount) + suffix).c_str());
 }
 
+void BilibiliFansItem::DrawSettings()
+{
+    DrawModuleSettings();
+    static std::string uidStr = std::to_string(uid);
+    ImGuiStd::InputTextStd(u8"B站 UID", uidStr);
+    ImGui::SameLine();
+    if (ImGui::Button(u8"确定"))
+    {
+        if (uidStr.empty())
+        {
+            uidStr = u8"不能输入空值"; // 默认设置为你的 UID
+        }
+        else if (uidStr.find_first_not_of("0123456789") != std::string::npos)
+        {
+            uidStr = u8"只能输入数字"; // 输入非数字
+        }
+        else
+            uid = std::stoll(uidStr);
+    }
+    if (ImGui::CollapsingHeader(u8"通用设置"))
+    {
+        DrawWindowSettings();
+        DrawAffixSettings();
+        DrawSoundSettings();
+    }
+}
+
 void BilibiliFansItem::Load(const nlohmann::json& j)
 {
+    LoadItem(j);
+    LoadAffix(j);
+    LoadWindow(j);
+    LoadSound(j);
     if (j.contains("uid")) uid = j["uid"];
     if (j.contains("fansCount")) fansCount = j["fansCount"];
     lastFansCount = fansCount;
-    if (j.contains("isPlaySound")) isPlaySound = j["isPlaySound"];
-    if (j.contains("soundVolume")) soundVolume = j["soundVolume"];
 
-    LoadInfoItemConfig(j);
 }
 
 void BilibiliFansItem::Save(nlohmann::json& j) const
 {
     j["type"] = "bilibili_fans";
+    SaveItem(j);
+    SaveAffix(j);
+    SaveWindow(j);
+    SaveSound(j);
+
     j["uid"] = uid;
     j["fansCount"] = fansCount;
-    j["isPlaySound"] = isPlaySound;
-    j["soundVolume"] = soundVolume;
-    SaveInfoItemConfig(j);
 }

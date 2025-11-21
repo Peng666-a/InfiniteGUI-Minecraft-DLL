@@ -13,12 +13,12 @@ public:
         ImGuiStd::InputTextStd(u8"บ๓ืบ", suffix);
     }
 
-    void LoadAffixConfig(const nlohmann::json& j)
+    void LoadAffix(const nlohmann::json& j)
     {
         if (j.contains("prefix")) prefix = j["prefix"];
         if (j.contains("suffix")) suffix = j["suffix"];
     }
-    void SaveAffixConfig(nlohmann::json& j) const
+    void SaveAffix(nlohmann::json& j) const
     {
         j["prefix"] = prefix;
         j["suffix"] = suffix;

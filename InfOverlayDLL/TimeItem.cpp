@@ -28,13 +28,29 @@ void TimeItem::DrawContent()
     ImGuiStd::TextShadow((prefix + currentTimeStr + suffix).c_str());
 }
 
+void TimeItem::DrawSettings()
+{
+    DrawModuleSettings();
+    ImGui::Text(u8"时钟 无额外设置");
+    if (ImGui::CollapsingHeader(u8"通用设置"))
+    {
+        DrawWindowSettings();
+        DrawAffixSettings();
+    }
+
+}
+
 void TimeItem::Load(const nlohmann::json& j)
 {
-    LoadInfoItemConfig(j);
+    LoadItem(j);
+    LoadAffix(j);
+    LoadWindow(j);
 }
 
 void TimeItem::Save(nlohmann::json& j) const
 {
     j["type"] = "time";
-    SaveInfoItemConfig(j);
+    SaveItem(j);
+    SaveAffix(j);
+    SaveWindow(j);
 }
