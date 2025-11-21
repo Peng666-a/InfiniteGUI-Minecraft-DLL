@@ -9,12 +9,17 @@ class ItemManager {
 public:
     ItemManager();
 
+    static ItemManager& Instance() {
+        static ItemManager instance;
+        return instance;
+    }
+
     void AddItem(std::shared_ptr<Item> item);
     void RemoveItem(int index);
 
     void UpdateAll();
 
-    void RenderAll(GlobalConfig* globalConfig, HWND hwnd);
+    void RenderAll(HWND hwnd);
 
     void Load(const nlohmann::json& j);
     void Save(nlohmann::json& j) const;

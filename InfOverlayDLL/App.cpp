@@ -3,12 +3,6 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-App& App::Instance()
-{
-    static App instance;
-    return instance;
-}
-
 bool App::CheckUpdate()
 {
     std::string response;

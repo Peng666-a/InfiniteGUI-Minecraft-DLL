@@ -28,7 +28,6 @@ void TextItem::Load(const nlohmann::json& j)
 
 void TextItem::Save(nlohmann::json& j) const
 {
-    j["type"] = "text";
     SaveItem(j);
     SaveWindow(j);
     SaveAffix(j);

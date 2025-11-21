@@ -14,7 +14,9 @@ struct bilibili_fans_element {
 class BilibiliFansItem : public Item, public AffixModule, public SoundModule, public UpdateModule, public WindowModule {
 public:
     BilibiliFansItem() {
-        name = u8"B站粉丝数显示";
+        type = Hud; // 信息项类型
+        multiType = MultiInstance;    // 信息项是否可以多开
+        name = u8"粉丝数显示";
         description = u8"显示B站用户的粉丝数";
         isPlaySound = true;    // 是否播放声音
         soundVolume = 0.5f;    // 声音音量（0.0~1.0）

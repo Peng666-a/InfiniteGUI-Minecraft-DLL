@@ -5,7 +5,11 @@
 
 class AudioManager {
 public:
-    static AudioManager& Instance();
+    static AudioManager& Instance()
+    {
+        static AudioManager instance;
+        return instance;
+    }
 
     bool Init();
     void Shutdown();

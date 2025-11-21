@@ -2,11 +2,6 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
 #include "FileUtils.h"
-AudioManager& AudioManager::Instance()
-{
-    static AudioManager instance;
-    return instance;
-}
 
 bool AudioManager::Init()
 {

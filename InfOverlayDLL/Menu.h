@@ -8,22 +8,36 @@
 #include "DanmakuItem.h"
 #include "FpsItem.h"
 
+enum MenuState {
+    MENU_STATE_MAIN,
+    MENU_STATE_SETTINGS,
+};
 
-class MainUI {
+enum SETTING_STATE {
+    SETTING_STATE_MODULES,
+    SETTING_STATE_GENERAL,
+    SETTING_STATE_ABOUT,
+};
+
+class Menu {
 public:
 
     bool open = false;
 
-    MainUI(ItemManager* manager);
+    static Menu& Instance()
+    {
+        static Menu instance;
+        return instance;
+    }
+    Menu();
 
-    void Render(GlobalConfig* global);
+    void Render();
 
     void Toggle(bool open);
 
     void Toggle();
 
 private:
-    ItemManager* manager;
 
     void DrawItemList();
     void DrawItemEditor(Item* item);

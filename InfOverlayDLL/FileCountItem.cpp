@@ -130,7 +130,6 @@ void FileCountItem::Load(const nlohmann::json& j)
 
 void FileCountItem::Save(nlohmann::json& j) const
 {
-    j["type"] = "file_count";
     SaveItem(j);
     SaveAffix(j);
     SaveWindow(j);

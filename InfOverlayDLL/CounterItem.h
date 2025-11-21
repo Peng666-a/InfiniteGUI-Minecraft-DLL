@@ -14,6 +14,8 @@ class CounterItem : public Item, public AffixModule, public WindowModule, public
 {
 public:
     CounterItem() {
+        type = Hud; // 信息项类型
+        multiType = MultiInstance;    // 信息项是否可以多开
         name = u8"计数器";
         description = u8"显示计数器";
         isPlaySound = true;

@@ -33,6 +33,8 @@ class DanmakuItem : public Item, public UpdateModule, public WindowModule {
 public:
     DanmakuItem()
     {
+        type = Hud; // 信息项类型
+        multiType = Singlton;    // 信息项是否可以多开
         name = u8"B站弹幕显示";
         description = u8"显示B站直播间的弹幕(需配合B站弹幕姬)";
         refreshIntervalMs = 50;
@@ -70,7 +72,7 @@ protected:
 
 public:
     // 最大弹幕数量
-    int maxDanmakuCount = 50;
+    int maxDanmakuCount = 16;
 
     //弹幕日志位置
     std::string logPath = "lastrun.txt";

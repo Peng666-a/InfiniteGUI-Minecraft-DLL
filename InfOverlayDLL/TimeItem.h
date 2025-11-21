@@ -12,6 +12,8 @@
 class TimeItem : public Item, public AffixModule , public UpdateModule, public WindowModule {
 public:
     TimeItem() {
+        type = Hud; // 信息项类型
+        multiType = Singlton;    // 信息项是否可以多开
         name = u8"时间显示";
         description = u8"显示当前时间";
         currentTimeStr = u8"正在获取系统时间...";

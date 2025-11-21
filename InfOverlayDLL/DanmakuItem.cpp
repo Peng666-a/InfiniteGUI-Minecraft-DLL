@@ -281,7 +281,7 @@ void DanmakuItem::DrawContent()
     //获取io
     ImGuiIO& io = ImGui::GetIO();
 
-    float heightSum = 2.0f;
+    float heightSum = 0.0f;
     for (auto& it_anim : anim) {
         heightSum += it_anim.second.curHeight;
     }
@@ -319,7 +319,7 @@ void DanmakuItem::DrawContent()
         textHeight += ImGui::GetItemRectSize().y + ImGui::GetStyle().ItemSpacing.y - 1.0f;
         it_anim->second.tarHeight = textHeight;
         if (it_anim->second.curHeight < it_anim->second.tarHeight)
-            it_anim->second.curHeight = ImLerp(it_anim->second.curHeight, it_anim->second.tarHeight, scrollSpeed) + 0.5f; // 弹幕高度动画
+            it_anim->second.curHeight = ImLerp(it_anim->second.curHeight, it_anim->second.tarHeight, scrollSpeed) + 1.0f; // 弹幕高度动画
     }
     ImGui::PopTextWrapPos();
 
@@ -371,13 +371,9 @@ void DanmakuItem::Load(const nlohmann::json& j)
 
 void DanmakuItem::Save(nlohmann::json& j) const
 {
-    j["type"] = "danmaku";
-
     SaveItem(j);
     SaveWindow(j);
-
     j["logPath"] = logPath;
-
     j["maxDanmakuCount"] = maxDanmakuCount;
 
 }

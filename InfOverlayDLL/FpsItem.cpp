@@ -33,7 +33,6 @@ void FpsItem::Load(const nlohmann::json& j)
 }
 void FpsItem::Save(nlohmann::json& j) const
 {
-	j["type"] = "fps";
 	SaveItem(j);
 	SaveAffix(j);
 	SaveWindow(j);

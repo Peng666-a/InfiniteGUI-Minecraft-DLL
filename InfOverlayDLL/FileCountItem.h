@@ -13,7 +13,9 @@ struct file_count_element {
 class FileCountItem : public Item, public AffixModule, public SoundModule, public UpdateModule, public WindowModule {
 public:
     FileCountItem() {
-        name = u8"FileCount";
+        type = Hud; // 信息项类型
+        multiType = MultiInstance;    // 信息项是否可以多开
+        name = u8"文件数量显示";
         description = u8"显示文件夹内文件数量";
         isPlaySound = true;
         soundVolume = 0.5f;

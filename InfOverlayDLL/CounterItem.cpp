@@ -78,7 +78,6 @@ void CounterItem::Load(const nlohmann::json& j)
 
 void CounterItem::Save(nlohmann::json& j) const
 {
-    j["type"] = "counter";
     SaveItem(j);
     SaveAffix(j);
     SaveWindow(j);

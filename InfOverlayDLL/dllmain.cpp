@@ -4,7 +4,7 @@
 
 #include "ItemManager.h"
 #include "ConfigManager.h"
-#include "MainUI.h"
+#include "Menu.h"
 #include "GlobalConfig.h"
 #include "StringConverter.h"
 #include "FileUtils.h"
@@ -12,12 +12,6 @@
 #include "App.h"
 #include "fonts\Uranus_Pixel_11Px.h"
 
-
-    // 全局在 dllmain.cpp 顶部声明（extern 或 static）
-ItemManager itemManager;
-MainUI mainUI(&itemManager);
-ConfigManager configManager;
-GlobalConfig globalConfig;
 
 
 typedef BOOL(WINAPI* OldSwapBuffers)(HDC);
@@ -39,14 +33,14 @@ LRESULT CALLBACK HookedWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
     // 1. 按键检测
     if (message == WM_KEYDOWN)
     {
-        if (wParam == globalConfig.menuKey)
-            mainUI.Toggle();
+        if (wParam == GlobalConfig::Instance().menuKey)
+            Menu::Instance().Toggle();
 
-        if (wParam == VK_ESCAPE && mainUI.open)
-            mainUI.Toggle();
+        if (wParam == VK_ESCAPE && Menu::Instance().open)
+            Menu::Instance().Toggle();
     }
 
-    if (mainUI.open)
+    if (Menu::Instance().open)
     {
         // 只有 UI 激活时才把消息交给 ImGui 处理
         ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
@@ -141,13 +135,14 @@ void setStyle()
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.14f, 0.14f, 0.14f, 0.3f);
 
-    style.WindowRounding = globalConfig.roundCornerRadius;
-    style.FrameRounding = globalConfig.roundCornerRadius;
-    style.GrabRounding = globalConfig.roundCornerRadius;
-    style.ScrollbarRounding = globalConfig.roundCornerRadius;
-    style.TabRounding = globalConfig.roundCornerRadius;
-    style.ChildRounding = globalConfig.roundCornerRadius;
-    style.PopupRounding = globalConfig.roundCornerRadius;
+    float roundCornerRadius = GlobalConfig::Instance().roundCornerRadius;
+    style.WindowRounding = roundCornerRadius;
+    style.FrameRounding = roundCornerRadius;
+    style.GrabRounding = roundCornerRadius;
+    style.ScrollbarRounding = roundCornerRadius;
+    style.TabRounding = roundCornerRadius;
+    style.ChildRounding = roundCornerRadius;
+    style.PopupRounding = roundCornerRadius;
 
 }
 
@@ -155,7 +150,7 @@ void setStyle()
 void UpdateThread() {
     App::Instance().GetAnnouncement();
     while (true) {
-        itemManager.UpdateAll();  // 调用UpdateAll()来更新所有item
+        ItemManager::Instance().UpdateAll();  // 调用UpdateAll()来更新所有item
         std::this_thread::sleep_for(std::chrono::milliseconds(1));  // 休眠100ms，可以根据实际需求调整
     }
 }
@@ -230,10 +225,10 @@ void InitImGuiForContext()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     ImFont* font;
-    if (globalConfig.fontPath == "default")
+    if (GlobalConfig::Instance().fontPath == "default")
         font = io.Fonts->AddFontFromMemoryCompressedTTF(Ur_data, Ur_size, 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     else
-        font = io.Fonts->AddFontFromFileTTF(globalConfig.fontPath.c_str(), 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        font = io.Fonts->AddFontFromFileTTF(GlobalConfig::Instance().fontPath.c_str(), 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     if (font == nullptr) {
         font = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\msyh.ttc", 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     }
@@ -241,7 +236,7 @@ void InitImGuiForContext()
     g_isInit = true;
 
     //加载配置文件
-    ConfigManager::Load(FileUtils::GetConfigPath(), globalConfig, itemManager);
+    ConfigManager::Load(FileUtils::GetConfigPath());
     //初始化音频管理器
     AudioManager::Instance().Init();
     StartUpdateThread();  // 启动更新线程
@@ -267,7 +262,7 @@ BOOL WINAPI MySwapBuffers(HDC hdc)
 
     // 切换 ImGui 鼠标捕获设置
     ImGuiIO& io = ImGui::GetIO();
-    if (mainUI.open)
+    if (Menu::Instance().open)
     {
         io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // 允许 ImGui 处理鼠标
     }
@@ -282,8 +277,8 @@ BOOL WINAPI MySwapBuffers(HDC hdc)
     ImGui::NewFrame();
 
     {
-        itemManager.RenderAll(&globalConfig, App::Instance().clientHwnd);
-        mainUI.Render(&globalConfig);
+        ItemManager::Instance().RenderAll(App::Instance().clientHwnd);
+        Menu::Instance().Render();
     }
 
     // 渲染 ImGui

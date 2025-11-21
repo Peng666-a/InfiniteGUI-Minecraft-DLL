@@ -5,11 +5,13 @@
 
 class ConfigManager {
 public:
-    static bool Save(const std::string& filePath,
-        const GlobalConfig& global,
-        const ItemManager& info);
 
-    static bool Load(const std::string& filePath,
-        GlobalConfig& global,
-        ItemManager& info);
+    static ConfigManager& Instance() {
+        static ConfigManager instance;
+        return instance;
+    }
+
+    static bool Save(const std::string& filePath);
+
+    static bool Load(const std::string& filePath);
 };

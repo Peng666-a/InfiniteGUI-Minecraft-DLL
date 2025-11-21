@@ -14,12 +14,9 @@
 ItemManager::ItemManager()
 {
     // 注册默认信息项
-    //AddItem(std::make_shared<TimeItem>());
-    //AddItem(std::make_shared<FpsItem>());
-    //AddItem(std::make_shared<BilibiliFansItem>());
-    //AddItem(std::make_shared<FileCountItem>());
-    //AddItem(std::make_shared<CounterItem>());
-    //AddItem(std::make_shared<DanmakuItem>());
+    AddItem(std::make_shared<TimeItem>());
+    AddItem(std::make_shared<FpsItem>());
+    AddItem(std::make_shared<DanmakuItem>());
 }
 
 void ItemManager::AddItem(std::shared_ptr<Item> item)
@@ -63,9 +60,8 @@ void ItemManager::UpdateAll()
 // ---------------------------------------------
 // 渲染所有信息项（每帧调用）
 // ---------------------------------------------
-void ItemManager::RenderAll(GlobalConfig* globalConfig, HWND hwnd)
+void ItemManager::RenderAll(HWND hwnd)
 {
-
     for (auto& item : items) {
         if (!item->isEnabled) continue; // 跳过禁用的模块
         if (auto win = dynamic_cast<WindowModule*>(item.get()))
@@ -80,40 +76,50 @@ void ItemManager::RenderAll(GlobalConfig* globalConfig, HWND hwnd)
 // ---------------------------------------------
 void ItemManager::Load(const nlohmann::json& j)
 {
-    if (!j.contains("Items")) return;
-    for (auto& v : j["Items"])
+    // 清理现有 MultiInstance 但保留 Singleton 已初始化的
+    items.erase(
+        std::remove_if(items.begin(), items.end(),
+            [](const std::shared_ptr<Item>& it) {
+                return it->IsMultiInstance();
+            }),
+        items.end()
+    );
+
+    // 加载 SingletonItems（此时 Singleton 实例已存在，只需要加载配置）
+    if (j.contains("SingletonItems"))
     {
-        std::string type = v["type"].get<std::string>();
-        std::unique_ptr<Item> item;
-
-        if (type == "text")
+        for (auto& node : j["SingletonItems"])
         {
-            item = std::make_unique<TextItem>();
-        }
-        else if (type == "time") {
-            item = std::make_unique<TimeItem>();
-        }
-        else if (type == "fps") {
-            item = std::make_unique<FpsItem>();
-        }
-        else if (type == "bilibili_fans") {
-            item = std::make_unique<BilibiliFansItem>();
-        }
-        else if (type == "file_count") {
-            item = std::make_unique<FileCountItem>();
-        }
-        else if (type == "counter") {
-            item = std::make_unique<CounterItem>();
-        }
-        else if (type == "danmaku") {
-            item = std::make_unique<DanmakuItem>();
-        }
-        else {
-            continue;
-        }
+            std::string type = node["type"].get<std::string>();
 
-        item->Load(v);
-        AddItem(std::move(item));
+            for (auto& item : items)
+            {
+                if (!item->IsMultiInstance() && item->name == type) // 只加载到已存在 Singleton
+                {
+                    item->Load(node);
+                    break;
+                }
+            }
+        }
+    }
+
+    //  加载 MultiInstanceItems（每个都创建新实例）
+    if (j.contains("MultiInstanceItems"))
+    {
+        for (auto& node : j["MultiInstanceItems"])
+        {
+            std::unique_ptr<Item> item;
+            std::string type = node["type"].get<std::string>();
+
+            if (type == u8"粉丝数显示")    item = std::make_unique<BilibiliFansItem>();
+            if (type == u8"文件数量显示")       item = std::make_unique<FileCountItem>();
+            if (type == u8"计数器")          item = std::make_unique<CounterItem>();
+            if (type == u8"文本显示")             item = std::make_unique<TextItem>();
+            if (!item) continue;
+
+            item->Load(node);
+            AddItem(std::move(item));
+        }
     }
 }
 
@@ -122,12 +128,17 @@ void ItemManager::Load(const nlohmann::json& j)
 // ---------------------------------------------
 void ItemManager::Save(nlohmann::json& j) const
 {
-    j["Items"] = nlohmann::json::array();
+    j["SingletonItems"] = nlohmann::json::array();
+    j["MultiInstanceItems"] = nlohmann::json::array();
 
     for (auto& item : items)
     {
-        nlohmann::json v;
-        item->Save(v);
-        j["Items"].push_back(v);
+        nlohmann::json node;
+        item->Save(node);
+
+        if (item->IsMultiInstance())
+            j["MultiInstanceItems"].push_back(node);
+        else
+            j["SingletonItems"].push_back(node);
     }
 }

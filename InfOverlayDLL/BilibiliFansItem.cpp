@@ -108,7 +108,6 @@ void BilibiliFansItem::Load(const nlohmann::json& j)
 
 void BilibiliFansItem::Save(nlohmann::json& j) const
 {
-    j["type"] = "bilibili_fans";
     SaveItem(j);
     SaveAffix(j);
     SaveWindow(j);

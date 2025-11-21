@@ -49,7 +49,6 @@ void TimeItem::Load(const nlohmann::json& j)
 
 void TimeItem::Save(nlohmann::json& j) const
 {
-    j["type"] = "time";
     SaveItem(j);
     SaveAffix(j);
     SaveWindow(j);

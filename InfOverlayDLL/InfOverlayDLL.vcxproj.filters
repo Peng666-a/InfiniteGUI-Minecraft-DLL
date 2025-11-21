@@ -111,7 +111,7 @@
     <ClInclude Include="GlobalConfig.h">
       <Filter>源文件\config</Filter>
     </ClInclude>
-    <ClInclude Include="MainUI.h">
+    <ClInclude Include="Menu.h">
       <Filter>源文件\ui</Filter>
     </ClInclude>
     <ClInclude Include="HttpClient.h">
@@ -221,7 +221,7 @@
     <ClCompile Include="GlobalConfig.cpp">
       <Filter>源文件\config</Filter>
     </ClCompile>
-    <ClCompile Include="MainUI.cpp">
+    <ClCompile Include="Menu.cpp">
       <Filter>源文件\ui</Filter>
     </ClCompile>
     <ClCompile Include="HttpClient.cpp">

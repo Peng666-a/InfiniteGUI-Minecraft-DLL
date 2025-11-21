@@ -1,4 +1,4 @@
-#include "MainUI.h"
+#include "Menu.h"
 #include "imgui/imgui.h"
 #include "ImGuiStd.h"
 #include "App.h"
@@ -76,19 +76,18 @@ void ShowFontSelection(GlobalConfig* globalConfig) {
 
 }
 
-MainUI::MainUI(ItemManager* manager)
-    : manager(manager)
+Menu::Menu()
 {
 }
 
-void MainUI::Render(GlobalConfig* globalConfig)
+void Menu::Render()
 {
+
     if(!open)
         return;
-
     // 首次渲染时，记录圆角状态
     static int firstRender = 5;
-    static bool prevRoundCorner = false;
+
     static bool isStyleEditorShow = false;
     if (isStyleEditorShow)
     {
@@ -107,7 +106,7 @@ void MainUI::Render(GlobalConfig* globalConfig)
     ImGui::SameLine();
 
     if (ImGui::Button(u8"保存配置"))
-        ConfigManager::Save(FileUtils::GetConfigPath(), *globalConfig, *manager);
+        ConfigManager::Instance().Save(FileUtils::GetConfigPath());
 
 
     ImGui::SameLine();
@@ -141,23 +140,24 @@ void MainUI::Render(GlobalConfig* globalConfig)
     ImGui::Separator();
     if (ImGui::CollapsingHeader(u8"全局设置", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
     {
-        if (ImGui::SliderFloat(u8"圆角半径", &globalConfig->roundCornerRadius, 0.0f, 10.0f, "%.1f"))
+        if (ImGui::SliderFloat(u8"圆角半径", &GlobalConfig::Instance().roundCornerRadius, 0.0f, 10.0f, "%.1f"))
         {
             ImGuiStyle& style = ImGui::GetStyle();
-            style.WindowRounding = globalConfig->roundCornerRadius;
-            style.FrameRounding = globalConfig->roundCornerRadius;
-            style.GrabRounding = globalConfig->roundCornerRadius;
-            style.ScrollbarRounding = globalConfig->roundCornerRadius;
-            style.TabRounding = globalConfig->roundCornerRadius;
-            style.ChildRounding = globalConfig->roundCornerRadius;
-            style.PopupRounding = globalConfig->roundCornerRadius;
+            float roundCornerRadius = GlobalConfig::Instance().roundCornerRadius;
+            style.WindowRounding = roundCornerRadius;
+            style.FrameRounding = roundCornerRadius;
+            style.GrabRounding = roundCornerRadius;
+            style.ScrollbarRounding = roundCornerRadius;
+            style.TabRounding = roundCornerRadius;
+            style.ChildRounding = roundCornerRadius;
+            style.PopupRounding = roundCornerRadius;
         }
 
         //设置主UI快捷键
 
-        ImGuiStd::Keybind(u8"UI快捷键：", globalConfig->menuKey);
+        ImGuiStd::Keybind(u8"UI快捷键：", GlobalConfig::Instance().menuKey);
 
-        ShowFontSelection(globalConfig);
+        ShowFontSelection(&GlobalConfig::Instance());
 
     }
 
@@ -165,34 +165,34 @@ void MainUI::Render(GlobalConfig* globalConfig)
 
     // 添加各种信息项按钮
 
-    if (ImGui::Button(u8"添加 文本 TextItem")) {
-        manager->AddItem(std::make_unique<TextItem>());
+    if (ImGui::Button(u8"添加 文本")) {
+        ItemManager::Instance().AddItem(std::make_unique<TextItem>());
     }
 
-    if (ImGui::Button(u8"添加 时间 TimeItem")) {
-        manager->AddItem(std::make_unique<TimeItem>());
+    //if (ImGui::Button(u8"添加 时间")) {
+    //    ItemManager::Instance().AddItem(std::make_unique<TimeItem>());
+    //}
+
+    //if (ImGui::Button(u8"添加 FPS显示")) {
+    //    ItemManager::Instance().AddItem(std::make_unique<FpsItem>());
+    //}
+
+    if (ImGui::Button(u8"添加 文件数量")) {
+        ItemManager::Instance().AddItem(std::make_unique<FileCountItem>());
     }
 
-    if (ImGui::Button(u8"添加 FPS显示 FpsItem")) {
-        manager->AddItem(std::make_unique<FpsItem>());
+    if (ImGui::Button(u8"添加 粉丝数")) {
+        ItemManager::Instance().AddItem(std::make_unique<BilibiliFansItem>());
     }
 
-    if (ImGui::Button(u8"添加 文件数量 FileCountItem")) {
-        manager->AddItem(std::make_unique<FileCountItem>());
-    }
-
-    if (ImGui::Button(u8"添加 B站粉丝数 BilibiliFansItem")) {
-        manager->AddItem(std::make_unique<BilibiliFansItem>());
-    }
-
-    if (ImGui::Button(u8"添加 计数器 CounterItem"))
+    if (ImGui::Button(u8"添加 计数器"))
     {
-        manager->AddItem(std::make_unique<CounterItem>());
+        ItemManager::Instance().AddItem(std::make_unique<CounterItem>());
     }
 
-    if (ImGui::Button(u8"添加 B站弹幕显示 BilibiliDanmakuItem")) {
-        manager->AddItem(std::make_unique<DanmakuItem>());
-    }
+    //if (ImGui::Button(u8"添加 弹幕显示")) {
+    //    ItemManager::Instance().AddItem(std::make_unique<DanmakuItem>());
+    //}
 
 
     ImGui::Separator();
@@ -283,9 +283,9 @@ void MainUI::Render(GlobalConfig* globalConfig)
     ImGui::End();
 }
 
-void MainUI::DrawItemList()
+void Menu::DrawItemList()
 {
-    auto& items = manager->GetItems();
+    auto& items = ItemManager::Instance().GetItems();
 
     for (int i = 0; i < items.size(); i++)
     {
@@ -298,14 +298,16 @@ void MainUI::DrawItemList()
         ImGui::SameLine();
         ImGui::PushID(i);
 
-        if (ImGui::Button(u8"删除"))
+        if (item->IsMultiInstance())
         {
-            manager->RemoveItem(i);
-            ImGui::PopID();
-            break;
+            if (ImGui::Button(u8"删除"))
+            {
+                ItemManager::Instance().RemoveItem(i);
+                ImGui::PopID();
+                break;
+            }
+            ImGui::SameLine();
         }
-
-        ImGui::SameLine();
         if (ImGui::Button(u8"设置"))
         {
             ImGui::OpenPopup("ItemEditor");
@@ -327,7 +329,7 @@ void MainUI::DrawItemList()
     }
 }
 
-void MainUI::DrawItemEditor(Item* item)
+void Menu::DrawItemEditor(Item* item)
 {
     ImGui::Text(u8"编辑项：%s", item->name.c_str());
 
@@ -335,12 +337,12 @@ void MainUI::DrawItemEditor(Item* item)
     item->DrawSettings();
 }
 
-void MainUI::Toggle(bool open)
+void Menu::Toggle(bool open)
 {
     this->open = open;
 }
 
-void MainUI::Toggle()
+void Menu::Toggle()
 {
     open = !open;
 }

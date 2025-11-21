@@ -9,6 +9,16 @@
 #include "WindowSnapper.h"
 #include <chrono>
 
+enum ItemType {
+    Hud,
+    Util
+};
+
+enum MultiType {
+    Singlton,
+    MultiInstance
+};
+
 class Item {
 public:
     virtual ~Item() {
@@ -33,15 +43,18 @@ public:
     }
     void SaveItem(nlohmann::json& j) const
     {
-
+        j["type"] = name;
         j["isEnabled"] = isEnabled;
     }
 
-    // ---------------------------
-    // 公共属性（所有信息项继承）
-    // ---------------------------
+    bool IsMultiInstance() const
+    {
+        return multiType == MultiType::MultiInstance;
+    }
 
     bool isEnabled = true; // 是否启用该信息项
+    ItemType type; // 信息项类型
+    MultiType multiType; // 信息项是否可以多开
     std::string name; // 信息项名称
     std::string description; // 信息项描述
     //std::string icon; // 信息项图标路径
