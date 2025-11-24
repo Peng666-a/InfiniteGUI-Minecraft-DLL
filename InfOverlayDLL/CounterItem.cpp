@@ -24,10 +24,6 @@ void CounterItem::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
             count = 0;
         }
     }
-}
-
-void CounterItem::DrawContent()
-{
     if (count > lastCount)
     {
         color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //бли╚
@@ -40,6 +36,10 @@ void CounterItem::DrawContent()
         lastCount = count;
         if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
     }
+}
+
+void CounterItem::DrawContent()
+{
 
     ImVec4 targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
 

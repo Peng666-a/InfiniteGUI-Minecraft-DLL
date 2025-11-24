@@ -34,10 +34,7 @@ void BilibiliFansItem::Update()
     }
 
     fansCount = resultFans;
-}
 
-void BilibiliFansItem::DrawContent()
-{
     if (fansCount < 0) {
         ImGuiStd::TextShadow(u8"粉丝数获取失败");
         return;
@@ -46,15 +43,19 @@ void BilibiliFansItem::DrawContent()
     {
         color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
         lastFansCount = fansCount;
-        if(isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_up.wav", soundVolume);
+        if (isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_up.wav", soundVolume);
     }
     else if (fansCount < lastFansCount)
     {
         color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
         lastFansCount = fansCount;
-        if(isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_down.wav", soundVolume);
+        if (isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_down.wav", soundVolume);
     }
 
+}
+
+void BilibiliFansItem::DrawContent()
+{
     ImVec4 targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
 
     //获取io

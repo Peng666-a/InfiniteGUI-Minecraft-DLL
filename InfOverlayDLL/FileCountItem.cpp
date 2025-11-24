@@ -61,10 +61,7 @@ void FileCountItem::Update()
         errorMessage = "未知错误";
         fileCount = -4;
     }
-}
 
-void FileCountItem::DrawContent()
-{
     if (fileCount < 0) {
         ImGuiStd::TextShadow(u8"路径无效或不可访问");
         return;
@@ -83,6 +80,10 @@ void FileCountItem::DrawContent()
         if (isPlaySound) AudioManager::Instance().playSound("filecount\\filecount_down.wav", soundVolume);
     }
 
+}
+
+void FileCountItem::DrawContent()
+{
     ImVec4 targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
 
     //获取io
