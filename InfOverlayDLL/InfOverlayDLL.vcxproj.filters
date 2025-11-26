@@ -67,6 +67,9 @@
     <Filter Include="源文件\core\items\hidden">
       <UniqueIdentifier>{52054187-1cb7-46af-9f81-3d2d2426bc65}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\imGuiHelper\pics">
+      <UniqueIdentifier>{e4ba39de-5d01-4340-bedb-fdbe6f093d03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="minHook\MinHook.h">
@@ -210,6 +213,12 @@
     <ClInclude Include="KeyState.h">
       <Filter>源文件\utils</Filter>
     </ClInclude>
+    <ClInclude Include="pics\MCInjector-small.h">
+      <Filter>源文件\imGuiHelper\pics</Filter>
+    </ClInclude>
+    <ClInclude Include="fonts\IconFont.h">
+      <Filter>源文件\imGuiHelper\fonts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -310,6 +319,12 @@
     </ClCompile>
     <ClCompile Include="KeyState.cpp">
       <Filter>源文件\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageLoader.h">
+      <Filter>源文件\imGuiHelper\pics</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageLoader.cpp">
+      <Filter>源文件\imGuiHelper\pics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

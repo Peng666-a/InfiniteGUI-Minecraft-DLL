@@ -213,6 +213,7 @@
     <ClInclude Include="DanmakuItem.h" />
     <ClInclude Include="FileCountItem.h" />
     <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="fonts\IconFont.h" />
     <ClInclude Include="fonts\Uranus_Pixel_11Px.h" />
     <ClInclude Include="FpsItem.h" />
     <ClInclude Include="GameStateDetector.h" />
@@ -239,6 +240,7 @@
     <ClInclude Include="minHook\MinHook.h" />
     <ClInclude Include="miniaudio\miniaudio.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="pics\MCInjector-small.h" />
     <ClInclude Include="Run.h" />
     <ClInclude Include="SoundModule.h" />
     <ClInclude Include="Sprint.h" />
@@ -265,6 +267,8 @@
     <ClCompile Include="GameStateDetector.cpp" />
     <ClCompile Include="GlobalConfig.cpp" />
     <ClCompile Include="HttpClient.cpp" />
+    <ClCompile Include="ImageLoader.cpp" />
+    <ClCompile Include="ImageLoader.h" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />

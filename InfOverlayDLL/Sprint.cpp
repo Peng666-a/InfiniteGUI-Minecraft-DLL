@@ -5,7 +5,7 @@
 #include "GameStateDetector.h"
 void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
 {
-    if (key == NULL) return;
+    if (key == NULL || !GameStateDetector::Instance().IsInGame()) return;
     if (state && !isRepeat) //按键按下
     {
         if (key == keybinds.at(u8"激活键："))
@@ -31,6 +31,7 @@ void Sprint::GetSneaking()
 {
     if (GetKeyDown(keybinds.at(u8"潜行键：")) && GameStateDetector::Instance().IsInGame())
     {
+        color.color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f); //灰色
         state = Sneaking;
         lastState = state;
     }

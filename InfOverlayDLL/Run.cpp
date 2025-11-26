@@ -8,10 +8,13 @@
 #include "AudioManager.h"
 #include "App.h"
 #include "fonts\Uranus_Pixel_11Px.h"
+#include "fonts\IconFont.h"
+#include "pics\MCInjector-small.h"
 #include "pch.h"
 #include "ImguiSty.h"
 #include <thread>
 #include "GameStateDetector.h"
+#include "ImageLoader.h"
 typedef BOOL(WINAPI* OldSwapBuffers)(HDC);
 OldSwapBuffers fpSwapBuffers = NULL;
 static bool done = false;
@@ -159,17 +162,31 @@ void InitImGuiForContext()
         "\nUsing GLSL: " + glsl_version + "\n";
     OutputDebugStringA(msg.c_str());
     ImGui_ImplOpenGL3_Init(glsl_version);
+    ImFontConfig font_cfg;
+    font_cfg.FontDataOwnedByAtlas = false;
+    font_cfg.OversampleH = 1;
+    font_cfg.OversampleV = 1;
+    font_cfg.PixelSnapH = true;
+
 
     ImFont* font;
     if (GlobalConfig::Instance().fontPath == "default")
-        font = io.Fonts->AddFontFromMemoryCompressedTTF(Ur_data, Ur_size, 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        font = io.Fonts->AddFontFromMemoryCompressedTTF(Ur_data, Ur_size, 20.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
     else
-        font = io.Fonts->AddFontFromFileTTF(GlobalConfig::Instance().fontPath.c_str(), 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        font = io.Fonts->AddFontFromFileTTF(GlobalConfig::Instance().fontPath.c_str(), 20.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
     if (font == nullptr) {
-        font = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\msyh.ttc", 20.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        font = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\msyh.ttc", 20.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
     }
+    App::Instance().iconFont = io.Fonts->AddFontFromMemoryTTF(iconfont, iconfontsize, 20.0f, &font_cfg);
+
+
     io.FontDefault = font;
+
+
+
     g_isInit = true;
+
+    App::Instance().logoTexture.id = LoadTextureFromMemory(logo, logoSize, &App::Instance().logoTexture.width, &App::Instance().logoTexture.height);
 
     //º”‘ÿ≈‰÷√Œƒº˛
     ConfigManager::Load(FileUtils::GetConfigPath());

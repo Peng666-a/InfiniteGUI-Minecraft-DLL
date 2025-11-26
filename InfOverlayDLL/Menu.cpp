@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "ImGuiStd.h"
 #include "App.h"
 #include "ConfigManager.h"
@@ -30,9 +31,9 @@ void ShowFontSelection(GlobalConfig* globalConfig) {
         fontFiles.insert(fontFiles.end(), userFonts.begin(), userFonts.end());
     }
 
-    if(ImGui::CollapsingHeader(u8"字体选择", ImGuiTreeNodeFlags_FramePadding))
+    if(ImGui::TreeNodeEx(u8"字体选择", ImGuiTreeNodeFlags_FramePadding))
     {
-        ImGui::BeginGroup();
+        //ImGui::BeginGroup();
         if (ImGui::Selectable(u8"默认字体-Uranus_Pixel_11Px (重启生效)")) {
             // Load the selected font
             globalConfig->fontPath = "default";
@@ -46,8 +47,10 @@ void ShowFontSelection(GlobalConfig* globalConfig) {
                 globalConfig->fontPath = StringConverter::WstringToUtf8(fontFiles[i].path);
             }
         }
-        ImGui::EndGroup();
+        //ImGui::EndGroup();
+        ImGui::TreePop();
     }
+
 
 }
 
@@ -55,13 +58,282 @@ Menu::Menu()
 {
 }
 
+
+static ImVec4 myWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+static ImVec4 tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
 void Menu::Render(bool* done)
 {
     if(!open)
         return;
-    // 首次渲染时，记录圆角状态
-    static int firstRender = 5;
 
+    //使窗口显示在屏幕中间
+    ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+    RECT rc;
+    GetClientRect(App::Instance().clientHwnd, &rc);
+    ImGui::SetNextWindowSize(ImVec2((float)rc.right + 10, (float)rc.bottom + 10), ImGuiCond_Always);
+
+
+    //获取io
+    ImGuiIO& io = ImGui::GetIO();
+    //计算速度
+    float speed = 5.0f * io.DeltaTime;
+    myWindowBgColor = ImLerp(myWindowBgColor, tarWindowBgColor, speed);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, myWindowBgColor);
+    ImGui::Begin(u8"菜单背景", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNav);
+    ImGui::End();
+
+    ImGui::PopStyleColor();
+    switch (state)
+    {
+    case MENU_STATE_MAIN:
+        ShowMain();
+        break;
+    case MENU_STATE_SETTINGS:
+        ShowSettings(done);
+        break;
+        
+    }
+
+    return;
+}
+
+void Menu::ShowMain()
+{
+    bool isBtnHovered = false;
+
+    //使窗口显示在屏幕中间
+    ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(206.0f, 66.0f), ImGuiCond_Always);
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+    //获取io
+    ImGuiIO& io = ImGui::GetIO();
+    //ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 边框透明\
+            //设置按钮背景半透明
+
+    ImVec4 myColor = colors[ImGuiCol_Button];
+    ImVec4 myColorHovered = colors[ImGuiCol_ButtonHovered];
+    ImVec4 myColorActive = colors[ImGuiCol_ButtonActive];
+    myColor.w = 0.6f;
+    myColorHovered.w = 0.6f;
+    myColorActive.w = 0.6f;
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, myWindowBgColor);
+    ImGui::PushStyleColor(ImGuiCol_Button, myColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, myColorHovered);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, myColorActive);
+    ImGui::Begin(u8"设置按钮", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav);
+    //让设置按钮显示在屏幕中间
+    ImGui::SetWindowFontScale(1.5f);
+
+    ImVec2 myBtnSize(200.0f, 60.0f);     // 可随意修改按钮大小
+    if (ImGuiStd::DrawCenteredButton(u8"设置", myBtnSize))
+    {
+        state = MENU_STATE_SETTINGS;
+        tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
+    }
+    if (ImGui::IsItemHovered())
+        isBtnHovered = true;
+    else
+        isBtnHovered = false;
+    ImGui::PopStyleColor(4);
+    ImGui::End();
+    float panel_speed = 10.0f * io.DeltaTime;
+    if (state == MENU_STATE_MAIN)
+    {
+        if (isBtnHovered)
+        {
+            tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.5f);
+            panelAnim.state = ImLerp(panelAnim.state, 1.0f, panel_speed);
+        }
+        else
+        {
+            tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
+            panelAnim.state = ImLerp(panelAnim.state, 0.0f, panel_speed);
+        }
+    }
+    ShowSidePanels();
+}
+
+void Menu::ShowSidePanels()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    // 动画值（0~1）
+    float t = panelAnim.state;
+
+    if (t <= 0.001f)
+        return;   // 完全缩回的时候不画，提高性能
+
+    // 面板大小
+    ImVec2 panelSize = ImVec2(350, 400);
+    // 按钮屏幕坐标（世界坐标）
+    ImVec2 Center; 
+    Center.x = io.DisplaySize.x / 2;
+    Center.y = io.DisplaySize.y / 2;
+
+
+    // 插值缩放
+    float scale = ImLerp(0.0f, 1.0f, t);
+
+    // 最终面板缩放尺寸
+    ImVec2 finalSize = ImVec2(panelSize.x * scale, panelSize.y * scale);
+
+    // 左右滑动距离
+    float slideOffset = 350.0f;
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, scale - 0.2f * (1.0f - scale));
+    ImGui::PushTextWrapPos(0.0f); // 设置自动换行
+    //======================
+    // 左侧 ABOUT 面板动画
+    //======================
+    {
+        ImVec2 targetPos = ImVec2(Center.x  -slideOffset, Center.y);
+        ImVec2 currentPos = ImLerp(Center, targetPos, t);
+
+        ImGui::SetNextWindowPos(ImVec2(currentPos.x - finalSize.x * 0.5f, currentPos.y - finalSize.y * 0.5f));
+        ImGui::SetNextWindowSize(finalSize);
+
+        //ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+        ImGui::SetNextWindowBgAlpha(0.7f); // 半透明
+        ImGui::Begin("##AboutPanel", nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs);
+        ImGui::SetWindowFontScale(1.5f);
+        ImGui::PushFont(App::Instance().iconFont);
+        ImGuiStd::TextShadow("I");
+        ImGui::PopFont();
+        ImGui::SameLine();
+        float right = ImGui::GetContentRegionAvail().x;
+        float textWidth =
+            ImGui::CalcTextSize(u8"公告").x +
+            ImGui::GetStyle().ItemSpacing.x;
+
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + right - textWidth);
+
+        ImGuiStd::TextShadow(u8"公告");
+        ImGui::Separator();
+        ImGui::SetNextWindowBgAlpha(0.3f); // 半透明
+        ImGui::BeginChild("AnnounceChild", ImVec2(0, 0), true, ImGuiWindowFlags_NoInputs);
+        ImGui::SetWindowFontScale(1.0f);
+        ImGuiStd::TextShadow(App::Instance().announcement.c_str());
+        ImGui::EndChild();
+        ImGui::End();
+
+        ImGui::PopStyleVar();
+    }
+
+    //======================
+    // 右侧 更新日志 面板动画
+    //======================
+    {
+        ImVec2 targetPos = ImVec2(Center.x + slideOffset, Center.y);
+        ImVec2 currentPos = ImLerp(Center, targetPos, t);
+
+        ImGui::SetNextWindowPos(ImVec2(currentPos.x - finalSize.x * 0.5f, currentPos.y - finalSize.y * 0.5f));
+        ImGui::SetNextWindowSize(finalSize);
+
+        //ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+        ImGui::SetNextWindowBgAlpha(0.7f); // 半透明
+        ImGui::Begin("##UpdateLogPanel", nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs);
+        ImGui::SetWindowFontScale(1.5f);
+        ImGuiStd::TextShadow(u8"日志");
+        ImGui::SameLine();
+        float right = ImGui::GetContentRegionAvail().x;
+        float textWidth =
+            ImGui::GetFontSize() +
+            ImGui::GetStyle().ItemSpacing.x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + right - textWidth);
+        ImGui::PushFont(App::Instance().iconFont);
+        ImGuiStd::TextShadow(u8"\uE034"); //"&#xe034"
+        ImGui::PopFont();
+        ImGui::Separator();
+        ImGui::SetNextWindowBgAlpha(0.3f); // 半透明
+        ImGui::BeginChild("UpdateLogChild", ImVec2(0, 0), true, ImGuiWindowFlags_NoInputs);
+        ImGui::SetWindowFontScale(1.0f);
+        ImGui::TextWrapped(u8"这里是更新日志内容……");
+        ImGui::EndChild();
+        ImGui::End();
+
+        ImGui::PopStyleVar();
+    }
+    ImGui::PopStyleVar();
+    ImGui::PopTextWrapPos();
+    //======================
+// LOGO 顶部动画面板
+//======================
+    {
+        // 按钮中心
+        ImVec2 startPos = Center;
+
+        // 目标位置：向上偏移 100 像素
+        ImVec2 targetPos = ImVec2(Center.x, Center.y - 150);
+
+        // 插值当前坐标
+        ImVec2 currentPos = targetPos;
+            //ImLerp(currentPos, targetPos, t);
+
+
+        // logo 原始大小
+        ImVec2 logoSize = ImVec2(
+            (float)App::Instance().logoTexture.width,
+            (float)App::Instance().logoTexture.height
+        );
+
+        // 动画缩放，0~1
+        float scale = t;
+
+        // 最终缩放大小
+        ImVec2 finalSize = ImVec2(
+            logoSize.x * scale,
+            logoSize.y * scale
+        );
+
+        // logo 窗口透明度（跟着scale淡入）
+        float logoAlpha = scale;
+
+        if (finalSize.x > 1 && finalSize.y > 1)
+        {
+            ImGui::SetNextWindowPos(
+                ImVec2(
+                    currentPos.x - finalSize.x * 0.5f,
+                    currentPos.y - finalSize.y * 0.5f
+                )
+            );
+
+            ImGui::SetNextWindowSize(finalSize);
+            ImGui::SetNextWindowBgAlpha(0.0f); // 完全无背景（相当于纯 Image）
+
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, logoAlpha);
+
+            ImGui::Begin("##LogoPanel", nullptr,
+                ImGuiWindowFlags_NoDecoration |
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoSavedSettings |
+                ImGuiWindowFlags_NoInputs |
+                ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoScrollWithMouse |
+                ImGuiWindowFlags_NoBackground
+            );
+
+            // 居中绘制图片
+            ImGui::SetCursorPos(ImVec2(0, 0));
+            ImGui::Image(App::Instance().logoTexture.id,
+                finalSize
+            );
+
+            ImGui::End();
+
+            ImGui::PopStyleVar(2);
+        }
+    }
+}
+
+void Menu::ShowSettings(bool* done)
+{
     static bool isStyleEditorShow = false;
     if (isStyleEditorShow)
     {
@@ -321,5 +593,11 @@ void Menu::Toggle()
             // 设置鼠标位置
             SetCursorPos(centerX, centerY);
         }
+        myWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+        panelAnim.state = 0.0f;
+    }
+    else
+    {
+        state = MENU_STATE_MAIN;
     }
 }

@@ -147,4 +147,22 @@ namespace ImGuiStd {
         }
     }
 
+    static bool DrawCenteredButton(const char* label, const ImVec2& buttonSize)
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImVec2 windowSize = ImGui::GetWindowSize();
+        ImVec2 btnSize = buttonSize;
+        // 计算按钮左侧应该空多少像素
+        btnSize.x = (windowSize.x - buttonSize.x) * 0.5f;
+
+        btnSize.y = (windowSize.y - buttonSize.y) * 0.5f;
+        ImGui::SetCursorPos(ImVec2(btnSize.x, btnSize.y));
+        // 绘制按钮
+        if (ImGui::Button(label, buttonSize))
+        {
+            return true;
+        }
+        return false;
+    }
+
 }
