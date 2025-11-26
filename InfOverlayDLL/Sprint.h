@@ -7,10 +7,22 @@
 #include "AffixModule.h"
 #include "UpdateModule.h"
 #include "KeybindModule.h"
+#include "SoundModule.h"
 #include <string>
 #include <chrono>
 
-class Sprint : public WindowModule, public UpdateModule, public KeybindModule, public AffixModule, public Item
+enum SprintState {
+    Idle,
+    Sprinting,
+    Sneaking,
+    Walking
+};
+
+struct sprint_element {
+    ImVec4 color;
+};
+
+class Sprint : public WindowModule, public UpdateModule, public KeybindModule, public AffixModule, public Item, public SoundModule
 {
 public:
     Sprint() {
@@ -20,10 +32,13 @@ public:
         isEnabled = false; // 是否启用
         name = u8"强制疾跑";
         description = u8"强制疾跑";
+        isPlaySound = true;
+        soundVolume = 0.5f;
 
         keybinds.insert(std::make_pair(u8"激活键：", 'I'));
         keybinds.insert(std::make_pair(u8"前进键：", 'W'));
         keybinds.insert(std::make_pair(u8"疾跑键：", VK_CONTROL));
+        keybinds.insert(std::make_pair(u8"潜行键：", VK_SHIFT));
 
         prefix = u8"[";
         suffix = "]";
@@ -38,6 +53,7 @@ public:
     }
 
     void OnKeyEvent(bool state, bool isRepeat, WPARAM key) override;
+
     void Update() override;
     void DrawContent() override;
     void DrawSettings() override;
@@ -45,7 +61,13 @@ public:
     void Save(nlohmann::json& j) const override;
 
 private:
+    void GetWalking();
+    void GetSneaking();
+    void SetSprinting();
     bool isActivated = false;
     bool isWalking = false;
-    bool lastIsWalking = false;
+    SprintState lastState = Idle;
+    SprintState state = Idle;
+
+    sprint_element color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
 };

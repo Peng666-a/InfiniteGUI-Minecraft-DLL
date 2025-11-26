@@ -1,6 +1,7 @@
 #pragma once
 #include "Sprint.h"
 #include "KeyState.h"
+#include "AudioManager.h"
 #include "GameStateDetector.h"
 void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
 {
@@ -10,38 +11,95 @@ void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
         if (key == keybinds.at(u8"激活键："))
         {
             isActivated = !isActivated;
+            if (isActivated)
+            {
+                color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
+                if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_up.wav", soundVolume);
+            }
+            else
+            {
+                color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
+                if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
+            }
         }
-    }
-}
-void Sprint::Update()
-{
-    if (!isActivated) return;
-    if (GetKeyDown(keybinds.at(u8"前进键：")) && GameStateDetector::Instance().IsInGame())
-    {
-        isWalking = true;
-        lastIsWalking = true;
-    }
-    else
-    {
-        isWalking = false;
-    }
-    if (isWalking)
-    {
-        SetKeyDown(keybinds.at(u8"疾跑键："), 1);
-    }
-    if (!isWalking && lastIsWalking)
-    {
-        SetKeyUp(keybinds.at(u8"疾跑键："), 1);
-        lastIsWalking = false;
+
     }
 
+}
+
+void Sprint::GetSneaking()
+{
+    if (GetKeyDown(keybinds.at(u8"潜行键：")) && GameStateDetector::Instance().IsInGame())
+    {
+        state = Sneaking;
+        lastState = state;
+    }
+}
+
+void Sprint::GetWalking()
+{
+    if (GetKeyDown(keybinds.at(u8"前进键：")) && GameStateDetector::Instance().IsInGame())
+    {
+        state = isActivated ? Sprinting : Walking;
+        lastState = state;
+    }
+}
+
+void Sprint::SetSprinting()
+{
+    if (state == Sprinting)
+    {
+        color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
+        SetKeyDown(keybinds.at(u8"疾跑键："), 1);
+    }
+    if (state != Sprinting && lastState == Sprinting)
+    {
+        SetKeyUp(keybinds.at(u8"疾跑键："), 1);
+        lastState = state;
+    }
+}
+
+void Sprint::Update()
+{
+    state = Idle;
+    GetWalking();
+    GetSneaking();
+    if (!isActivated) return;
+    SetSprinting();
 
 }
 
 void Sprint::DrawContent()
 {
-    std::string text = isActivated? isWalking? u8"正在疾跑" : u8"停止疾跑" : u8"未激活";
-    ImGuiStd::TextShadow((prefix + text + suffix).c_str());
+    ImVec4 targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+
+    //获取io
+    ImGuiIO& io = ImGui::GetIO();
+
+    //计算速度
+    float speed = 3.0f * io.DeltaTime;
+    color.color = ImLerp(color.color, targetTextColor, speed);
+
+    std::string text;
+    switch (state)
+    {
+    case Idle:
+        text = u8"空闲中";
+        break;
+    case Sprinting:
+        text = u8"疾跑中";
+        break;
+    case Sneaking:
+        text = u8"潜行中";
+        break;
+    case Walking:
+        text = u8"行走中";
+        break;
+    default:
+        break;
+    }
+
+    ImGuiStd::TextColoredShadow(color.color, (prefix + text + suffix).c_str());
 }
 
 void Sprint::DrawSettings()
@@ -55,6 +113,7 @@ void Sprint::DrawSettings()
     {
         DrawWindowSettings();
         DrawAffixSettings();
+        DrawSoundSettings();
     }
 }
 
@@ -63,6 +122,8 @@ void Sprint::Load(const nlohmann::json& j)
     LoadItem(j);
     LoadAffix(j);
     LoadWindow(j);
+    LoadKeybind(j);
+    LoadSound(j);
     if (j.contains("isWindowShow")) isWindowShow = j["isWindowShow"];
     if (j.contains("isActivated")) isActivated = j["isActivated"];
 }
@@ -72,6 +133,8 @@ void Sprint::Save(nlohmann::json& j) const
     SaveItem(j);
     SaveAffix(j);
     SaveWindow(j);
+    SaveKeybind(j);
+    SaveSound(j);
     j["isWindowShow"] = isWindowShow;
     j["isActivated"] = isActivated;
 }

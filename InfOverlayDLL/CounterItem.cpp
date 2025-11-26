@@ -23,18 +23,18 @@ void CounterItem::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
         {
             count = 0;
         }
-    }
-    if (count > lastCount)
-    {
-        color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
-        lastCount = count;
-        if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_up.wav", soundVolume);
-    }
-    else if (count < lastCount)
-    {
-        color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
-        lastCount = count;
-        if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
+        if (count > lastCount)
+        {
+            color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
+            lastCount = count;
+            if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_up.wav", soundVolume);
+        }
+        else if (count < lastCount)
+        {
+            color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
+            lastCount = count;
+            if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
+        }
     }
 }
 
