@@ -135,33 +135,33 @@ void InitImGuiForContext()
 
     //ImGui_ImplOpenGL3_Init("#version 130"); // 如果你的 MC 是较新 GL，可改为 "#version 330 core"
      // 尝试获取当前 OpenGL 上下文信息
-    const GLubyte* glVersionStr = glGetString(GL_VERSION);
-    const GLubyte* glRendererStr = glGetString(GL_RENDERER);
+    //const GLubyte* glVersionStr = glGetString(GL_VERSION);
+    //const GLubyte* glRendererStr = glGetString(GL_RENDERER);
 
-    if (!glVersionStr)
-    {
-        MessageBoxA(App::Instance().clientHwnd, "OpenGL context not ready! Please call after SwapBuffers hook is active.", "Error", MB_ICONERROR);
-        return;
-    }
+    //if (!glVersionStr)
+    //{
+    //    MessageBoxA(App::Instance().clientHwnd, "OpenGL context not ready! Please call after SwapBuffers hook is active.", "Error", MB_ICONERROR);
+    //    return;
+    //}
 
-    std::string glVersion(reinterpret_cast<const char*>(glVersionStr));
-    std::string glRenderer(reinterpret_cast<const char*>(glRendererStr ? glRendererStr : (const GLubyte*)"Unknown"));
+    //std::string glVersion(reinterpret_cast<const char*>(glVersionStr));
+    //std::string glRenderer(reinterpret_cast<const char*>(glRendererStr ? glRendererStr : (const GLubyte*)"Unknown"));
 
-    int major = 0, minor = 0;
-    sscanf(glVersion.c_str(), "%d.%d", &major, &minor);
+    //int major = 0, minor = 0;
+    //sscanf(glVersion.c_str(), "%d.%d", &major, &minor);
 
-    const char* glsl_version = "#version 130"; // fallback default
+    //const char* glsl_version = "#version 130"; // fallback default
 
-    if (major >= 4) glsl_version = "#version 410 core";
-    else if (major == 3 && minor >= 3) glsl_version = "#version 330 core";
-    else if (major == 3 && minor >= 2) glsl_version = "#version 150 core";
+    //if (major >= 4) glsl_version = "#version 410 core";
+    //else if (major == 3 && minor >= 3) glsl_version = "#version 330 core";
+    //else if (major == 3 && minor >= 2) glsl_version = "#version 150 core";
 
-    // 输出检测结果到控制台（或日志）
-    std::string msg = "Detected OpenGL version: " + glVersion +
-        "\nRenderer: " + glRenderer +
-        "\nUsing GLSL: " + glsl_version + "\n";
-    OutputDebugStringA(msg.c_str());
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    //// 输出检测结果到控制台（或日志）
+    //std::string msg = "Detected OpenGL version: " + glVersion +
+    //    "\nRenderer: " + glRenderer +
+    //    "\nUsing GLSL: " + glsl_version + "\n";
+    //OutputDebugStringA(msg.c_str());
+    ImGui_ImplOpenGL3_Init();
     ImFontConfig font_cfg;
     font_cfg.FontDataOwnedByAtlas = false;
     font_cfg.OversampleH = 1;
@@ -192,51 +192,6 @@ void InitImGuiForContext()
     AudioManager::Instance().Init();
     StartUpdateThread();  // 启动更新线程
 }
-
-
-//struct GLStateBackup {
-//    GLint last_program, last_active_texture, last_texture;
-//    GLint last_array_buffer, last_vertex_array;
-//    GLint last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha;
-//    GLboolean last_enable_blend, last_enable_scissor, last_enable_cull, last_enable_depth_test;
-//    GLint last_viewport[4];
-//    GLint last_scissor_box[4];
-//};
-//
-//static void BackupGLState(GLStateBackup& s) {
-//    glGetIntegerv(GL_CURRENT_PROGRAM, &s.last_program);
-//    glGetIntegerv(GL_ACTIVE_TEXTURE, &s.last_active_texture);
-//    glActiveTexture(GL_TEXTURE0);
-//    glGetIntegerv(GL_TEXTURE_BINDING_2D, &s.last_texture);
-//    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &s.last_array_buffer);
-//    // VAO may not be supported in very old GL; guard if needed.
-//    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &s.last_vertex_array);
-//    glGetIntegerv(GL_VIEWPORT, s.last_viewport);
-//    glGetIntegerv(GL_SCISSOR_BOX, s.last_scissor_box);
-//    s.last_enable_blend = glIsEnabled(GL_BLEND);
-//    s.last_enable_scissor = glIsEnabled(GL_SCISSOR_TEST);
-//    s.last_enable_cull = glIsEnabled(GL_CULL_FACE);
-//    s.last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-//    glGetIntegerv(GL_BLEND_SRC_RGB, &s.last_blend_src_rgb);
-//    glGetIntegerv(GL_BLEND_DST_RGB, &s.last_blend_dst_rgb);
-//    glGetIntegerv(GL_BLEND_SRC_ALPHA, &s.last_blend_src_alpha);
-//    glGetIntegerv(GL_BLEND_DST_ALPHA, &s.last_blend_dst_alpha);
-//}
-//
-//static void RestoreGLState(const GLStateBackup& s) {
-//    glUseProgram(s.last_program);
-//    glActiveTexture(s.last_active_texture);
-//    glBindTexture(GL_TEXTURE_2D, s.last_texture);
-//    glBindBuffer(GL_ARRAY_BUFFER, s.last_array_buffer);
-//    glBindVertexArray(s.last_vertex_array);
-//    if (s.last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
-//    if (s.last_enable_scissor) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
-//    if (s.last_enable_cull) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-//    if (s.last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
-//    glBlendFuncSeparate(s.last_blend_src_rgb, s.last_blend_dst_rgb, s.last_blend_src_alpha, s.last_blend_dst_alpha);
-//    glViewport(s.last_viewport[0], s.last_viewport[1], s.last_viewport[2], s.last_viewport[3]);
-//    glScissor(s.last_scissor_box[0], s.last_scissor_box[1], s.last_scissor_box[2], s.last_scissor_box[3]);
-//}
 
 // Hooked SwapBuffers - 每次换帧都会被调用
 BOOL WINAPI MySwapBuffers(HDC hdc)

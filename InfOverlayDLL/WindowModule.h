@@ -7,6 +7,7 @@
 #include "GlobalConfig.h"
 #include "WindowSnapper.h"
 #include "App.h"
+#include "opengl_hook.h"
 static const float SNAP_DISTANCE = 15.0f;
 static bool isSnapping = false;
 
@@ -88,12 +89,7 @@ public:
             ImVec2 pos = ImGui::GetWindowPos();
             ImVec2 sz = ImGui::GetWindowSize();
 
-            // 获取 screenW,screenH（DLL 中已经有 g_hwnd）
-            RECT rc;
-            GetClientRect(g_hwnd, &rc);
-            float sw = (float)rc.right;
-            float sh = (float)rc.bottom;
-            WindowSnapper::KeepSnapped(pos, sz, sw, sh, snapState);
+            WindowSnapper::KeepSnapped(pos, sz, opengl_hook::screen_size.x, opengl_hook::screen_size.y, snapState);
             // 设置吸附后的位置
             ImGui::SetWindowPos(pos, ImGuiCond_Always);
 
@@ -121,22 +117,16 @@ private:
             ImVec2 pos = ImGui::GetWindowPos();
             ImVec2 sz = ImGui::GetWindowSize();
 
-            // 获取 screenW,screenH（DLL 中已经有 g_hwnd）
-            RECT rc;
-            GetClientRect(g_hwnd, &rc);
-            float sw = (float)rc.right;
-            float sh = (float)rc.bottom;
-
             SnapResult snap;
             if (isSnapping)
             {
                 // 计算吸附
-                snap = WindowSnapper::ComputeSnap(pos, sz, sw, sh, SNAP_DISTANCE);
+                snap = WindowSnapper::ComputeSnap(pos, sz, opengl_hook::screen_size.x, opengl_hook::screen_size.y, SNAP_DISTANCE);
                 // 画吸附线
-                WindowSnapper::DrawGuides(snap, sw, sh);
+                WindowSnapper::DrawGuides(snap, opengl_hook::screen_size.x, opengl_hook::screen_size.y);
             }
             else
-                snap = WindowSnapper::ComputeSnap(pos, sz, sw, sh, 0.0f);
+                snap = WindowSnapper::ComputeSnap(pos, sz, opengl_hook::screen_size.x, opengl_hook::screen_size.y, 0.0f);
 
             // 设置吸附后的位置
             ImGui::SetWindowPos(snap.snappedPos, ImGuiCond_Always);

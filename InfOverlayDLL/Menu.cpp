@@ -11,6 +11,7 @@
 #include "FileCountItem.h"
 #include "BilibiliFansItem.h"
 #include "CounterItem.h"
+#include "opengl_hook.h"
 #include <thread>
 
 void ShowFontSelection(GlobalConfig* globalConfig) {
@@ -68,9 +69,7 @@ void Menu::Render(bool* done)
 
     //使窗口显示在屏幕中间
     ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-    RECT rc;
-    GetClientRect(App::Instance().clientHwnd, &rc);
-    ImGui::SetNextWindowSize(ImVec2((float)rc.right + 10, (float)rc.bottom + 10), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2((float)opengl_hook::screen_size.x + 10, (float)opengl_hook::screen_size.y + 10), ImGuiCond_Always);
 
 
     //获取io

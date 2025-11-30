@@ -211,14 +211,23 @@
     <ClInclude Include="CPSDetector.h" />
     <ClInclude Include="CPSItem.h" />
     <ClInclude Include="DanmakuItem.h" />
+    <ClInclude Include="detours\include\detours.h" />
+    <ClInclude Include="detours\include\detver.h" />
+    <ClInclude Include="detours\include\syelog.h" />
+    <ClInclude Include="detours\lazy_importer.hpp" />
+    <ClInclude Include="detours\titan_hook.h" />
     <ClInclude Include="FileCountItem.h" />
     <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="fonts.h" />
     <ClInclude Include="fonts\IconFont.h" />
     <ClInclude Include="fonts\Uranus_Pixel_11Px.h" />
     <ClInclude Include="FpsItem.h" />
     <ClInclude Include="GameStateDetector.h" />
     <ClInclude Include="GlobalConfig.h" />
+    <ClInclude Include="gui.h" />
+    <ClInclude Include="harmony_sc_regular.h" />
     <ClInclude Include="HttpClient.h" />
+    <ClInclude Include="Images.h" />
     <ClInclude Include="ImGuiStd.h" />
     <ClInclude Include="ImguiSty.h" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -239,9 +248,9 @@
     <ClInclude Include="Menu.h" />
     <ClInclude Include="minHook\MinHook.h" />
     <ClInclude Include="miniaudio\miniaudio.h" />
+    <ClInclude Include="opengl_hook.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="pics\MCInjector-small.h" />
-    <ClInclude Include="Run.h" />
     <ClInclude Include="SoundModule.h" />
     <ClInclude Include="Sprint.h" />
     <ClInclude Include="TextItem.h" />
@@ -263,12 +272,13 @@
     <ClCompile Include="DanmakuItem.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FileCountItem.cpp" />
+    <ClCompile Include="fonts.cpp" />
     <ClCompile Include="FpsItem.cpp" />
     <ClCompile Include="GameStateDetector.cpp" />
     <ClCompile Include="GlobalConfig.cpp" />
+    <ClCompile Include="gui.cpp" />
     <ClCompile Include="HttpClient.cpp" />
-    <ClCompile Include="ImageLoader.cpp" />
-    <ClCompile Include="ImageLoader.h" />
+    <ClCompile Include="Images.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -281,6 +291,7 @@
     <ClCompile Include="KeyState.cpp" />
     <ClCompile Include="KeystrokesItem.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="opengl_hook.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -289,7 +300,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='exe|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Run.cpp" />
     <ClCompile Include="Sprint.cpp" />
     <ClCompile Include="TextItem.cpp" />
     <ClCompile Include="TimeItem.cpp" />
@@ -297,6 +307,7 @@
     <ClCompile Include="WindowSnapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="detours\detours.lib" />
     <Library Include="minHook\libMinHook.x64.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
