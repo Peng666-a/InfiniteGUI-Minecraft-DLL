@@ -809,7 +809,7 @@ bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButtonFlags
         anim.insert({ id, {ColorConvertU32ToFloat4(GetColorU32(ImGuiCol_Button)), 0.0f} });
         it_anim = anim.find(id);
     }
-    float speed = 0.05f * (240.0f / ImGui::GetIO().Framerate);
+    float speed = 10.0f * GetIO().DeltaTime;
 
     ImU32 tB;
     tB = (held && hovered) ? GetColorU32(ImGuiCol_ButtonActive) : hovered ? GetColorU32(ImGuiCol_ButtonHovered) : GetColorU32(ImGuiCol_Button);
@@ -1304,7 +1304,7 @@ bool ImGui::Checkbox(const char* label, bool* v)
         anim.insert({ id, { *v ? 1.0f : 0.0f, ColorConvertU32ToFloat4(GetColorU32(ImGuiCol_FrameBg)) } });
         it_anim = anim.find(id);
     }
-    float speed = 0.03f * (240.0f / ImGui::GetIO().Framerate);
+    float speed = 6.0f * GetIO().DeltaTime;
 
     it_anim->second.tp = ImLerp(it_anim->second.tp, *v ? 1.0f : (hovered ? 0.2f : 0.0f), speed);
 
@@ -1441,7 +1441,7 @@ bool ImGui::RadioButton(const char* label, bool active)
         anim.insert({ id, { active ? 1.0f : 0.0f ,active ? 1.0f : 0.0f, ColorConvertU32ToFloat4(GetColorU32(ImGuiCol_FrameBg)) } });
         it_anim = anim.find(id);
     }
-    float speed = 0.05f * (240.0f / ImGui::GetIO().Framerate);
+    float speed = 10.0f * GetIO().DeltaTime;
 
     it_anim->second.tp = ImLerp(it_anim->second.tp, active ? 1.0f : (hovered ? 0.2f : 0.0f), speed);
     it_anim->second.rad = ImLerp(it_anim->second.rad, active ? 1.0f : (hovered ? 0.6f : 0.0f), speed);
@@ -2045,7 +2045,7 @@ bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
         it_anim = anim.find(id);
     }
 
-    float speed = 0.05f * (240 / g.IO.Framerate);
+    float speed = 10.0f * GetIO().DeltaTime;
 
     it_anim->second.open_anim = ImLerp(it_anim->second.open_anim, popup_open ? 1.0f : 0.2f, speed * 0.5f);
     if (!popup_open)
@@ -3546,7 +3546,7 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_dat
         anim.insert({ id, { ColorConvertU32ToFloat4(GetColorU32(ImGuiCol_FrameBg)) , ColorConvertU32ToFloat4(GetColorU32(ImGuiCol_SliderGrab)), grab_bb, false } });
         it_anim = anim.find(id);
     }
-    float speed = 0.05f * (240.0f / g.IO.Framerate);
+    float speed = 10.0f * GetIO().DeltaTime;
 
     ImU32 tFB;
     tFB = g.ActiveId == id ? GetColorU32(ImGuiCol_FrameBgActive) : hovered ? GetColorU32(ImGuiCol_FrameBgHovered) : GetColorU32(ImGuiCol_FrameBg);
@@ -6220,6 +6220,14 @@ static void RenderArrowsForVerticalBar(ImDrawList* draw_list, ImVec2 pos, ImVec2
     ImGui::RenderArrowPointingAt(draw_list, ImVec2(pos.x + bar_w - half_sz.x,     pos.y), half_sz,                              ImGuiDir_Left,  IM_COL32(255,255,255,alpha8));
 }
 
+struct colorpicker_element
+{
+    ImVec2 hue_cursor;     // 色轮光标位置
+    float hue_cursor_rad;
+    float sv_cursor;      // SV 三角光标位置
+    float alpha_cursor;   // Alpha 光标位置
+};
+
 // Note: ColorPicker4() only accesses 3 floats if ImGuiColorEditFlags_NoAlpha flag is set.
 // (In C++ the 'float col[4]' notation for a function argument is equivalent to 'float* col', we only specify a size to facilitate understanding of the code.)
 // FIXME: we adjust the big color square height based on item width, which may cause a flickering feedback loop (if automatic height makes a vertical scrollbar appears, affecting automatic width..)
@@ -6232,6 +6240,7 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         return false;
 
     ImDrawList* draw_list = window->DrawList;
+    const ImGuiID id = window->GetID(label);
     ImGuiStyle& style = g.Style;
     ImGuiIO& io = g.IO;
 
@@ -6397,13 +6406,13 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         PushItemFlag(ImGuiItemFlags_NoNavDefaultFocus, true);
         ImVec4 col_v4(col[0], col[1], col[2], (flags & ImGuiColorEditFlags_NoAlpha) ? 1.0f : col[3]);
         if ((flags & ImGuiColorEditFlags_NoLabel))
-            Text("Current");
+            /*Text("Current");*/ Text(u8"初始颜色");
 
         ImGuiColorEditFlags sub_flags_to_forward = ImGuiColorEditFlags_InputMask_ | ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_AlphaMask_ | ImGuiColorEditFlags_NoTooltip;
         ColorButton("##current", col_v4, (flags & sub_flags_to_forward), ImVec2(square_sz * 3, square_sz * 2));
         if (ref_col != NULL)
         {
-            Text("Original");
+            /*Text("Original");*/  Text(u8"初始颜色");
             ImVec4 ref_col_v4(ref_col[0], ref_col[1], ref_col[2], (flags & ImGuiColorEditFlags_NoAlpha) ? 1.0f : ref_col[3]);
             if (ColorButton("##original", ref_col_v4, (flags & sub_flags_to_forward), ImVec2(square_sz * 3, square_sz * 2)))
             {
@@ -6489,6 +6498,20 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         }
     }
 
+    static std::map<ImGuiID, colorpicker_element> anims;
+
+    auto it = anims.find(id);
+    if (it == anims.end())
+    {
+        anims[id] = {};
+        it = anims.find(id);
+
+        // 初始化（可自定义）
+        it->second = { {ImGui::GetIO().DisplaySize.x / 2,  ImGui::GetIO().DisplaySize.y / 2}, 0, ImGui::GetIO().DisplaySize.y / 2, ImGui::GetIO().DisplaySize.y / 2 };
+    }
+    colorpicker_element& anim = it->second;
+    float speed = 10.0f * GetIO().DeltaTime;
+
     const int style_alpha8 = IM_F32_TO_INT8_SAT(style.Alpha);
     const ImU32 col_black = IM_COL32(0,0,0,style_alpha8);
     const ImU32 col_white = IM_COL32(255,255,255,style_alpha8);
@@ -6526,6 +6549,7 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         float sin_hue_angle = ImSin(H * 2.0f * IM_PI);
         ImVec2 hue_cursor_pos(wheel_center.x + cos_hue_angle * (wheel_r_inner + wheel_r_outer) * 0.5f, wheel_center.y + sin_hue_angle * (wheel_r_inner + wheel_r_outer) * 0.5f);
         float hue_cursor_rad = value_changed_h ? wheel_thickness * 0.65f : wheel_thickness * 0.55f;
+
         int hue_cursor_segments = draw_list->_CalcCircleAutoSegmentCount(hue_cursor_rad); // Lock segment count so the +1 one matches others.
         draw_list->AddCircleFilled(hue_cursor_pos, hue_cursor_rad, hue_color32, hue_cursor_segments);
         draw_list->AddCircle(hue_cursor_pos, hue_cursor_rad + 1, col_midgrey, hue_cursor_segments);
@@ -6556,16 +6580,30 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         for (int i = 0; i < 6; ++i)
             draw_list->AddRectFilledMultiColor(ImVec2(bar0_pos_x, picker_pos.y + i * (sv_picker_size / 6)), ImVec2(bar0_pos_x + bars_width, picker_pos.y + (i + 1) * (sv_picker_size / 6)), col_hues[i], col_hues[i], col_hues[i + 1], col_hues[i + 1]);
         float bar0_line_y = IM_ROUND(picker_pos.y + H * sv_picker_size);
+
+
+        float target_sv_cursor = bar0_line_y;
+
+        it->second.sv_cursor = ImLerp(it->second.sv_cursor, target_sv_cursor, speed);
+
+
         RenderFrameBorder(ImVec2(bar0_pos_x, picker_pos.y), ImVec2(bar0_pos_x + bars_width, picker_pos.y + sv_picker_size), 0.0f);
-        RenderArrowsForVerticalBar(draw_list, ImVec2(bar0_pos_x - 1, bar0_line_y), ImVec2(bars_triangles_half_sz + 1, bars_triangles_half_sz), bars_width + 2.0f, style.Alpha);
+        RenderArrowsForVerticalBar(draw_list, ImVec2(bar0_pos_x - 1, it->second.sv_cursor), ImVec2(bars_triangles_half_sz + 1, bars_triangles_half_sz), bars_width + 2.0f, style.Alpha);
     }
 
     // Render cursor/preview circle (clamp S/V within 0..1 range because floating points colors may lead HSV values to be out of range)
     float sv_cursor_rad = value_changed_sv ? wheel_thickness * 0.55f : wheel_thickness * 0.40f;
     int sv_cursor_segments = draw_list->_CalcCircleAutoSegmentCount(sv_cursor_rad); // Lock segment count so the +1 one matches others.
-    draw_list->AddCircleFilled(sv_cursor_pos, sv_cursor_rad, user_col32_striped_of_alpha, sv_cursor_segments);
-    draw_list->AddCircle(sv_cursor_pos, sv_cursor_rad + 1, col_midgrey, sv_cursor_segments);
-    draw_list->AddCircle(sv_cursor_pos, sv_cursor_rad, col_white, sv_cursor_segments);
+
+    ImVec2 target_hue_pos = sv_cursor_pos;
+    float target_hue_rad = sv_cursor_rad;
+
+    it->second.hue_cursor = ImLerp(it->second.hue_cursor, target_hue_pos, speed);
+    it->second.hue_cursor_rad = ImLerp(it->second.hue_cursor_rad, target_hue_rad, speed);
+
+    draw_list->AddCircleFilled(it->second.hue_cursor, it->second.hue_cursor_rad, user_col32_striped_of_alpha, sv_cursor_segments);
+    draw_list->AddCircle(it->second.hue_cursor, it->second.hue_cursor_rad + 1, col_midgrey, sv_cursor_segments);
+    draw_list->AddCircle(it->second.hue_cursor, it->second.hue_cursor_rad, col_white, sv_cursor_segments);
 
     // Render alpha bar
     if (alpha_bar)
@@ -6575,8 +6613,13 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         RenderColorRectWithAlphaCheckerboard(draw_list, bar1_bb.Min, bar1_bb.Max, 0, bar1_bb.GetWidth() / 2.0f, ImVec2(0.0f, 0.0f));
         draw_list->AddRectFilledMultiColor(bar1_bb.Min, bar1_bb.Max, user_col32_striped_of_alpha, user_col32_striped_of_alpha, user_col32_striped_of_alpha & ~IM_COL32_A_MASK, user_col32_striped_of_alpha & ~IM_COL32_A_MASK);
         float bar1_line_y = IM_ROUND(picker_pos.y + (1.0f - alpha) * sv_picker_size);
+
+        float target_alpha_cursor = bar1_line_y;
+
+        it->second.alpha_cursor = ImLerp(it->second.alpha_cursor, target_alpha_cursor, speed);
+
         RenderFrameBorder(bar1_bb.Min, bar1_bb.Max, 0.0f);
-        RenderArrowsForVerticalBar(draw_list, ImVec2(bar1_pos_x - 1, bar1_line_y), ImVec2(bars_triangles_half_sz + 1, bars_triangles_half_sz), bars_width + 2.0f, style.Alpha);
+        RenderArrowsForVerticalBar(draw_list, ImVec2(bar1_pos_x - 1, it->second.alpha_cursor), ImVec2(bars_triangles_half_sz + 1, bars_triangles_half_sz), bars_width + 2.0f, style.Alpha);
     }
 
     EndGroup();
@@ -6669,7 +6712,8 @@ bool ImGui::ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFl
             SetDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_4F, &col_rgb, sizeof(float) * 4, ImGuiCond_Once);
         ColorButton(desc_id, col, flags);
         SameLine();
-        TextEx("Color");
+        //TextEx("Color");
+        TextEx(u8"颜色");
         EndDragDropSource();
     }
 
@@ -7248,7 +7292,7 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
         it_anim = anim.find(id);
     }
 
-    float speed = 0.03f * (240.0f / ImGui::GetIO().Framerate);
+    float speed = 6.0f * GetIO().DeltaTime;
 
     it_anim->second.arrow_anim = ImLerp(it_anim->second.arrow_anim, is_open ? 1.0f : 0.5f, speed);
 
@@ -7683,7 +7727,7 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
         it_anim = anim.find(id);
     }
 
-    float speed = 0.05f * (1.0f - ImGui::GetIO().DeltaTime);
+    float speed = 10.0f * GetIO().DeltaTime;
 
     //it_anim->second.tp = ImLerp(it_anim->second.tp, hovered ? 1.0f : 0.0f, speed);
     ImU32 tH;

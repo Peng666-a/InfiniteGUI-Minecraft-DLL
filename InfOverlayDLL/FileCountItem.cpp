@@ -109,9 +109,9 @@ void FileCountItem::DrawSettings()
 
     if (ImGui::CollapsingHeader(u8"Õ®”√…Ë÷√"))
     {
-        DrawWindowSettings();
         DrawAffixSettings();
         DrawSoundSettings();
+        DrawWindowSettings();
     }
 }
 

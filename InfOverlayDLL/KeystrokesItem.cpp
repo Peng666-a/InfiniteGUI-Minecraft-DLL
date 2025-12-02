@@ -37,8 +37,8 @@ void KeystrokesItem::DrawContent()
     {
         if(key_box.type == space && !showSpace) continue;
         if(key_box.type == mouse && !showMouse) continue;
-        ImVec4 targetTextColor = key_box.state ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f) : ImGui::GetStyleColorVec4(ImGuiCol_Text);
-        ImVec4 targetBgColor = key_box.state ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImGui::GetStyleColorVec4(ImGuiCol_FrameBg);
+        ImVec4 targetTextColor = key_box.state ? ImVec4(0.0f, 0.0f, 0.0f, 1.0f) : itemStylePtr->fontColor;
+        ImVec4 targetBgColor = key_box.state ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         //计算速度
         float speed_off = 15.0f * io.DeltaTime;
@@ -82,7 +82,6 @@ void KeystrokesItem::DrawSettings()
     ImGui::Checkbox(u8"显示CPS", &showCps);
     ImGui::Separator();
     ImGui::Checkbox(u8"显示边框", &child_showBorder);
-    ImGui::InputFloat(u8"字体大小", &fontSize, 1.0f, 1.0f, "%.1f");
     bool needResize = false;
     if(ImGui::SliderFloat(u8"按键边长", &min_box_size, 12.0f, 108.0f, "%.1f"))
     {
@@ -100,6 +99,9 @@ void KeystrokesItem::DrawSettings()
         }
     }
     ImGui::SliderFloat(u8"背景透明度", &child_alpha, 0.0f, 1.0f, "%.1f");
+    ImGui::InputFloat(u8"字体大小", &itemStyle.fontSize, 1.0f, 1.0f, "%.1f");
+    ImVec4* colors = ImGui::GetStyle().Colors;
+    ImGuiStd::EditColor(u8"字体颜色", itemStyle.fontColor, colors[ImGuiCol_Text]);
     //if (ImGui::CollapsingHeader(u8"通用设置"))
     //{
     //    DrawWindowSettings();
@@ -116,7 +118,6 @@ void KeystrokesItem::Load(const nlohmann::json& j)
     if (j.contains("padding")) padding = j["padding"];
     if (j.contains("child_alpha")) child_alpha = j["child_alpha"];
     if (j.contains("child_showBorder")) child_showBorder = j["child_showBorder"];
-    if (j.contains("fontSize")) fontSize = j["fontSize"];
 
     for (auto& key_box : key_boxes)
     {
@@ -136,5 +137,4 @@ void KeystrokesItem::Save(nlohmann::json& j) const
     j["padding"] = padding;
     j["child_alpha"] = child_alpha;
     j["child_showBorder"] = child_showBorder;
-    j["fontSize"] = fontSize;
 }

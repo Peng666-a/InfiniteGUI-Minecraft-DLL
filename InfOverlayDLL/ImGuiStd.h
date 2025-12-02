@@ -5,6 +5,7 @@
 #include "VK_Keymap.h"
 #include <Windows.h>
 #include <map>
+#include <nlohmann/json.hpp>
 
 namespace ImGuiStd {
 
@@ -65,7 +66,7 @@ namespace ImGuiStd {
         ImGuiID id = 0;
         bool binding = false;
     };
-    static ImGuiID current_id = 0;
+    static ImGuiID current_keybind_element_id = 0;
 
 
     static void Keybind(const char* text, int &key)
@@ -74,7 +75,7 @@ namespace ImGuiStd {
         if (keybind_elements.find(text) == keybind_elements.end())
         {
                 keybind_element element;
-                element.id = current_id++;
+                element.id = current_keybind_element_id++;
                 keybind_elements[text] = element;
         }
         keybind_element& element = keybind_elements[text];
@@ -138,7 +139,7 @@ namespace ImGuiStd {
         }
     }
 
-    static void Helpmarker(const char* Text, ImVec4 Color = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled))
+    static void HelpMarker(const char* Text, ImVec4 Color = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled))
     {
         TextColoredShadow(Color, u8"(?)");
         if (ImGui::IsItemHovered())
@@ -163,6 +164,82 @@ namespace ImGuiStd {
             return true;
         }
         return false;
+    }
+
+    struct edit_color_element
+    {
+        ImGuiID id = 0;
+        ImVec2 popup_size = ImVec2(0, 0);
+    };
+    static ImGuiID current_edit_color_element_id = 0;
+
+    static void EditColor(const char* label, ImVec4& color, ImVec4 refColor, ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel)
+    {
+        //ImGuiStyle& style = ImGui::GetStyle();
+        //ImGui::ColorEdit4(label, (float*)&color, ImGuiColorEditFlags_AlphaBar | flags);
+        //if (memcmp(&color, &refColor, sizeof(ImVec4)) != 0)
+        //{
+        //    // Tips: in a real user application, you may want to merge and use an icon font into the main font,
+        //    // so instead of "Save"/"Revert" you'd use icons!
+        //    // Read the FAQ and docs/FONTS.md about using icon fonts. It's really easy and super convenient!
+        //    //ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button(u8"保存")) { refColor = color; }
+        //    ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button(u8"还原")) { color = refColor; }
+        //}
+        static std::map<const char*, edit_color_element> edit_color_elements;
+        if (edit_color_elements.find(label) == edit_color_elements.end())
+        {
+            edit_color_element element;
+            element.id = current_edit_color_element_id++;
+            edit_color_elements[label] = element;
+        }
+        edit_color_element& element = edit_color_elements[label];\
+        ImVec2 target_size = ImVec2(338, 366);
+        float speed = 10.0f * ImGui::GetIO().DeltaTime;
+        std::string text = label + std::string(u8"：");
+
+        TextShadow(text.c_str());
+        ImGui::SameLine();
+
+        if (ImGui::ColorButton(label, color, flags))
+        {
+            ImGui::OpenPopup(label);
+            element.popup_size = ImVec2(0, 0);
+        }
+
+        ImGui::SetNextWindowSize(element.popup_size, ImGuiCond_Always);
+        if (ImGui::BeginPopup(label, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+        {
+            element.popup_size = ImLerp(element.popup_size, target_size, speed);
+            //TextShadow(label);
+            //ImGui::Spacing();
+            ImGui::ColorPicker4(label, (float*)&color, flags, (float*)&refColor);
+            ImGui::EndPopup();
+        }
+        if (memcmp(&color, &refColor, sizeof(ImVec4)) != 0)
+        {
+            ImGui::SameLine(); if (ImGui::Button((u8"还原初始颜色" + std::string(u8"##") + std::to_string(element.id)).c_str())) { color = refColor; }
+        }
+    }
+
+    static void EditColor(const char* label, ImVec4& color, ImGuiColorEditFlags flags = 0)
+    {
+        ImGui::ColorEdit4(label, (float*)&color, ImGuiColorEditFlags_AlphaBar | flags);
+    }
+
+    static void SaveImVec4(nlohmann::json& j, const char* key, const ImVec4& v)
+    {
+        j[key] = { v.x, v.y, v.z, v.w };
+    }
+
+    static void LoadImVec4(const nlohmann::json& j, const char* key, ImVec4& v)
+    {
+        if (j.contains(key) && j[key].is_array() && j[key].size() == 4)
+        {
+            v.x = j[key][0];
+            v.y = j[key][1];
+            v.z = j[key][2];
+            v.w = j[key][3];
+        }
     }
 
 }

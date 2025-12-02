@@ -24,8 +24,8 @@ void CPSItem::DrawSettings()
 
     if (ImGui::CollapsingHeader(u8"Õ®”√…Ë÷√"))
     {
-        DrawWindowSettings();
         DrawAffixSettings();
+        DrawWindowSettings();
     }
 }
 

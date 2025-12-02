@@ -225,6 +225,7 @@
     <ClInclude Include="FpsItem.h" />
     <ClInclude Include="GameStateDetector.h" />
     <ClInclude Include="GlobalConfig.h" />
+    <ClInclude Include="GlobalWindowStyle.h" />
     <ClInclude Include="gl\glew.h" />
     <ClInclude Include="gl\glxew.h" />
     <ClInclude Include="gl\wglew.h" />
@@ -264,6 +265,7 @@
     <ClInclude Include="VK_Keymap.h" />
     <ClInclude Include="WindowModule.h" />
     <ClInclude Include="WindowSnapper.h" />
+    <ClInclude Include="WindowStyleModule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
@@ -280,6 +282,7 @@
     <ClCompile Include="FpsItem.cpp" />
     <ClCompile Include="GameStateDetector.cpp" />
     <ClCompile Include="GlobalConfig.cpp" />
+    <ClCompile Include="GlobalWindowStyle.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="HttpClient.cpp" />
     <ClCompile Include="HttpModule.h" />

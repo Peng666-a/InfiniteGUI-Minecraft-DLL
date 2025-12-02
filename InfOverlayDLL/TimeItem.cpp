@@ -38,8 +38,8 @@ void TimeItem::DrawSettings()
     ImGui::Text(u8"时钟 无额外设置");
     if (ImGui::CollapsingHeader(u8"通用设置"))
     {
-        DrawWindowSettings();
         DrawAffixSettings();
+        DrawWindowSettings();
     }
 
 }

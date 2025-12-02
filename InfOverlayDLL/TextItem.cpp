@@ -17,8 +17,8 @@ void TextItem::DrawSettings()
     ImGuiStd::InputTextStd(u8"文本内容", text);
     if (ImGui::CollapsingHeader(u8"通用设置"))
     {
-        DrawWindowSettings();
         DrawAffixSettings();
+        DrawWindowSettings();
     }
 }
 

@@ -77,8 +77,9 @@ public:
         name = u8"按键显示";
         description = u8"显示按键状态";
         isCustomSize = false;
-        alpha = 0.0f;
-        showBorder = false; 
+        isCustomStyle = true;
+        itemStyle.bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+        itemStyle.borderColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 
         updateIntervalMs = 5;
         lastUpdateTime = std::chrono::steady_clock::now();

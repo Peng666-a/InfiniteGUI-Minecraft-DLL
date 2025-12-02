@@ -65,9 +65,9 @@ void CounterItem::DrawSettings()
     DrawKeybindSettings();
     if (ImGui::CollapsingHeader(u8"Õ®”√…Ë÷√"))
     {
-        DrawWindowSettings();
         DrawAffixSettings();
         DrawSoundSettings();
+        DrawWindowSettings();
     }
 }
 

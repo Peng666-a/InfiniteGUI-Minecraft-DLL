@@ -1,6 +1,9 @@
 #pragma once
+#include "WindowStyleModule.h"
+#include "GlobalWindowStyle.h"
 #include <string>
 #include "imgui/imgui.h"
+#include "ImGuiStd.h"
 #include <nlohmann/json.hpp>
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
@@ -11,19 +14,26 @@
 static const float SNAP_DISTANCE = 15.0f;
 static bool isSnapping = false;
 
-class WindowModule
+class WindowModule : public WindowStyleModule
 {
 public:
     virtual void DrawContent() = 0;       // 绘制内容（文本、图形等）
 
+    void SetStyle()
+    {
+        if (isCustomStyle)
+        {
+            itemStylePtr = &itemStyle;
+
+        }
+        else
+        {
+            itemStylePtr = &GlobalWindowStyle::Instance().GetGlobeStyle();
+        }
+    }
     void DrawWindowSettings()
     {
         ImGui::Checkbox(u8"固定", &clickThrough);
-
-        ImGui::Checkbox(u8"显示边框", &showBorder);
-
-
-        ImGui::SliderFloat(u8"背景透明度", &alpha, 0.0f, 1.0f, "%.1f");
 
         ImGui::Checkbox(u8"自定义窗口大小", &isCustomSize);
         if (isCustomSize) {
@@ -33,7 +43,13 @@ public:
         ImGui::InputFloat(u8"窗口 X", &x, 1.0f, 1.0f, "%.1f");
         ImGui::InputFloat(u8"窗口 Y", &y, 1.0f, 1.0f, "%.1f");
 
-        ImGui::InputFloat(u8"字体大小", &fontSize, 1.0f, 1.0f, "%.1f");
+        if (ImGui::Checkbox(u8"自定义窗口样式", &isCustomStyle))
+        {
+            SetStyle();
+        }
+
+        if (isCustomStyle) 
+            DrawStyleSettings();
     }
 
     // ---------------------------
@@ -54,8 +70,10 @@ public:
         }
         HWND g_hwnd = App::Instance().clientHwnd;
 
-        ImGui::SetNextWindowBgAlpha(alpha); // 半透明
-        if (!showBorder) ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 边框透明
+
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, itemStylePtr->bgColor); // 背景透明
+        ImGui::PushStyleColor(ImGuiCol_Border, itemStylePtr->borderColor); // 边框透明
+        ImGui::PushStyleColor(ImGuiCol_Text, itemStylePtr->fontColor); // 字体颜色
 
         ImGuiWindowFlags flags = 0;
         //if (!allowResize) flags |= ImGuiWindowFlags_NoResize;
@@ -74,7 +92,7 @@ public:
 
         isHovered = ImGui::IsWindowHovered();
 
-        ImGui::PushFont(NULL, fontSize);
+        ImGui::PushFont(NULL, itemStylePtr->fontSize);
         DrawContent();
         ImGui::PopFont();
 
@@ -99,7 +117,7 @@ public:
         }
 
         ImGui::End();
-        if (!showBorder) ImGui::PopStyleColor(); // 边框透明
+        ImGui::PopStyleColor(3);
     }
 private:
         std::string GetActualWindowName() const {
@@ -150,13 +168,13 @@ protected:
         if (j.contains("width")) width = j["width"];
         if (j.contains("height")) height = j["height"];
 
-        if (j.contains("alpha")) alpha = j["alpha"];
-        if (j.contains("showBorder")) showBorder = j["showBorder"];
-        if (j.contains("fontSize")) fontSize = j["fontSize"];
         if (j.contains("clickThrough")) clickThrough = j["clickThrough"];
 
         if (j.contains("snapState")) snapState = j["snapState"];
 
+        if (j.contains("isCustomStyle")) isCustomStyle = j["isCustomStyle"];
+        SetStyle();
+        LoadStyle(j);
     }
     void SaveWindow(nlohmann::json& j) const
     {
@@ -166,12 +184,13 @@ protected:
         j["width"] = width;
         j["height"] = height;
 
-        j["alpha"] = alpha;
-        j["showBorder"] = showBorder;
-        j["fontSize"] = fontSize;
         j["clickThrough"] = clickThrough;
 
         j["snapState"] = snapState;
+
+        j["isCustomStyle"] = isCustomStyle;
+
+        SaveStyle(j);
     }
 
     bool isWindowShow = true;
@@ -184,11 +203,6 @@ protected:
     float width = 250.0f;
     float height = 80.0f;
 
-    float alpha = 1.0f;              // 透明度
-    bool showBorder = true;        // 开启边框
-    float fontSize = 20.0f;               // 字体大小
-
-
     bool allowMove = true;
     bool allowResize = true;
     bool clickThrough = false;
@@ -196,5 +210,7 @@ protected:
     bool isMoving = false;
     bool isHovered = true;
 
+    bool isCustomStyle = false;
 
+    ItemStyle* itemStylePtr = &itemStyle;
 };

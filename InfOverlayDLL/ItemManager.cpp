@@ -12,6 +12,7 @@
 
 #include "CPSDetector.h"
 #include "GameStateDetector.h"
+#include "GlobalWindowStyle.h"
 
 #include "Menu.h"
 #include <algorithm>
@@ -29,6 +30,7 @@ ItemManager::ItemManager()
     AddSingleton(&KeystrokesItem::Instance());
     AddSingleton(&CPSItem::Instance());
 
+    AddSingleton(&GlobalWindowStyle::Instance());
     AddSingleton(&GameStateDetector::Instance());
     AddSingleton(&CPSDetector::Instance());
 }

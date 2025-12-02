@@ -278,6 +278,12 @@
     <ClInclude Include="HttpUpdateWorker.h">
       <Filter>src\utils\Http</Filter>
     </ClInclude>
+    <ClInclude Include="WindowStyleModule.h">
+      <Filter>src\core\items\virtual\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalWindowStyle.h">
+      <Filter>src\core\items\hidden</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -390,6 +396,9 @@
     </ClCompile>
     <ClCompile Include="HttpUpdateWorker.cpp">
       <Filter>src\utils\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalWindowStyle.cpp">
+      <Filter>src\core\items\hidden</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -415,9 +415,10 @@ void Menu::ShowSettings(bool* done)
         ImGui::Separator();
         if (ImGui::CollapsingHeader(u8"全局设置", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
         {
+            ImGuiStyle& style = ImGui::GetStyle();
             if (ImGui::SliderFloat(u8"圆角半径", &GlobalConfig::Instance().roundCornerRadius, 0.0f, 10.0f, "%.1f"))
             {
-                ImGuiStyle& style = ImGui::GetStyle();
+
                 float roundCornerRadius = GlobalConfig::Instance().roundCornerRadius;
                 style.WindowRounding = roundCornerRadius;
                 style.FrameRounding = roundCornerRadius;
@@ -431,6 +432,19 @@ void Menu::ShowSettings(bool* done)
             //设置主UI快捷键
 
             ImGuiStd::Keybind(u8"UI快捷键：", GlobalConfig::Instance().menuKey);
+
+            for (Item* item : ItemManager::Instance().GetAllItems())
+            {
+                if (item->type == Hidden)
+                {
+                    ImGui::PushFont(NULL, style.FontSizeBase * 0.8f);
+                    ImGui::BeginDisabled();
+                    ImGuiStd::TextShadow(item->name.c_str());
+                    ImGui::EndDisabled();
+                    ImGui::PopFont();
+                    item->DrawSettings();
+                }
+            }
 
             ShowFontSelection(&GlobalConfig::Instance());
 
@@ -461,6 +475,7 @@ void Menu::ShowSettings(bool* done)
         DrawItemList();
 
         ImGui::Separator();
+
         //显示关于
         if (ImGui::CollapsingHeader(u8"关于", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
         {

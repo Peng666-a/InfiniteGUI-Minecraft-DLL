@@ -30,6 +30,7 @@ public:
 
         prefix = u8"[·ÛË¿Êý:";
         suffix = "]";
+
     }
 
     ~BilibiliFansItem() {
