@@ -6,7 +6,7 @@ int HttpUpdateWorker::AddTask(
     int intervalMs,
     std::function<void(const std::string&)> callback)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    //std::lock_guard<std::mutex> lock(m_mutex);
 
     int id = m_nextId++;
 
@@ -23,7 +23,7 @@ int HttpUpdateWorker::AddTask(
 
 void HttpUpdateWorker::RemoveTask(int taskId)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    //std::lock_guard<std::mutex> lock(m_mutex);
 
     m_tasks.erase(
         std::remove_if(m_tasks.begin(), m_tasks.end(),
@@ -62,7 +62,7 @@ void HttpUpdateWorker::WorkerLoop()
         auto now = std::chrono::steady_clock::now();
 
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            //std::lock_guard<std::mutex> lock(m_mutex);
 
             for (auto& task : m_tasks)
             {

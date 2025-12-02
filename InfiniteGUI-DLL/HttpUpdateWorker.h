@@ -40,7 +40,7 @@ private:
     std::atomic<bool> m_running{ false };
     std::thread m_thread;
 
-    std::mutex m_mutex;
+    //std::mutex m_mutex;
     std::vector<HttpTask> m_tasks;
 
     std::atomic<int> m_nextId{ 1 };
