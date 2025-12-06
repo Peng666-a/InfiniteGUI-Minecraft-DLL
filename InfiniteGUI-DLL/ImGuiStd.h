@@ -7,7 +7,6 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include "App.h"
-
 namespace ImGuiStd {
 
     static bool InputTextStd(const char* label, std::string& str, ImGuiInputTextFlags flags = 0)
@@ -194,7 +193,7 @@ namespace ImGuiStd {
             edit_color_elements[label] = element;
         }
         edit_color_element& element = edit_color_elements[label];\
-        ImVec2 target_size = ImVec2(338, 366);
+        ImVec2 target_size = ImVec2(338 * ImGui::GetFontSize() / 20.0f, 366 * ImGui::GetFontSize() / 20.0f);
         float speed = 10.0f * ImGui::GetIO().DeltaTime;
         std::string text = label + std::string(u8"：");
 
@@ -228,6 +227,7 @@ namespace ImGuiStd {
             {
                 ImGui::SetTooltip(u8"还原初始样式");
             }
+
         }
         return changed;
     }
@@ -253,7 +253,7 @@ namespace ImGuiStd {
             edit_color_elements[label] = element;
         }
         edit_color_element& element = edit_color_elements[label];\
-            ImVec2 target_size = ImVec2(338, 366);
+            static ImVec2 target_size = ImVec2(0, 366);
         float speed = 10.0f * ImGui::GetIO().DeltaTime;
         std::string text = label + std::string(u8"：");
 

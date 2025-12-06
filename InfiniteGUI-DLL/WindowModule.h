@@ -1,6 +1,7 @@
 #pragma once
 #include "WindowStyleModule.h"
 #include "GlobalWindowStyle.h"
+#include "RenderModule.h"
 #include <string>
 #include "imgui/imgui.h"
 #include "ImGuiStd.h"
@@ -34,7 +35,7 @@ struct ItemStylePtr
 };
 
 
-class WindowModule : public WindowStyleModule
+class WindowModule : public WindowStyleModule, public RenderModule
 {
 public:
 
@@ -175,7 +176,7 @@ public:
     // ---------------------------
 //   渲染整个窗口（统一逻辑）
 // ---------------------------
-    virtual void RenderWindow()
+    virtual void Render() override
     {
         if (!isWindowShow) return;
         if (!isCustomSize)
@@ -197,10 +198,10 @@ public:
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, *itemStylePtr.bgColor); // 背景透明
-            ImGui::PushStyleColor(ImGuiCol_Border, *itemStylePtr.borderColor); // 边框透明
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, *itemStylePtr.bgColor); 
+            ImGui::PushStyleColor(ImGuiCol_Border, *itemStylePtr.borderColor); 
         }
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, *itemStylePtr.windowRounding);
+        PushRounding(*itemStylePtr.windowRounding);
         if (*itemStylePtr.rainbowFont)
             processRainbowFont();
         else
@@ -247,7 +248,7 @@ public:
         }
 
         ImGui::End();
-        ImGui::PopStyleVar();
+        ImGui::PopStyleVar(7);
         ImGui::PopStyleColor(3);
     }
 private:

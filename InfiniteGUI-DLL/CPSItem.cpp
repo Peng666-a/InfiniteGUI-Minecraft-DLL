@@ -13,6 +13,7 @@ void CPSItem::DrawContent()
     float speed = 3.0f * io.DeltaTime;
     color.color = ImLerp(color.color, targetTextColor, speed);
     bool needMiddleFix = showLeft && showRight;
+    //std::string addon = std::to_string(Motionblur::Instance().cur_blurriness_value);
     std::string middleFix = needMiddleFix ? " | " : "";
     std::string left = showLeft ? std::to_string(CPSDetector::Instance().GetLeftCPS()) : "";
     std::string right = showRight ? std::to_string(CPSDetector::Instance().GetRightCPS()) : "";

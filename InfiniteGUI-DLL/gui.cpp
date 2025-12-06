@@ -15,6 +15,8 @@
 #include "App.h"
 
 #include "Menu.h"
+#include "Motionblur.h"
+#include "GameStateDetector.h"
 static ImGuiContext* imGuiContext = nullptr;
 
 void Gui::init()
@@ -44,7 +46,7 @@ void Gui::init()
 	io.ConfigFlags |= ImGuiConfigFlags_NoMouse; // 禁止 ImGui 捕获鼠标输入（我们在切换时会调整）
 	io.IniFilename = nullptr; // 禁止生成 imgui.ini
 	//ImGui::StyleColorsDark();
-	SetStyleGray(GlobalConfig::Instance().roundCornerRadius);
+	SetStyleGray();
 	//SetStylePurple();
 	//SetStyleViolet();
 	//SetStyleVioletBlue();
@@ -127,13 +129,13 @@ void Gui::render()
 		////voyage::get().event_bus.fire_event(render_2d_event{});
 		//ImGui::End();
 		ItemManager::Instance().RenderAll();
-		Menu::Instance().Render(&done);
+		//Menu::Instance().Render();
 	}
-
-
 
 
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	if (Motionblur::Instance().isEnabled && Motionblur::Instance().applayOnMenu && 
+		(GameStateDetector::Instance().IsInGame() || Menu::Instance().isEnabled)) Motionblur::Instance().Render();
 }

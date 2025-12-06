@@ -6,6 +6,7 @@
 
 #include "menu.h"
 #include "ItemManager.h"
+#include "GameStateDetector.h"
 #include "gui.h"
 
 #include "App.h"
@@ -16,6 +17,7 @@
 //#include <mutex>
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool detour_wgl_swap_buffers(HDC hdc);
+
 static LRESULT CALLBACK wndproc_hook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	bool isRepeat = (lParam & (1 << 30)) != 0;
@@ -23,15 +25,33 @@ static LRESULT CALLBACK wndproc_hook(HWND hWnd, UINT message, WPARAM wParam, LPA
 	{
 	case WM_KEYDOWN:
 	{
-		if (wParam == GlobalConfig::Instance().menuKey && !isRepeat)
+		if (wParam == Menu::Instance().GetKeyBind() && !isRepeat)
 		{
+			Menu::Instance().isEnabled =!Menu::Instance().isEnabled;
 			Menu::Instance().Toggle();
 		}
-		if (wParam == VK_ESCAPE && Menu::Instance().open)
-			Menu::Instance().Toggle();
 		break;
 	}
+	case WM_INPUT:
+	{
+		UINT size;
+		GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+		BYTE* buffer = new BYTE[size];
+		GetRawInputData((HRAWINPUT)lParam, RID_INPUT, buffer, &size, sizeof(RAWINPUTHEADER));
 
+		RAWINPUT* raw = (RAWINPUT*)buffer;
+		if (raw->header.dwType == RIM_TYPEMOUSE)
+		{
+			int dx = raw->data.mouse.lLastX;
+			int dy = raw->data.mouse.lLastY;
+
+			// dx / dy 就是你的视角移动量
+			GameStateDetector::Instance().ProcessMouseMovement(dx, dy);
+		}
+		delete[] buffer;
+	}
+
+	break;
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	{
@@ -64,7 +84,7 @@ static LRESULT CALLBACK wndproc_hook(HWND hWnd, UINT message, WPARAM wParam, LPA
 		state = true;
 
 	ItemManager::Instance().ProcessKeyEvents(state, isRepeat, wParam);
-	if (Menu::Instance().open)
+	if (Menu::Instance().isEnabled)
 	{
 		// 只有 UI 激活时才把消息交给 ImGui 处理
 		ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
@@ -151,6 +171,13 @@ bool detour_wgl_swap_buffers(HDC hdc)
 			opengl_hook::screen_size.x = area.right - area.left;
 			opengl_hook::screen_size.y = area.bottom - area.top;
 
+			RAWINPUTDEVICE rid;
+			rid.usUsagePage = 0x01;
+			rid.usUsage = 0x02; // Mouse
+			rid.dwFlags = RIDEV_INPUTSINK;
+			rid.hwndTarget = opengl_hook::handle_window;
+			RegisterRawInputDevices(&rid, 1, sizeof(rid));
+
 			opengl_hook::gui.init();
 		});
 	if (WindowFromDC(hdc) != opengl_hook::handle_window) return wgl_swap_buffers_hook.GetOrignalFunc()(hdc);
@@ -172,7 +199,7 @@ bool detour_wgl_swap_buffers(HDC hdc)
 
 	// 切换 ImGui 鼠标捕获设置
 	ImGuiIO& io = ImGui::GetIO();
-	if (Menu::Instance().open)
+	if (Menu::Instance().isEnabled)
 	{
 		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // 允许 ImGui 处理鼠标
 	}
@@ -182,7 +209,6 @@ bool detour_wgl_swap_buffers(HDC hdc)
 	}
 	//渲染代码
 	opengl_hook::gui.render();
-
 	//渲染结束
 	wglMakeCurrent(hdc, opengl_hook::o_gl_ctx);
 

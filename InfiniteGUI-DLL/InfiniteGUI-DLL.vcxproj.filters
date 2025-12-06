@@ -62,9 +62,6 @@
     <Filter Include="src\ui">
       <UniqueIdentifier>{019afd2a-1ccb-4710-8d5c-51617a082f32}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\ui\menu">
-      <UniqueIdentifier>{7d75ccb6-7ce5-4aba-9c36-9e5bc5d234c6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\ui\hooks">
       <UniqueIdentifier>{f3be7ae2-9701-4c99-889d-49957a2b67ca}</UniqueIdentifier>
     </Filter>
@@ -229,9 +226,6 @@
     <ClInclude Include="ItemManager.h">
       <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>src\ui\menu</Filter>
-    </ClInclude>
     <ClInclude Include="fonts\harmony_sc_regular.h">
       <Filter>src\ui\hooks\gui\resources\fonts</Filter>
     </ClInclude>
@@ -282,6 +276,15 @@
     </ClInclude>
     <ClInclude Include="VK_Keymap.h">
       <Filter>src\ui\imGuiHelper</Filter>
+    </ClInclude>
+    <ClInclude Include="Motionblur.h">
+      <Filter>src\core\items\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderModule.h">
+      <Filter>src\core\items\virtual\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>src\core\items\huds</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -366,9 +369,6 @@
     <ClCompile Include="ItemManager.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>src\ui\menu</Filter>
-    </ClCompile>
     <ClCompile Include="fonts.cpp">
       <Filter>src\ui\hooks\gui\resources</Filter>
     </ClCompile>
@@ -395,6 +395,12 @@
     </ClCompile>
     <ClCompile Include="WindowSnapper.cpp">
       <Filter>src\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Motionblur.cpp">
+      <Filter>src\core\items\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>src\core\items\huds</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

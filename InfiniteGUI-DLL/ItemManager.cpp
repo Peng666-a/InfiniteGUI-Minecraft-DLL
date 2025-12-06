@@ -8,7 +8,9 @@
 #include "FileCountItem.h"
 #include "CounterItem.h"
 #include "TextItem.h"
+
 #include "Sprint.h"
+#include "Motionblur.h"
 
 #include "CPSDetector.h"
 #include "GameStateDetector.h"
@@ -24,6 +26,7 @@ ItemManager::ItemManager()
     // 注册默认 Singleton
     AddSingleton(&Sprint::Instance());
 
+    AddSingleton(&Menu::Instance());
     AddSingleton(&TimeItem::Instance());
     AddSingleton(&FpsItem::Instance());
     AddSingleton(&DanmakuItem::Instance());
@@ -33,6 +36,8 @@ ItemManager::ItemManager()
     AddSingleton(&GlobalWindowStyle::Instance());
     AddSingleton(&GameStateDetector::Instance());
     AddSingleton(&CPSDetector::Instance());
+
+    AddSingleton(&Motionblur::Instance());
 }
 
 // ------------------------------------------------
@@ -92,14 +97,17 @@ void ItemManager::UpdateAll()
 // ------------------------------------------------
 void ItemManager::RenderAll()
 {
-    if (GameStateDetector::Instance().IsNeedHide() && !Menu::Instance().open)
+    if (GameStateDetector::Instance().IsNeedHide() && !Menu::Instance().isEnabled)
         return; // 隐藏所有窗口
     for (auto item : allItems)
     {
         if (!item->isEnabled) continue;
-        if (auto win = dynamic_cast<WindowModule*>(item))
+        if (auto win = dynamic_cast<RenderModule*>(item))
         {
-            win->RenderWindow();
+            if (auto motionblur = dynamic_cast<Motionblur*>(item))
+                if (motionblur->applayOnMenu) continue;
+
+            win->Render();
         }
     }
 }
@@ -109,9 +117,11 @@ void ItemManager::ProcessKeyEvents(bool state, bool isRepeat, WPARAM key)
 {
     for (auto item : allItems)
     {
-        if (!item->isEnabled) continue;
         if (auto kbd = dynamic_cast<KeybindModule*>(item))
         {
+            if (auto menu = dynamic_cast<Menu*>(kbd))
+                menu->OnKeyEvent(state, isRepeat, key);
+            if (!item->isEnabled) continue;
             kbd->OnKeyEvent(state, isRepeat, key);
         }
     }

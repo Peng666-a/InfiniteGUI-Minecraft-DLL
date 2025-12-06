@@ -1,0 +1,283 @@
+#include "Motionblur.h"
+#include <gl/glew.h>
+#include <gl/GL.h>
+#include "opengl_hook.h"
+#include "GameStateDetector.h"
+#include "imgui\imgui_internal.h"
+#include "ImGuiStd.h"
+auto vertex_shader_code = R"glsl(
+#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 TexCoord;
+
+void main()
+{
+    gl_Position = vec4(aPos, 0.0, 1.0);
+    TexCoord = aTexCoord;
+}
+)glsl";
+
+auto fragment_shader_code = R"glsl(
+#version 330 core
+
+out vec4 FragColor;
+in vec2 TexCoord;
+uniform sampler2D currentTexture;
+uniform sampler2D historyTexture;
+uniform float blurriness;
+uniform bool renderRGB;
+
+void main()
+{
+    vec4 current = texture(currentTexture, TexCoord);
+    vec4 history = texture(historyTexture, TexCoord);
+    
+    vec2 interpolatedTexCoord;
+    interpolatedTexCoord.x = mix(TexCoord.x, TexCoord.x, 0.5);
+    interpolatedTexCoord.y = mix(TexCoord.y, TexCoord.y, 0.5);
+    
+    vec4 blurredColor = mix(history, texture(currentTexture, interpolatedTexCoord), blurriness);
+    
+    if (renderRGB)
+    {
+        FragColor = blurredColor;
+    }
+    else
+    {
+		float value1 = texture(currentTexture, interpolatedTexCoord).r;
+		FragColor = mix(history, vec4(value1), blurriness);
+    }
+}
+
+)glsl";
+
+void Motionblur::Toggle()
+{
+}
+
+void Motionblur::Render()
+{
+	if (!isEnabled) return;
+	static bool initialize = false;
+	static bool first = true;
+
+	const int width = opengl_hook::screen_size.x;
+	const int height = opengl_hook::screen_size.y;
+
+	GLint viewport[4];
+	GLint prev_framebuffer = 0;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &prev_framebuffer);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+
+	glViewport(0, 0, width, height);
+
+	if (!initialize)
+	{
+		initialize_texture(width, height);
+		initialize_quad();
+		initialize_shader();
+		initialize = true;
+
+		texture_width_ = width;
+		texture_height_ = height;
+	}
+
+	if (texture_width_ != width || texture_height_ != height)
+	{
+		resize_texture(width, height);
+		first = true;
+	}
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	copy_to_current();
+	if (first)
+	{
+		copy_to_history();
+		first = false;
+	}
+
+	//计算blurriness_value值
+	if (velocityAdaptive)
+		velocity_adaptive_blur(GameStateDetector::Instance().IsCameraMoving(),GameStateDetector::Instance().GetCameraSpeed(), blurriness_value, &cur_blurriness_value);
+	else
+		cur_blurriness_value = blurriness_value;
+
+	draw_texture(cur_blurriness_value);
+	copy_to_history();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, prev_framebuffer);
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+}
+
+void Motionblur::Load(const nlohmann::json& j)
+{
+	LoadItem(j);
+	if(j.contains("blurriness")) blurriness_value = j["blurriness"].get<float>();
+	if(j.contains("velocityAdaptive")) velocityAdaptive = j["velocityAdaptive"].get<bool>();
+	if(j.contains("applayOnMenu")) applayOnMenu = j["applayOnMenu"].get<bool>();
+	if(j.contains("clear_color")) clear_color = j["clear_color"].get<bool>();
+}
+
+void Motionblur::Save(nlohmann::json& j) const
+{
+	SaveItem(j);
+	j["blurriness"] = blurriness_value;
+	j["velocityAdaptive"] = velocityAdaptive;
+	j["applayOnMenu"] = applayOnMenu;
+	j["clear_color"] = clear_color;
+}
+
+void Motionblur::DrawSettings()
+{
+	DrawItemSettings();
+	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 40.0f, "%.1f");
+	ImGui::Checkbox(u8"速度自适应", &velocityAdaptive); ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。");
+	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
+	ImGui::Checkbox(u8"Im Faded~", &clear_color);
+
+}
+
+void Motionblur::initialize_texture(const int width, const int height)
+{
+	glGenTextures(1, &current_texture_);
+	glBindTexture(GL_TEXTURE_2D, current_texture_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glGenTextures(1, &history_texture_);
+	glBindTexture(GL_TEXTURE_2D, history_texture_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Motionblur::initialize_quad()
+{
+	constexpr GLfloat quad_vertices[] = {
+		-1.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f
+	};
+
+	glGenVertexArrays(1, &quad_vao_);
+	glGenBuffers(1, &quad_vbo_);
+
+	glBindVertexArray(quad_vao_);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_vbo_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), static_cast<GLvoid*>(0));
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
+		reinterpret_cast<GLvoid*>(2 * sizeof(GLfloat)));
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+void Motionblur::initialize_shader()
+{
+	shader_program_ = glCreateProgram();
+
+	const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, &vertex_shader_code, nullptr);
+	glCompileShader(vertex_shader);
+
+	const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, &fragment_shader_code, nullptr);
+	glCompileShader(fragment_shader);
+
+	glAttachShader(shader_program_, vertex_shader);
+	glAttachShader(shader_program_, fragment_shader);
+	glLinkProgram(shader_program_);
+
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
+}
+
+void Motionblur::resize_texture(int width, int height)
+{
+	glBindTexture(GL_TEXTURE_2D, current_texture_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+	glBindTexture(GL_TEXTURE_2D, history_texture_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	texture_width_ = width;
+	texture_height_ = height;
+}
+
+void Motionblur::draw_texture(float blurriness_value) const
+{
+	if (current_texture_ == 0)
+		return;
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
+	glUseProgram(shader_program_);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, current_texture_);
+	glUniform1i(glGetUniformLocation(shader_program_, "currentTexture"), 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, history_texture_);
+	glUniform1i(glGetUniformLocation(shader_program_, "historyTexture"), 1);
+	auto value = max(0.1, (50 - blurriness_value)) / 100;
+	glUniform1f(glGetUniformLocation(shader_program_, "blurriness"), (GLfloat)value);
+
+	glUniform1f(glGetUniformLocation(shader_program_, "renderRGB"), !clear_color);
+
+	glBindVertexArray(quad_vao_);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
+void Motionblur::copy_to_history() const
+{
+	glBindTexture(GL_TEXTURE_2D, history_texture_);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, texture_width_, texture_height_, 0);
+}
+
+void Motionblur::copy_to_current() const
+{
+	glBindTexture(GL_TEXTURE_2D, current_texture_);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, texture_width_, texture_height_, 0);
+}
+
+void Motionblur::velocity_adaptive_blur(bool cameraMoving, float cameraSpeed, float value, float* cur_value) const
+{
+	//cameraSpeed 1~10
+	ImGuiIO& io = ImGui::GetIO();
+	float lerpSpeed = 10.0f * io.DeltaTime;
+	float baseValue = value / 2; //0~25
+	float tarValue;
+	tarValue = baseValue + std::clamp((cameraSpeed - 1.0f), 0.0f, 15.0f) / 15.0f * baseValue; //0~30
+
+	if (cameraMoving)
+	{
+		*cur_value = tarValue;
+	}
+	else
+	{
+		*cur_value = ImLerp(*cur_value, tarValue, lerpSpeed);
+	}
+}

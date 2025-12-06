@@ -16,6 +16,7 @@ class WindowStyleModule {
 public:
     WindowStyleModule()
     {
+        GetDefaultStyle();
         InitStyle();
     }
     void DrawStyleSettings()
@@ -24,14 +25,13 @@ public:
         //字体大小设置
         ImGui::InputFloat(u8"字体大小", &itemStyle.fontSize, 1.0f, 1.0f, "%.1f");
         //颜色设置
-        ImVec4* colors = ImGui::GetStyle().Colors;
-        ImGuiStd::EditColor(u8"字体颜色", itemStyle.fontColor, colors[ImGuiCol_Text]);
+
+        ImGuiStd::EditColor(u8"字体颜色", itemStyle.fontColor, defaultStyle.fontColor);
         ImGui::SameLine();
         ImGui::Checkbox(u8"彩虹", &itemStyle.rainbowFont);
-        ImGuiStd::EditColor(u8"背景颜色", itemStyle.bgColor, colors[ImGuiCol_WindowBg]);
-        ImGuiStd::EditColor(u8"边框颜色", itemStyle.borderColor, colors[ImGuiCol_Border]);
+        ImGuiStd::EditColor(u8"背景颜色", itemStyle.bgColor, defaultStyle.bgColor);
+        ImGuiStd::EditColor(u8"边框颜色", itemStyle.borderColor, defaultStyle.borderColor);
     }
-
 protected:
     void LoadStyle(const nlohmann::json& j)
     {
@@ -63,12 +63,36 @@ protected:
         itemStyle.bgColor = defaultStyle.Colors[ImGuiCol_WindowBg];
         itemStyle.borderColor = defaultStyle.Colors[ImGuiCol_Border];
     }
+
+    static void GetDefaultStyle()
+    {
+        static bool isInit = false;
+        if (isInit) return;
+        ImGuiStyle& style = ImGui::GetStyle();
+        defaultStyle.windowRounding = style.WindowRounding;
+        defaultStyle.fontSize = style.FontSizeBase;
+        defaultStyle.fontColor = style.Colors[ImGuiCol_Text];
+        defaultStyle.bgColor = style.Colors[ImGuiCol_WindowBg];
+        defaultStyle.borderColor = style.Colors[ImGuiCol_Border];
+        isInit = true;
+    }
+
     void processRainbowFont()
     {
         ImVec4 col = ImColor::HSV((float)fmod(ImGui::GetTime() * 0.2f, 1.0f), 1, 1);
         ImGui::PushStyleColor(ImGuiCol_Text, col);
     }
+    static void PushRounding(float rounding)
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, rounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, rounding);
+    }
     ItemStyle itemStyle;
+    inline static ItemStyle defaultStyle;
     //ImVec4 rainbowFontColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 };
-

@@ -2,7 +2,7 @@
 
 #include "imgui\imgui.h"
 
-void SetStyleGray(float roundCornerRadius)
+void SetStyleGray()
 {
     //https://github.com/ocornut/imgui/issues/707#issuecomment-2393152123
     // Setup style
@@ -65,13 +65,13 @@ void SetStyleGray(float roundCornerRadius)
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.14f, 0.14f, 0.14f, 0.3f);
 
-    style.WindowRounding = roundCornerRadius;
-    style.FrameRounding = roundCornerRadius;
-    style.GrabRounding = roundCornerRadius;
-    style.ScrollbarRounding = roundCornerRadius;
-    style.TabRounding = roundCornerRadius;
-    style.ChildRounding = roundCornerRadius;
-    style.PopupRounding = roundCornerRadius;
+    style.WindowRounding = 3.0f;
+    style.FrameRounding = 3.0f;
+    style.GrabRounding = 3.0f;
+    style.ScrollbarRounding = 3.0f;
+    style.TabRounding = 3.0f;
+    style.ChildRounding = 3.0f;
+    style.PopupRounding = 3.0f;
 
 }
 

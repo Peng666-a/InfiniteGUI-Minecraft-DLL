@@ -1,5 +1,8 @@
 #pragma once
 #include "Item.h"
+#include "RenderModule.h"
+#include "WindowStyleModule.h"
+#include "KeybindModule.h"
 
 enum MenuState {
     MENU_STATE_MAIN,
@@ -16,10 +19,20 @@ struct panel_element {
     float state = 0.0f;
 };
 
-class Menu {
+class Menu : public RenderModule, public WindowStyleModule , public Item, public KeybindModule {
 public:
 
-    bool open = false;
+    Menu() {
+        type = Hud; // 信息项类型
+        multiType = Singleton;    // 信息项是否可以多开
+        name = u8"菜单";
+        description = u8"显示菜单";
+        isEnabled = false;
+
+        keybinds.insert(std::make_pair(u8"菜单快捷键：", VK_OEM_5));
+        itemStyle.fontSize = 20.0f;
+        itemStyle.bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.1f);
+    }
     panel_element panelAnim;
 
     MenuState state = MENU_STATE_MAIN;
@@ -30,20 +43,18 @@ public:
         static Menu instance;
         return instance;
     }
-    Menu();
 
-    void Render(bool* done);
-
+    void Render() override;
+    void Toggle() override;
+    void DrawSettings() override;
+    void Load(const nlohmann::json& j) override;
+    void Save(nlohmann::json& j) const override;
+    void OnKeyEvent(bool state, bool isRepeat, WPARAM key) override;
+    int GetKeyBind();
+private:
     void ShowMain();
     void ShowSettings(bool* done);
     void ShowSidePanels();
-    void Toggle(bool open);
-
-    void Toggle();
-
-private:
-
     void DrawItemList();
     void DrawItemEditor(Item* item);
-
 };

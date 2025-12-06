@@ -55,16 +55,12 @@ void ShowFontSelection(GlobalConfig* globalConfig) {
 
 }
 
-Menu::Menu()
-{
-}
-
 
 static ImVec4 myWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 static ImVec4 tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
-void Menu::Render(bool* done)
+void Menu::Render()
 {
-    if(!open)
+    if(!isEnabled)
         return;
 
     //使窗口显示在屏幕中间
@@ -82,18 +78,49 @@ void Menu::Render(bool* done)
     ImGui::End();
 
     ImGui::PopStyleColor();
+    ImGui::PushFont(NULL, itemStyle.fontSize);
+    if (itemStyle.rainbowFont)
+        processRainbowFont();
+    else
+        ImGui::PushStyleColor(ImGuiCol_Text, itemStyle.fontColor); // 字体颜色
     switch (state)
     {
     case MENU_STATE_MAIN:
         ShowMain();
         break;
     case MENU_STATE_SETTINGS:
-        ShowSettings(done);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, itemStyle.bgColor);
+        ImGui::PushStyleColor(ImGuiCol_Border, itemStyle.borderColor);
+        PushRounding(itemStyle.windowRounding);
+
+        ShowSettings(&opengl_hook::gui.done);
+
+        ImGui::PopStyleColor(2);
+        ImGui::PopStyleVar(7);
         break;
         
     }
-
+    ImGui::PopStyleColor();
+    ImGui::PopFont();
     return;
+}
+
+void Menu::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
+{
+    if (key == NULL || isRepeat) return;
+    if (state) //按键按下
+    {
+        if (key == VK_ESCAPE && isEnabled)
+        {
+            isEnabled = false;
+            Toggle();
+        }
+    }
+}
+
+int Menu::GetKeyBind()
+{
+    return keybinds.at(u8"菜单快捷键：");
 }
 
 void Menu::ShowMain()
@@ -254,13 +281,14 @@ void Menu::ShowSidePanels()
         ImGui::SetNextWindowBgAlpha(0.3f); // 半透明
         ImGui::BeginChild("UpdateLogChild", ImVec2(0, 0), true, ImGuiWindowFlags_NoInputs);
         //ImGui::PushFont(io.FontDefault);
-        ImGuiStd::TextShadow(u8"   -25.11.30-    |    -B0.9.0-");
-        ImGui::BulletText(u8"发布第一支测试版本");
-        ImGui::Separator();
-        ImGuiStd::TextShadow(u8"   -25.11.30-    |    -B0.9.1-");
-        ImGui::BulletText(u8"优化资源位置");
+        ImGuiStd::TextShadow(u8"   -25.12.05-    |    -B0.9.1-");
+        ImGui::BulletText(u8"优化资源文件夹位置");
         ImGui::BulletText(u8"添加窗口样式自定义");
         ImGui::BulletText(u8"添加窗口彩虹字");
+        ImGui::BulletText(u8"添加动态模糊");
+        ImGui::Separator();
+        ImGuiStd::TextShadow(u8"   -25.11.30-    |    -B0.9.0-");
+        ImGui::BulletText(u8"发布第一支测试版本");
         ImGui::Separator();
         ImGui::EndChild();
         ImGui::End();
@@ -354,9 +382,9 @@ void Menu::ShowSettings(bool* done)
     ImGui::SetNextWindowSize(ImVec2(1000, 618), ImGuiCond_Once);
 
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.1f));
+    //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.1f));
     ImGui::Begin(u8"主控制面板", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
-    ImGui::PopStyleColor(2);
+    ImGui::PopStyleColor();
 
     ImGui::SetCursorPos(ImVec2(3, 3));
     //设置控件与左边的间隔
@@ -378,19 +406,20 @@ void Menu::ShowSettings(bool* done)
 
         if (ImGui::Button("  X  "))
         {
+            isEnabled = false;
             Toggle();
             //*done = true;
         }
 
-        ImGui::SameLine();
+        //ImGui::SameLine();
 
-        //将退出按钮显示在右上角
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 90);
+        ////将退出按钮显示在右上角
+        //ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 90);
 
-        if (ImGui::Button("  +  "))
-        {
-            isStyleEditorShow = !isStyleEditorShow;
-        }
+        //if (ImGui::Button("  +  "))
+        //{
+        //    isStyleEditorShow = !isStyleEditorShow;
+        //}
 
         ImGui::Separator();
         ImGui::BeginChild("Content", ImVec2(0, 0), true);
@@ -405,23 +434,6 @@ void Menu::ShowSettings(bool* done)
         if (ImGui::CollapsingHeader(u8"全局设置", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
         {
             ImGuiStyle& style = ImGui::GetStyle();
-            if (ImGui::SliderFloat(u8"圆角半径", &GlobalConfig::Instance().roundCornerRadius, 0.0f, 10.0f, "%.1f"))
-            {
-
-                float roundCornerRadius = GlobalConfig::Instance().roundCornerRadius;
-                style.WindowRounding = roundCornerRadius;
-                style.FrameRounding = roundCornerRadius;
-                style.GrabRounding = roundCornerRadius;
-                style.ScrollbarRounding = roundCornerRadius;
-                style.TabRounding = roundCornerRadius;
-                style.ChildRounding = roundCornerRadius;
-                style.PopupRounding = roundCornerRadius;
-            }
-
-            //设置主UI快捷键
-
-            ImGuiStd::Keybind(u8"UI快捷键：", GlobalConfig::Instance().menuKey);
-
             for (Item* item : ItemManager::Instance().GetAllItems())
             {
                 if (item->type == Hidden)
@@ -547,10 +559,10 @@ void Menu::ShowSettings(bool* done)
             }
         }
 
-        if (ImGui::Button(u8"自毁"))
-        {
-            *done = true;
-        }
+        //if (ImGui::Button(u8"自毁"))
+        //{
+        //    *done = true;
+        //}
         ImGui::EndChild();
         ImGui::EndChild();
 
@@ -610,15 +622,9 @@ void Menu::DrawItemEditor(Item* item)
     item->DrawSettings();
 }
 
-void Menu::Toggle(bool open)
-{
-    this->open = open;
-}
-
 void Menu::Toggle()
 {
-    open = !open;
-    if (!open)
+    if (!isEnabled)
     {
         RECT rect;
         // 获取窗口的矩形位置和大小
@@ -637,4 +643,25 @@ void Menu::Toggle()
     {
         state = MENU_STATE_MAIN;
     }
+}
+
+void Menu::DrawSettings()
+{
+    DrawItemSettings();
+    DrawKeybindSettings();
+    DrawStyleSettings();
+}
+
+void Menu::Load(const nlohmann::json& j)
+{
+    LoadKeybind(j);
+    LoadStyle(j);
+    //LoadItem(j);
+}
+
+void Menu::Save(nlohmann::json& j) const
+{
+    SaveKeybind(j);
+    SaveStyle(j);
+    j["type"] = name;
 }
