@@ -136,6 +136,8 @@ void Gui::render()
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	if (Motionblur::Instance().isEnabled && Motionblur::Instance().applayOnMenu && 
-		(GameStateDetector::Instance().IsInGame() || Menu::Instance().isEnabled)) Motionblur::Instance().Render();
+	if (Motionblur::Instance().isEnabled &&
+		Motionblur::Instance().applayOnMenu &&
+		Menu::Instance().isEnabled) 
+		Motionblur::Instance().Render();
 }

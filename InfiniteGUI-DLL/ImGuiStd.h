@@ -141,7 +141,7 @@ namespace ImGuiStd {
 
     static void HelpMarker(const char* Text, ImVec4 Color = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled))
     {
-        TextColoredShadow(Color, u8"(?)");
+	    ImGui::TextColored(Color, "(?)");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(Text);

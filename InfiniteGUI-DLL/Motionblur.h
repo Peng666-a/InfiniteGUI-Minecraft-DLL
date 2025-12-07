@@ -7,7 +7,7 @@ public:
         type = Util; // 信息项类型
         multiType = Singleton;    // 信息项是否可以多开
         name = u8"动态模糊";
-        description = u8"动态模糊";
+        description = u8"采用帧混合技术实现的动态模糊";
         isEnabled = false;
     }
     ~Motionblur() {}
@@ -29,12 +29,12 @@ public:
 	void initialize_shader();
 
 	void resize_texture(int width, int height);
-	void draw_texture(float blurriness_value) const;
+	void draw_texture() const;
 	void copy_to_history() const;
 	void copy_to_current() const;
 
-    void velocity_adaptive_blur(bool cameraMoving, float velocity, float value, float* cur_blurriness_value) const;
-    float cur_blurriness_value = 20.0f;
+    static void velocity_adaptive_blur(bool cameraMoving, float velocity, float* velocity_factor);
+    float cur_blurriness_value = 10.0f;
     bool applayOnMenu = true;
 private:
     uint32_t shader_program_;
@@ -48,8 +48,9 @@ private:
     int32_t texture_width_;
     int32_t texture_height_;
 
-
-    float blurriness_value = 20.0f;
+    float velocity_factor = 0.0f;
+    float blurriness_value = 10.0f;
+    bool smooth_blur = true;
     bool clear_color = false;
     bool velocityAdaptive = true;
 

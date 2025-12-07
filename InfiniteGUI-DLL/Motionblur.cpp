@@ -27,18 +27,38 @@ in vec2 TexCoord;
 uniform sampler2D currentTexture;
 uniform sampler2D historyTexture;
 uniform float blurriness;
+uniform float velocity_factor;
 uniform bool renderRGB;
+uniform bool smooth_blur;
+
+vec4 blurHistory(vec2 uv)
+{
+    float offset = 0.0007 * velocity_factor;
+    vec4 sum = vec4(0.0);
+
+    sum += texture(historyTexture, uv + vec2(-offset, 0.0)) * 0.25;
+    sum += texture(historyTexture, uv + vec2( offset, 0.0)) * 0.25;
+    sum += texture(historyTexture, uv + vec2(0.0, -offset)) * 0.25;
+    sum += texture(historyTexture, uv + vec2(0.0,  offset)) * 0.25;
+
+    return sum;
+}
 
 void main()
 {
     vec4 current = texture(currentTexture, TexCoord);
     vec4 history = texture(historyTexture, TexCoord);
-    
-    vec2 interpolatedTexCoord;
-    interpolatedTexCoord.x = mix(TexCoord.x, TexCoord.x, 0.5);
-    interpolatedTexCoord.y = mix(TexCoord.y, TexCoord.y, 0.5);
-    
-    vec4 blurredColor = mix(history, texture(currentTexture, interpolatedTexCoord), blurriness);
+    float cur_blurriness = blurriness;
+    vec4 blurredHistory = history;
+	if(velocity_factor > 0.0){
+		float base_blurriness = blurriness / 2.0;
+		cur_blurriness = base_blurriness + (1.0 - velocity_factor) * base_blurriness;
+		if(smooth_blur)
+		{
+			blurredHistory = blurHistory(TexCoord);
+		}
+	}
+	vec4 blurredColor = mix(blurredHistory, current, cur_blurriness);
     
     if (renderRGB)
     {
@@ -46,8 +66,8 @@ void main()
     }
     else
     {
-		float value1 = texture(currentTexture, interpolatedTexCoord).r;
-		FragColor = mix(history, vec4(value1), blurriness);
+		float value1 = current.r;
+		FragColor = mix(blurredHistory, vec4(value1), cur_blurriness);
     }
 }
 
@@ -101,43 +121,15 @@ void Motionblur::Render()
 
 	//计算blurriness_value值
 	if (velocityAdaptive)
-		velocity_adaptive_blur(GameStateDetector::Instance().IsCameraMoving(),GameStateDetector::Instance().GetCameraSpeed(), blurriness_value, &cur_blurriness_value);
+		velocity_adaptive_blur(GameStateDetector::Instance().IsCameraMoving(),GameStateDetector::Instance().GetCameraSpeed(), &velocity_factor);
 	else
-		cur_blurriness_value = blurriness_value;
+		velocity_factor = 0.0f;
 
-	draw_texture(cur_blurriness_value);
+	draw_texture();
 	copy_to_history();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, prev_framebuffer);
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-}
-
-void Motionblur::Load(const nlohmann::json& j)
-{
-	LoadItem(j);
-	if(j.contains("blurriness")) blurriness_value = j["blurriness"].get<float>();
-	if(j.contains("velocityAdaptive")) velocityAdaptive = j["velocityAdaptive"].get<bool>();
-	if(j.contains("applayOnMenu")) applayOnMenu = j["applayOnMenu"].get<bool>();
-	if(j.contains("clear_color")) clear_color = j["clear_color"].get<bool>();
-}
-
-void Motionblur::Save(nlohmann::json& j) const
-{
-	SaveItem(j);
-	j["blurriness"] = blurriness_value;
-	j["velocityAdaptive"] = velocityAdaptive;
-	j["applayOnMenu"] = applayOnMenu;
-	j["clear_color"] = clear_color;
-}
-
-void Motionblur::DrawSettings()
-{
-	DrawItemSettings();
-	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 40.0f, "%.1f");
-	ImGui::Checkbox(u8"速度自适应", &velocityAdaptive); ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。");
-	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
-	ImGui::Checkbox(u8"Im Faded~", &clear_color);
-
 }
 
 void Motionblur::initialize_texture(const int width, const int height)
@@ -222,7 +214,7 @@ void Motionblur::resize_texture(int width, int height)
 	texture_height_ = height;
 }
 
-void Motionblur::draw_texture(float blurriness_value) const
+void Motionblur::draw_texture() const
 {
 	if (current_texture_ == 0)
 		return;
@@ -241,8 +233,9 @@ void Motionblur::draw_texture(float blurriness_value) const
 	glUniform1i(glGetUniformLocation(shader_program_, "historyTexture"), 1);
 	auto value = max(0.1, (50 - blurriness_value)) / 100;
 	glUniform1f(glGetUniformLocation(shader_program_, "blurriness"), (GLfloat)value);
-
+	glUniform1f(glGetUniformLocation(shader_program_, "velocity_factor"), (GLfloat)velocity_factor);
 	glUniform1f(glGetUniformLocation(shader_program_, "renderRGB"), !clear_color);
+	glUniform1f(glGetUniformLocation(shader_program_, "smooth_blur"), smooth_blur);
 
 	glBindVertexArray(quad_vao_);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -263,21 +256,55 @@ void Motionblur::copy_to_current() const
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, texture_width_, texture_height_, 0);
 }
 
-void Motionblur::velocity_adaptive_blur(bool cameraMoving, float cameraSpeed, float value, float* cur_value) const
+void Motionblur::velocity_adaptive_blur(bool cameraMoving, float cameraSpeed, float* velocity_factor)
 {
 	//cameraSpeed 1~10
 	ImGuiIO& io = ImGui::GetIO();
 	float lerpSpeed = 10.0f * io.DeltaTime;
-	float baseValue = value / 2; //0~25
-	float tarValue;
-	tarValue = baseValue + std::clamp((cameraSpeed - 1.0f), 0.0f, 15.0f) / 15.0f * baseValue; //0~30
+	float tar_velocity_factor = std::clamp((cameraSpeed - 1.0f), 0.0f, 15.0f) / 15.0f;
 
 	if (cameraMoving)
 	{
-		*cur_value = tarValue;
+		*velocity_factor = tar_velocity_factor;
 	}
 	else
 	{
-		*cur_value = ImLerp(*cur_value, tarValue, lerpSpeed);
+		*velocity_factor = ImLerp(*velocity_factor, 0.0f, lerpSpeed);
+		if(*velocity_factor < 0.01f)
+			*velocity_factor = 0.0f;
 	}
+}
+
+void Motionblur::Load(const nlohmann::json& j)
+{
+	LoadItem(j);
+	if (j.contains("blurriness")) blurriness_value = j["blurriness"].get<float>();
+	if (j.contains("velocityAdaptive")) velocityAdaptive = j["velocityAdaptive"].get<bool>();
+	if (j.contains("smooth_blur")) smooth_blur = j["smooth_blur"].get<bool>();
+	if (j.contains("applayOnMenu")) applayOnMenu = j["applayOnMenu"].get<bool>();
+	if (j.contains("clear_color")) clear_color = j["clear_color"].get<bool>();
+}
+
+void Motionblur::Save(nlohmann::json& j) const
+{
+	SaveItem(j);
+	j["blurriness"] = blurriness_value;
+	j["velocityAdaptive"] = velocityAdaptive;
+	j["smooth_blur"] = smooth_blur;
+	j["applayOnMenu"] = applayOnMenu;
+	j["clear_color"] = clear_color;
+}
+
+void Motionblur::DrawSettings()
+{
+	DrawItemSettings();
+	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 40.0f, "%.1f");
+	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
+	if (ImGui::Checkbox(u8"速度自适应", &velocityAdaptive))
+	{
+		if (!velocityAdaptive) smooth_blur = false;
+	}
+	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。");
+	if (velocityAdaptive) { ImGui::Checkbox(u8"柔和模糊", &smooth_blur); ImGui::SameLine(); ImGuiStd::HelpMarker(u8"柔和化模糊拖影，但会使MCUI模糊。");  }
+	ImGui::Checkbox(u8"Im Faded~", &clear_color);
 }

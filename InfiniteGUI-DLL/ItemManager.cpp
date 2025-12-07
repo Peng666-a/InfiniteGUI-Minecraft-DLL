@@ -105,7 +105,7 @@ void ItemManager::RenderAll()
         if (auto win = dynamic_cast<RenderModule*>(item))
         {
             if (auto motionblur = dynamic_cast<Motionblur*>(item))
-                if (motionblur->applayOnMenu) continue;
+                if (motionblur->applayOnMenu && Menu::Instance().isEnabled) continue;
 
             win->Render();
         }

@@ -38,8 +38,6 @@ typedef std::deque<Log> Logs;
 class ChangeLog
 {
 	ChangeLog();
-	~ChangeLog();
-
 public:
 	static ChangeLog& Instance()
 	{
@@ -58,6 +56,5 @@ private:
 	static void DrawContent(const Content& content);
 
 	Logs logs;
-	unsigned int current_version_index = 0;
 };
 
