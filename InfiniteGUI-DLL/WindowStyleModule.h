@@ -92,6 +92,12 @@ protected:
         ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, rounding);
         ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, rounding);
     }
+
+    void ResetWindowStyle()
+    {
+        itemStyle = defaultStyle;
+        itemStyle.fontSize = 20.0f;
+    }
     ItemStyle itemStyle;
     inline static ItemStyle defaultStyle;
     //ImVec4 rainbowFontColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);

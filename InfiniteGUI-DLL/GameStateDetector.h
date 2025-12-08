@@ -21,9 +21,9 @@ public:
         multiType = Singleton;    // 信息项是否可以多开
         name = u8"游戏状态检测";
         description = u8"检测游戏当前状态";
-        isEnabled = true;
         updateIntervalMs = 10;
         lastUpdateTime = std::chrono::steady_clock::now();
+        Reset();
     }
     ~GameStateDetector() {}
 
@@ -34,6 +34,11 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        isEnabled = true;
+        bool hideItemInGui = true;
+    }
     void Update() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;

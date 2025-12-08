@@ -19,18 +19,10 @@ public:
         multiType = MultiInstance;    // 信息项是否可以多开
         name = u8"粉丝数显示";
         description = u8"显示B站用户的粉丝数";
-
-        isPlaySound = true;    // 是否播放声音
-        soundVolume = 0.5f;    // 声音音量（0.0~1.0）
-
         httpUpdateIntervalMs = 3000;
-
         updateIntervalMs = 50;
         lastUpdateTime = std::chrono::steady_clock::now();
-
-        prefix = u8"[粉丝数:";
-        suffix = "]";
-
+        Reset();
     }
 
     ~BilibiliFansItem() {
@@ -42,6 +34,21 @@ public:
 
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetAffix();
+        ResetSound();
+        ResetWindow();
+        prefix = u8"[粉丝数:";
+        suffix = "]";
+        if (httpTaskId != -1)
+        {
+            HttpRemoveTask();
+        }
+        uid = 399194206;
+        fansCount = -1;
+        lastFansCount = -1;
+    }
     void HttpAddTask() override;
     void HttpRemoveTask() override;
     void Update() override;

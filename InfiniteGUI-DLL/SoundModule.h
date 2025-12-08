@@ -23,6 +23,11 @@ protected:
         j["isPlaySound"] = isPlaySound;
         j["soundVolume"] = soundVolume;
     }
+    void ResetSound()
+    {
+        isPlaySound = true;
+        soundVolume = 0.5f;
+    }
     bool isPlaySound;
     float soundVolume;    // …˘“Ù“Ù¡ø£®0.0~1.0£©
 };

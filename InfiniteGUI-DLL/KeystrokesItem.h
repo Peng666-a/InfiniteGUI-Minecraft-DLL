@@ -73,23 +73,12 @@ public:
     KeystrokesItem() {
         type = Hud; // 信息项类型
         multiType = Singleton;    // 信息项是否可以多开
-        isEnabled = false;
         name = u8"按键显示";
         description = u8"显示按键状态";
-        isTransparentBg = true;
-        isCustomSize = false;
-        //isCustomStyle = true;
-
         updateIntervalMs = 5;
         lastUpdateTime = std::chrono::steady_clock::now();
-        key_boxes.push_back(key_box(normal, "W", min_box_size, padding, true, 'W'));
-        key_boxes.push_back(key_box(normal, "A", min_box_size, padding, false, 'A'));
-        key_boxes.push_back(key_box(normal, "S", min_box_size, padding, false, 'S'));
-        key_boxes.push_back(key_box(normal, "D", min_box_size, padding, true, 'D'));
-        key_boxes.push_back(key_box(space, "----", min_box_size, padding, true, VK_SPACE));
-        key_boxes.push_back(key_box(mouse, "LMB", min_box_size, padding, false, VK_LBUTTON));
-        key_boxes.push_back(key_box(mouse, "RMB", min_box_size, padding, true, VK_RBUTTON));
-        
+
+        Reset();
     }
     ~KeystrokesItem() {}
 
@@ -99,6 +88,26 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetWindow();
+        isTransparentBg = true;
+        isCustomSize = false;
+        isEnabled = false;
+        key_boxes.clear();
+        key_boxes.push_back(key_box(normal, "W", min_box_size, padding, true, 'W'));
+        key_boxes.push_back(key_box(normal, "A", min_box_size, padding, false, 'A'));
+        key_boxes.push_back(key_box(normal, "S", min_box_size, padding, false, 'S'));
+        key_boxes.push_back(key_box(normal, "D", min_box_size, padding, true, 'D'));
+        key_boxes.push_back(key_box(space, "----", min_box_size, padding, true, VK_SPACE));
+        key_boxes.push_back(key_box(mouse, "LMB", min_box_size, padding, false, VK_LBUTTON));
+        key_boxes.push_back(key_box(mouse, "RMB", min_box_size, padding, true, VK_RBUTTON));
+        showSpace = true;
+        showMouse = true;
+        showCps = false;
+        padding = 6.0f;
+        min_box_size = 32.0f;
+    }
     void Update() override;
     void DrawContent() override;
     void DrawSettings() override;

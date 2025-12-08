@@ -112,10 +112,10 @@ public:
         multiType = Singleton;    // 信息项是否可以多开
         name = u8"CPS检测";
         description = u8"检测左右键CPS";
-        isEnabled = true;
         updateIntervalMs = 2;
         lastUpdateTime = std::chrono::steady_clock::now();
         //lastCpsTime = std::chrono::steady_clock::now();
+        Reset();
     } 
     ~CPSDetector() {}
 
@@ -125,6 +125,10 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        isEnabled = true;
+    }
     void Update() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;

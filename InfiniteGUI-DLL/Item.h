@@ -31,6 +31,7 @@ public:
     //   必须被子类实现的接口
     // ---------------------------
     virtual void Toggle() = 0;
+    virtual void Reset() = 0;
     virtual void Load(const nlohmann::json& j) = 0;
     virtual void Save(nlohmann::json& j) const = 0;
     virtual void DrawSettings() = 0;

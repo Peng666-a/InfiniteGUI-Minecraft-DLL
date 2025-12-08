@@ -13,12 +13,13 @@ void ChangeLog::Init()
     AddContent(ADD, u8"添加窗口彩虹字");
     AddContent(ADD, u8"添加动态模糊");
 
-    NewVersion("B0.9.2", "25.12.12");
+    NewVersion("B0.9.2", "25.12.09");
     AddContent(OPTIMIZE, u8"优化ChangeLog界面");
     AddContent(OPTIMIZE, u8"优化/美化动态模糊");
     AddContent(FIXBUG, u8"修复字体彩色绑定问题");
     AddContent(ADD, u8"添加菜单背景模糊");
-}
+    AddContent(ADD, u8"添加多配置管理系统");
+} //我写这个真是个天才，这样就不用手敲Imgui代码了，天才天才天才天
 
 ChangeLog::ChangeLog()
 {

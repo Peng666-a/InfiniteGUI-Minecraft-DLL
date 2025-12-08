@@ -13,13 +13,11 @@ public:
     FpsItem() {
         type = Hud; // 信息项类型
         multiType = Singleton;    // 信息项是否可以多开
-        isEnabled = false;
         name = u8"帧率显示";
         description = u8"显示当前帧率";
         updateIntervalMs = 1000;
         lastUpdateTime = std::chrono::steady_clock::now();
-        prefix = "[";
-        suffix = "FPS]";
+        Reset();
     }
 
     static FpsItem& Instance() {
@@ -28,6 +26,14 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetAffix();
+        ResetWindow();
+        isEnabled = false;
+        prefix = "[";
+        suffix = "FPS]";
+    }
     void Update() override;
     void DrawContent() override;
     void DrawSettings() override;

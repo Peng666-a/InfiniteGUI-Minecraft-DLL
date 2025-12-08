@@ -7,6 +7,8 @@
 class ItemManager {
 public:
     ItemManager();
+    void Init();
+
     static ItemManager& Instance() {
         static ItemManager instance;
         return instance;
@@ -21,7 +23,7 @@ public:
     void ProcessKeyEvents(bool state, bool isRepeat, WPARAM key);
 
 
-    void Shutdown();
+    void Clear(bool resetSingletons);
     void Load(const nlohmann::json& j);
     void Save(nlohmann::json& j) const;
 

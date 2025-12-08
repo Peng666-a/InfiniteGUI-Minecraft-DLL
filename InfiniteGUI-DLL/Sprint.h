@@ -26,25 +26,13 @@ class Sprint : public WindowModule, public UpdateModule, public KeybindModule, p
 {
 public:
     Sprint() {
-
         type = Util; // 信息项类型
         multiType = Singleton;    // 信息项是否可以多开
-        isEnabled = false; // 是否启用
         name = u8"强制疾跑";
         description = u8"强制疾跑";
-        isPlaySound = true;
-        soundVolume = 0.5f;
-
-        keybinds.insert(std::make_pair(u8"激活键：", 'I'));
-        keybinds.insert(std::make_pair(u8"前进键：", 'W'));
-        keybinds.insert(std::make_pair(u8"疾跑键：", VK_CONTROL));
-        keybinds.insert(std::make_pair(u8"潜行键：", VK_SHIFT));
-
-        prefix = u8"[";
-        suffix = "]";
-
         updateIntervalMs = 5;
         lastUpdateTime = std::chrono::steady_clock::now();
+        Reset();
     }
 
     static Sprint& Instance() {
@@ -53,6 +41,26 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetWindow();
+        ResetKeybind();
+        ResetAffix();
+        ResetSound();
+        isEnabled = false; // 是否启用
+
+        keybinds.insert(std::make_pair(u8"激活键：", 'I'));
+        keybinds.insert(std::make_pair(u8"前进键：", 'W'));
+        keybinds.insert(std::make_pair(u8"疾跑键：", VK_CONTROL));
+        keybinds.insert(std::make_pair(u8"潜行键：", VK_SHIFT));
+
+        isActivated = false;
+        isWalking = false;
+        lastState = Idle;
+        state = Idle;
+
+        color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
+    }
     void OnKeyEvent(bool state, bool isRepeat, WPARAM key) override;
 
     void Update() override;

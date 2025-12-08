@@ -86,6 +86,9 @@
     <Filter Include="src\ui\imGuiHelper">
       <UniqueIdentifier>{a0dee063-a8f0-4d9a-bb87-fcd8aa3195b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\core\shaders">
+      <UniqueIdentifier>{28c0a33b-8860-4c8a-ad05-e1b97d8db2c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Init.hpp">
@@ -289,6 +292,9 @@
     <ClInclude Include="ChangeLog.h">
       <Filter>src\app</Filter>
     </ClInclude>
+    <ClInclude Include="Blur.h">
+      <Filter>src\core\shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -407,6 +413,9 @@
     </ClCompile>
     <ClCompile Include="ChangeLog.cpp">
       <Filter>src\app</Filter>
+    </ClCompile>
+    <ClCompile Include="Blur.cpp">
+      <Filter>src\core\shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

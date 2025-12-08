@@ -17,17 +17,26 @@ public:
         multiType = MultiInstance;    // 信息项是否可以多开
         name = u8"文件数量显示";
         description = u8"显示文件夹内文件数量";
-        isPlaySound = true;
-        soundVolume = 0.5f;
         updateIntervalMs = 1000;
         lastUpdateTime = std::chrono::steady_clock::now();
-
-        prefix = "[";
-        suffix = u8"个文件]";
-
+        Reset();
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetAffix();
+        ResetSound();
+        ResetWindow();
+        prefix = "[";
+        suffix = u8"个文件]";
+        fileCount = 0;
+        lastFileCount = 0;
+        folderPath = "C:\\Users";
+        errorMessage = "";
+        recursive = false;
+        extensionFilter = "";
+    }
     void Update() override;
     void DrawContent() override;
     void DrawSettings() override;

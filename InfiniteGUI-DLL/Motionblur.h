@@ -8,7 +8,7 @@ public:
         multiType = Singleton;    // 信息项是否可以多开
         name = u8"动态模糊";
         description = u8"采用帧混合技术实现的动态模糊";
-        isEnabled = false;
+        Reset();
     }
     ~Motionblur() {}
 
@@ -19,6 +19,14 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        isEnabled = false;
+        float blurriness_value = 10.0f;
+        bool smooth_blur = true;
+        bool clear_color = false;
+        bool velocityAdaptive = true;
+    }
     void Render() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;

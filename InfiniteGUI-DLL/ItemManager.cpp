@@ -23,10 +23,17 @@
 // ------------------------------------------------
 ItemManager::ItemManager()
 {
-    // 注册默认 Singleton
-    AddSingleton(&Sprint::Instance());
+    Init();
+}
 
+void ItemManager::Init()
+{
+    // 注册默认 Singleton
     AddSingleton(&Menu::Instance());
+
+    AddSingleton(&Sprint::Instance());
+    AddSingleton(&Motionblur::Instance());
+
     AddSingleton(&TimeItem::Instance());
     AddSingleton(&FpsItem::Instance());
     AddSingleton(&DanmakuItem::Instance());
@@ -36,8 +43,6 @@ ItemManager::ItemManager()
     AddSingleton(&GlobalWindowStyle::Instance());
     AddSingleton(&GameStateDetector::Instance());
     AddSingleton(&CPSDetector::Instance());
-
-    AddSingleton(&Motionblur::Instance());
 }
 
 // ------------------------------------------------
@@ -197,9 +202,24 @@ void ItemManager::Save(nlohmann::json& j) const
     }
 }
 
-void ItemManager::Shutdown()
+void ItemManager::Clear(bool resetSingletons)
 {
-    allItems.clear();
-    singletonItems.clear();
-    multiItems.clear();
+    // ---- 1. 删除多例 Items ----
+    multiItems.clear(); // unique_ptr 自动释放对象内存
+
+    // ---- 2. 清理 allItems 中剩余的多例条目 ----
+    allItems.erase(
+        std::remove_if(allItems.begin(), allItems.end(),
+            [&](Item* it) { return it->IsMultiInstance(); }),
+        allItems.end()
+    );
+
+    // ---- 3. 重置所有 SingletonItems（可选，根据需求） ----
+    if (resetSingletons)
+    {
+        for (auto* item : singletonItems)
+        {
+            item->Reset();   //  要求 Item 提供 Reset() 或默认状态
+        }
+    }
 }

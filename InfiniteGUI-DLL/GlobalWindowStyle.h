@@ -9,7 +9,7 @@ public:
         multiType = Singleton;    // 信息项是否可以多开
         name = u8"全局窗口样式";
         description = u8"设置全局窗口样式";
-        isEnabled = true;
+        Reset();
     }
     ~GlobalWindowStyle() {}
 
@@ -20,6 +20,11 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetWindowStyle();
+        isEnabled = true;
+    }
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
     void DrawSettings() override;

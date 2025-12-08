@@ -19,9 +19,7 @@ public:
         multiType = Singleton;    // 信息项是否可以多开
         name = u8"CPS显示";
         description = u8"显示左右键CPS";
-        isEnabled = false;
-        prefix = "[CPS: ";
-        suffix = "]";
+        Reset();
     }
     ~CPSItem() {}
 
@@ -31,6 +29,16 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetAffix();
+        ResetWindow();
+        isEnabled = false;
+        prefix = "[CPS: ";
+        suffix = "]";
+        showLeft = true;
+        showRight = true;
+    }
     void DrawContent() override;
     void DrawSettings() override;
     void Load(const nlohmann::json& j) override;

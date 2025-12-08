@@ -24,6 +24,12 @@ protected:
         j["suffix"] = suffix;
     }
 
+    void ResetAffix()
+    {
+        prefix = "[";
+        suffix = "]";
+    }
+
 	std::string prefix = "[";
 	std::string suffix = "]";
 };

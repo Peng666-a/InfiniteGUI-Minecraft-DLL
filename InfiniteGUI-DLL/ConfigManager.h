@@ -1,17 +1,38 @@
 #pragma once
 #include <string>
-#include "GlobalConfig.h"
-#include "ItemManager.h"
+#include <vector>
 
-class ConfigManager {
+class ConfigManager
+{
 public:
-
-    static ConfigManager& Instance() {
+    static ConfigManager& Instance()
+    {
         static ConfigManager instance;
         return instance;
     }
 
-    static bool Save(const std::string& filePath);
+    void Init();
 
-    static bool Load(const std::string& filePath);
+    bool CreateProfile(const std::string& name);
+    bool DeleteProfile(const std::string& name);
+    bool RenameProfile(const std::string& oldName, const std::string& newName);
+
+    bool SwitchProfile(const std::string& name, bool saveCurrent = true);
+
+    bool Save();
+    bool Load();
+    bool LoadProfile();
+
+    const std::vector<std::string>& GetProfiles() const { return profiles; }
+    const std::string& GetCurrentProfile() const { return currentProfile; }
+
+private:
+    ConfigManager() = default;
+
+    void RefreshProfileList();
+    std::string GetProfilePath(const std::string& name) const;
+
+private:
+    std::vector<std::string> profiles;
+    std::string currentProfile;
 };

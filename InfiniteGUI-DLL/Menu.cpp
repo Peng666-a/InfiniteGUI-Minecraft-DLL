@@ -13,13 +13,11 @@
 #include "CounterItem.h"
 #include "opengl_hook.h"
 #include <thread>
-#include <GL/glew.h>
-#include <GL/GL.h>
 #include "ChangeLog.h"
+#include "ItemManager.h"
 
 void ShowFontSelection(GlobalConfig* globalConfig) {
     static std::vector<FileUtils::FontInfo> fontFiles;
-
     // Get font files if not loaded yet
     if (fontFiles.empty()) {
         fontFiles = FileUtils::GetFontsFromDirectory(L"C:\\Windows\\Fonts");
@@ -54,8 +52,241 @@ void ShowFontSelection(GlobalConfig* globalConfig) {
         //ImGui::EndGroup();
         ImGui::TreePop();
     }
+}
+
+bool CheckNameValid(const std::string& inputName)
+{
+    bool valid = true;
+    for (auto c : inputName) {
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+            valid = false;
+            break;
+        }
+    }
+    return valid;
+}
+
+void ShowConfigSelection(GlobalConfig* globalConfig) {
+    // 当前 profile 名称（utf8）
+    std::string curProfile = ConfigManager::Instance().GetCurrentProfile();
+    ImVec2 btnSize = ImVec2(150.0f, 0.0f);
+
+    // 按钮索引用来生成唯一 id
+    static int uniqueId = 0;
+
+    // 临时 UI 状态（静态以便跨帧保存输入）
+    static std::string inputName;           // 用于新增/重命名的输入
+    static std::string renameOldName;       // 重命名时要替换的旧名字
+    static std::string deleteTargetName;    // 待删除的名字（在确认弹窗中使用）
+    static std::string lastErrorMsg;        // 校验/操作失败提示
+
+    // 弹窗标识
+    const char* addPopupName = u8"创建";
+    const char* renamePopupName = u8"重命名";
+    const char* deletePopupName = u8"删除";
+
+    if (ImGui::TreeNodeEx((u8"配置选择： " + StringConverter::AcpToUtf8(curProfile)).c_str(),
+        ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowOverlap))
+    {
+        std::vector<std::string> profiles = ConfigManager::Instance().GetProfiles();
+
+        for (size_t i = 0; i < profiles.size(); ++i) {
+            std::string profileName = profiles[i];
+
+            // 主按钮：切换配置
+            if (ImGui::Button(profileName.c_str(), btnSize)) {
+                // Load the selected config (保存当前 -> 切换)
+                ConfigManager::Instance().SwitchProfile(profileName, true);
+            }
+
+            ImGui::SameLine();
+
+            // 图标按钮（占位/未来用）
+            ImGui::PushFont(App::Instance().iconFont);
+            // 重命名按钮（紧跟在 icon 后面；用小字体或图标也行）
+            if (ImGui::Button((u8"\uE02F##rename" + std::to_string(i)).c_str())) {
+                renameOldName = profileName;
+                inputName = profileName; // 预填旧名字
+                lastErrorMsg.clear();
+                ImGui::OpenPopup(renamePopupName);
+            }
+
+            // 删除按钮（只有 profiles > 1 且 不是当前配置时显示）
+            if (profiles.size() > 1 && profileName != curProfile)
+            {
+                ImGui::SameLine();
+                if (ImGui::Button((u8"9##del" + std::to_string(i)).c_str())) {
+                    // 打开删除确认弹窗
+                    deleteTargetName = profileName;
+                    lastErrorMsg.clear();
+                    ImGui::OpenPopup(deletePopupName);
+                }
+            }
+            ImGui::PopFont();
+        }
+
+        // 新建配置按钮
+        if (ImGui::Button("+", btnSize))
+        {
+            // 生成一个默认唯一名（profile_1, profile_2...）
+            std::vector<std::string> profilesNow = ConfigManager::Instance().GetProfiles();
+            std::string base = "profile";
+            int idx = 1;
+            std::string candidate;
+            do {
+                candidate = base + "_" + std::to_string(idx++);
+            } while (std::find(profilesNow.begin(), profilesNow.end(), candidate) != profilesNow.end());
+            inputName = candidate;
+            lastErrorMsg.clear();
+            ImGui::OpenPopup(addPopupName);
+        }
+
+        // ----------------------
+    // Create Profile Popup
+    // ----------------------
+        if (ImGui::BeginPopupModal(addPopupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+
+            ImGuiStd::TextShadow(u8"输入新配置名称：");
+            ImGui::SetNextItemWidth(300.0f);
+            // 使用 InputText 的 std::string 版本
+            char bufCreate[256];
+            std::strncpy(bufCreate, inputName.c_str(), sizeof(bufCreate));
+            if (ImGui::InputText("##newProfile", bufCreate, sizeof(bufCreate))) {
+                inputName = std::string(bufCreate);
+            }
+
+            if (!lastErrorMsg.empty()) {
+                ImGui::TextColored(ImVec4(1, 0.5f, 0.5f, 1.0f), "%s", lastErrorMsg.c_str());
+            }
+
+            if (ImGui::Button(u8"创建")) {
+                // 校验
+                if (inputName.empty()) {
+                    lastErrorMsg = u8"名称不能为空。";
+                }
+                else if (!CheckNameValid(inputName)) {
+                    lastErrorMsg = u8"名称只能包含英文数字下划线。";
+                }
+                else {
+                    auto profilesNow = ConfigManager::Instance().GetProfiles();
+                    if (std::find(profilesNow.begin(), profilesNow.end(), inputName) != profilesNow.end()) {
+                        lastErrorMsg = u8"该名称已存在。";
+                    }
+                    else {
+                        bool ok = ConfigManager::Instance().CreateProfile(inputName);
+                        if (!ok) {
+                            lastErrorMsg = u8"创建配置文件失败(可能是 IO 错误？)。";
+                        }
+                        else {
+                            ImGui::CloseCurrentPopup();
+                            lastErrorMsg.clear();
+                            // 可选：自动切换到新配置
+                            // ConfigManager::Instance().SwitchProfile(inputName, true);
+                        }
+                    }
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(u8"取消")) {
+                ImGui::CloseCurrentPopup();
+                lastErrorMsg.clear();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        // ----------------------
+        // Rename Profile Popup
+        // ----------------------
+        if (ImGui::BeginPopupModal(renamePopupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGuiStd::TextShadow(u8"重命名：");
+            ImGui::SetNextItemWidth(300.0f);
+            char bufRename[256];
+            std::strncpy(bufRename, inputName.c_str(), sizeof(bufRename));
+            if (ImGui::InputText("##renameProfile", bufRename, sizeof(bufRename))) {
+                inputName = std::string(bufRename);
+            }
+
+            if (!lastErrorMsg.empty()) {
+                ImGui::TextColored(ImVec4(1, 0.5f, 0.5f, 1.0f), "%s", lastErrorMsg.c_str());
+            }
+
+            if (ImGui::Button(u8"确认")) {
+                if (inputName.empty()) {
+                    lastErrorMsg = u8"名称不能为空。";
+                }
+                else if (!CheckNameValid(inputName)) {
+                    lastErrorMsg = u8"名称只能包含英文数字下划线。";
+                }
+                else if (inputName == renameOldName) {
+                    // 没改名，直接关闭
+                    ImGui::CloseCurrentPopup();
+                    lastErrorMsg.clear();
+                }
+                else {
+                    auto profilesNow = ConfigManager::Instance().GetProfiles();
+                    if (std::find(profilesNow.begin(), profilesNow.end(), inputName) != profilesNow.end()) {
+                        lastErrorMsg = u8"该名称已存在。";
+                    }
+                    else {
+                        bool ok = ConfigManager::Instance().RenameProfile(renameOldName, inputName);
+                        if (!ok) {
+                            lastErrorMsg = u8"创建配置文件失败(可能是 IO 错误？)。";
+                        }
+                        else {
+                            // 若重命名的是当前 profile，需要更新 currentProfile UI 文本（ConfigManager 实现一般会处理）
+                            ImGui::CloseCurrentPopup();
+                            lastErrorMsg.clear();
+                        }
+                    }
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(u8"取消")) {
+                ImGui::CloseCurrentPopup();
+                lastErrorMsg.clear();
+            }
+            ImGui::EndPopup();
+        }
+
+        // ----------------------
+        // Delete Confirmation Popup
+        // ----------------------
+        if (ImGui::BeginPopupModal(deletePopupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            std::string deleteTargetNameUtf8 = StringConverter::AcpToUtf8(deleteTargetName);
+            std::string deleteTargetNameUtf8Confirm = u8"确认删除\"" + deleteTargetNameUtf8 + u8"\"?(该操作不可恢复)";
+            ImGuiStd::TextShadow(deleteTargetNameUtf8Confirm.c_str());
+            if (!lastErrorMsg.empty()) {
+                ImGui::TextColored(ImVec4(1, 0.5f, 0.5f, 1.0f), "%s", lastErrorMsg.c_str());
+            }
+
+            if (ImGui::Button(u8"删除")) {
+                // 调用删除（ConfigManager 会阻止删除当前 profile 或保留至少一个）
+                bool ok = ConfigManager::Instance().DeleteProfile(deleteTargetName);
+                if (!ok) {
+                    lastErrorMsg = u8"删除失败，可能是因为它是当前配置或只有一个配置。";
+                }
+                else {
+                    ImGui::CloseCurrentPopup();
+                    lastErrorMsg.clear();
+                    // 如果用户刚删了当前之外的 profile，通常不需额外操作
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(u8"取消")) {
+                ImGui::CloseCurrentPopup();
+                lastErrorMsg.clear();
+            }
+            ImGui::EndPopup();
+        }
 
 
+
+        ImGui::TreePop();
+    }
 }
 
 
@@ -65,7 +296,7 @@ void Menu::Render()
 {
     if(!isEnabled)
         return;
-    if (menu_blur) RenderMenuBlur();
+    if (blur.menu_blur) blur.RenderBlur(panelAnim.blurriness);
     //使窗口显示在屏幕中间
     ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2((float)opengl_hook::screen_size.x + 10, (float)opengl_hook::screen_size.y + 10), ImGuiCond_Always);
@@ -95,7 +326,7 @@ void Menu::Render()
         ImGui::PushStyleColor(ImGuiCol_WindowBg, itemStyle.bgColor);
         ImGui::PushStyleColor(ImGuiCol_Border, itemStyle.borderColor);
         PushRounding(itemStyle.windowRounding);
-        panelAnim.blurriness = (float)blurriness_value;
+        panelAnim.blurriness = (float)blur.blurriness_value;
         ShowSettings(&opengl_hook::gui.done);
 
         ImGui::PopStyleColor(2);
@@ -174,7 +405,7 @@ void Menu::ShowMain()
         {
             tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.5f);
             panelAnim.state = ImLerp(panelAnim.state, 1.0f, panel_speed);
-            panelAnim.blurriness = ImLerp(panelAnim.blurriness, (float)blurriness_value, panel_speed);
+            panelAnim.blurriness = ImLerp(panelAnim.blurriness, (float)blur.blurriness_value, panel_speed);
         }
         else
         {
@@ -392,7 +623,7 @@ void Menu::ShowSettings(bool* done)
         ImGui::SameLine();
 
         if (ImGui::Button(u8"保存配置"))
-            ConfigManager::Instance().Save(FileUtils::configPath);
+            ConfigManager::Instance().Save();
 
 
         ImGui::SameLine();
@@ -444,7 +675,7 @@ void Menu::ShowSettings(bool* done)
             }
 
             ShowFontSelection(&GlobalConfig::Instance());
-
+            ShowConfigSelection(&GlobalConfig::Instance());
         }
 
         ImGui::Separator();
@@ -646,16 +877,16 @@ void Menu::DrawSettings()
 {
     DrawItemSettings();
     DrawKeybindSettings();
-    ImGui::Checkbox(u8"背景模糊", &menu_blur);
-    ImGui::SliderInt(u8"模糊强度", &blurriness_value, 0, 10);
+    ImGui::Checkbox(u8"背景模糊", &blur.menu_blur);
+    ImGui::SliderInt(u8"模糊强度", &blur.blurriness_value, 0, 10);
     DrawStyleSettings();
 }
 
 void Menu::Load(const nlohmann::json& j)
 {
     LoadKeybind(j);
-    if(j.contains("menu_blur")) menu_blur = j["menu_blur"].get<bool>();
-    if(j.contains("blurriness_value")) blurriness_value = j["blurriness_value"].get<int>();
+    if(j.contains("menu_blur")) blur.menu_blur = j["menu_blur"].get<bool>();
+    if(j.contains("blurriness_value")) blur.blurriness_value = j["blurriness_value"].get<int>();
     LoadStyle(j);
     //LoadItem(j);
 }
@@ -663,246 +894,8 @@ void Menu::Load(const nlohmann::json& j)
 void Menu::Save(nlohmann::json& j) const
 {
     SaveKeybind(j);
-    j["menu_blur"] = menu_blur;
-    j["blurriness_value"] = blurriness_value;
+    j["menu_blur"] = blur.menu_blur;
+    j["blurriness_value"] = blur.blurriness_value;
     SaveStyle(j);
     j["type"] = name;
-}
-
-auto vertex_shader_code2 = R"glsl(
-#version 330 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec2 aTexCoord;
-
-out vec2 TexCoord;
-
-void main()
-{
-    gl_Position = vec4(aPos, 0.0, 1.0);
-    TexCoord = aTexCoord;
-}
-)glsl";
-
-auto fragment_shader_code2 = R"glsl(
-#version 330 core
-
-out vec4 FragColor;
-in vec2 TexCoord;
-uniform sampler2D image;
-uniform vec2 resolution;
-uniform vec2 direction;
-
-void main() {
-  vec4 color = vec4(0.0);
-  vec2 off1 = vec2(1.411764705882353) * direction;
-  vec2 off2 = vec2(3.2941176470588234) * direction;
-  vec2 off3 = vec2(5.176470588235294) * direction;
-  color += texture2D(image, TexCoord) * 0.1964825501511404;
-  color += texture2D(image, TexCoord + (off1 / resolution)) * 0.2969069646728344;
-  color += texture2D(image, TexCoord - (off1 / resolution)) * 0.2969069646728344;
-  color += texture2D(image, TexCoord + (off2 / resolution)) * 0.09447039785044732;
-  color += texture2D(image, TexCoord - (off2 / resolution)) * 0.09447039785044732;
-  color += texture2D(image, TexCoord + (off3 / resolution)) * 0.010381362401148057;
-  color += texture2D(image, TexCoord - (off3 / resolution)) * 0.010381362401148057;
-  FragColor = color;
-}
-
-)glsl"; //https://github.com/Experience-Monks/glsl-fast-gaussian-blur/tree/master
-
-
-void Menu::RenderMenuBlur()
-{
-    if (!isEnabled) return;
-    static bool initialize = false;
-
-    const int width = opengl_hook::screen_size.x;
-    const int height = opengl_hook::screen_size.y;
-
-    glViewport(0, 0, width, height);
-
-    if (!initialize)
-    {
-        initialize_pingpong(width, height);
-        initialize_texture(width, height);
-        initialize_quad();
-        initialize_shader();
-        initialize = true;
-
-        texture_width_ = width;
-        texture_height_ = height;
-    }
-
-    if (texture_width_ != width || texture_height_ != height)
-    {
-        resize_texture(width, height);
-    }
-
-    copy_to_current();
-
-    apply_blur(panelAnim.blurriness);  // iteration count
-    if(panelAnim.blurriness >= 1.0f)
-        draw_final_texture();
-
-}
-
-void Menu::apply_blur(int iterations) const
-{
-    if (iterations <= 0) return;
-
-    glUseProgram(shader_program_);
-
-    glUniform2f(glGetUniformLocation(shader_program_, "resolution"),
-        texture_width_, texture_height_);
-
-    bool horizontal = true;
-    bool firstPass = true;
-
-    for (int i = 0; i < iterations * 2; i++) // 每次包含水平和垂直
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-
-        glUniform2f(glGetUniformLocation(shader_program_, "direction"),
-            horizontal ? 1.0f : 0.0f,
-            horizontal ? 0.0f : 1.0f);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,
-            firstPass ? current_texture_ : pingpongColorBuffers[!horizontal]);
-
-        glUniform1i(glGetUniformLocation(shader_program_, "image"), 0);
-
-        glBindVertexArray(quad_vao_);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-        horizontal = !horizontal;
-        if (firstPass) firstPass = false;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUseProgram(0);
-}
-
-void Menu::draw_final_texture() const
-{
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    glUseProgram(shader_program_);
-    glActiveTexture(GL_TEXTURE0);
-
-    // 绑定最后一轮 pingpong 输出（horizontal 的反向）
-    glBindTexture(GL_TEXTURE_2D, pingpongColorBuffers[0]);
-    glUniform1i(glGetUniformLocation(shader_program_, "image"), 0);
-
-    glBindVertexArray(quad_vao_);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glUseProgram(0);
-}
-
-void Menu::initialize_pingpong(const int width, const int height)
-{
-    glGenFramebuffers(2, pingpongFBO);
-    glGenTextures(2, pingpongColorBuffers);
-
-    for (unsigned int i = 0; i < 2; i++)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
-
-        glBindTexture(GL_TEXTURE_2D, pingpongColorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-            GL_TEXTURE_2D, pingpongColorBuffers[i], 0);
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Menu::initialize_texture(const int width, const int height)
-{
-    glGenTextures(1, &current_texture_);
-    glBindTexture(GL_TEXTURE_2D, current_texture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void Menu::initialize_quad()
-{
-    constexpr GLfloat quad_vertices[] = {
-        -1.0f, -1.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f
-    };
-
-    glGenVertexArrays(1, &quad_vao_);
-    glGenBuffers(1, &quad_vbo_);
-
-    glBindVertexArray(quad_vao_);
-    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), static_cast<GLvoid*>(0));
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
-        reinterpret_cast<GLvoid*>(2 * sizeof(GLfloat)));
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
-void Menu::initialize_shader()
-{
-    shader_program_ = glCreateProgram();
-
-    const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_code2, nullptr);
-    glCompileShader(vertex_shader);
-
-    const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_code2, nullptr);
-    glCompileShader(fragment_shader);
-
-    glAttachShader(shader_program_, vertex_shader);
-    glAttachShader(shader_program_, fragment_shader);
-    glLinkProgram(shader_program_);
-
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
-}
-
-void Menu::resize_texture(int width, int height)
-{
-    glBindTexture(GL_TEXTURE_2D, current_texture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    for (unsigned int i = 0; i < 2; i++)
-    {
-        glBindTexture(GL_TEXTURE_2D, pingpongColorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-    texture_width_ = width;
-    texture_height_ = height;
-}
-
-void Menu::copy_to_current() const
-{
-    glBindTexture(GL_TEXTURE_2D, current_texture_);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, texture_width_, texture_height_, 0);
 }

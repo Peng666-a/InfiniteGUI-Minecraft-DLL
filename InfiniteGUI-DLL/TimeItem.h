@@ -18,12 +18,11 @@ public:
     TimeItem() {
         type = Hud; // 信息项类型
         multiType = Singleton;    // 信息项是否可以多开
-        isEnabled = false;
         name = u8"时间显示";
         description = u8"显示当前时间";
-        currentTimeStr = u8"正在获取系统时间...";
         updateIntervalMs = 1000;
         lastUpdateTime = std::chrono::steady_clock::now();
+        Reset();
     }
     //Instance()
     static TimeItem& Instance() {
@@ -32,6 +31,13 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetWindow();
+        ResetAffix();
+        currentTimeStr = u8"正在获取系统时间...";
+        isEnabled = false;
+    }
     void Update() override;
     void DrawContent() override;
     void DrawSettings() override;

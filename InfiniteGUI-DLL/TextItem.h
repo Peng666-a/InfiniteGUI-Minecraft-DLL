@@ -17,10 +17,16 @@ public:
         multiType = MultiInstance;    // 信息项是否可以多开
         name = u8"文本显示";
         description = u8"显示一段文本";
-        text = u8"请输入文本";
+        Reset();
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetAffix();
+        ResetWindow();
+        text = u8"请输入文本";
+    }
     void DrawContent() override;
     void DrawSettings() override;
     void Load(const nlohmann::json& j) override;

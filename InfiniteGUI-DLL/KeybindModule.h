@@ -37,5 +37,10 @@ protected:
         }
     }
 
+    void ResetKeybind()
+    {
+        keybinds.clear();
+    }
+
 	std::map<std::string, int> keybinds; //name, key
 };

@@ -6,6 +6,8 @@ class GlobalConfig {
 public:
     std::string fontPath = "default";  // 全局语言
 
+    std::string currentProfile = "profile";  // 全局语言
+
     // 在这里加更多全局参数…
 
     static GlobalConfig& Instance() {

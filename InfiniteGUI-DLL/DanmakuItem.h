@@ -35,12 +35,11 @@ public:
     {
         type = Hud; // 信息项类型
         multiType = Singleton;    // 信息项是否可以多开
-        isEnabled = false;
         name = u8"B站弹幕显示";
         description = u8"显示B站直播间的弹幕(需配合B站弹幕姬)";
         updateIntervalMs = 50;
         lastUpdateTime = std::chrono::steady_clock::now();
-        isCustomSize = true;
+        Reset();
     }
 
     virtual ~DanmakuItem();
@@ -51,6 +50,14 @@ public:
     }
 
     void Toggle() override;
+    void Reset() override
+    {
+        ResetWindow();
+        isCustomSize = true;
+        isEnabled = false;
+        maxDanmakuCount = 16;
+        logPath = "lastrun.txt";
+    }
     void Update() override;
     void DrawContent() override;
     void DrawSettings() override;

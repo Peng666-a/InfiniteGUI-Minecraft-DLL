@@ -343,6 +343,23 @@ protected:
         SaveStyle(j);
     }
 
+    void ResetWindow()
+    {
+        isCustomSize = false;
+        x = 100.0f;
+        y = 40.0f;
+        snapState = SNAP_NONE;
+        width = 250.0f;
+        height = 80.0f;
+        clickThrough = false;
+        custom.windowRounding = false;
+        custom.fontSize = false;
+        custom.fontColor = false;
+        custom.bgColor = false;
+        custom.borderColor = false;
+        SetStyle();
+        ResetWindowStyle();
+    }
     bool isWindowShow = true;
 
     bool isCustomSize = false;    //是否自定义大小

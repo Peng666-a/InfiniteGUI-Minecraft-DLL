@@ -5,6 +5,7 @@
 #include <thread>
 #include <atomic>
 #include "HttpUpdateWorker.h"
+#include "ItemManager.h"
 HMODULE g_hModule = NULL;
 std::thread g_updateThread;
 static std::atomic_bool g_running = ATOMIC_VAR_INIT(true);
@@ -46,7 +47,7 @@ DWORD WINAPI InitApp(LPVOID)
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 	//加载配置文件
-	ConfigManager::Load(FileUtils::configPath);
+	ConfigManager::Instance().Init();
 	//初始化音频管理器
 	AudioManager::Instance().Init();
 	HttpUpdateWorker::Instance().Start();

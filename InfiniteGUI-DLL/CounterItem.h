@@ -18,8 +18,18 @@ public:
         multiType = MultiInstance;    // 信息项是否可以多开
         name = u8"计数器";
         description = u8"显示计数器";
-        isPlaySound = true;
-        soundVolume = 0.5f;
+        Reset();
+    }
+    ~CounterItem() {}
+
+
+    void Toggle() override;
+    void Reset() override
+    {
+        ResetAffix();
+        ResetWindow();
+        ResetSound();
+        ResetKeybind();
 
         keybinds.insert(std::make_pair(u8"增加快捷键：", VK_F6));
         keybinds.insert(std::make_pair(u8"减少快捷键：", VK_F5));
@@ -27,11 +37,10 @@ public:
 
         prefix = u8"[计数:";
         suffix = "]";
+
+        count = 0;
+        lastCount = 0;
     }
-    ~CounterItem() {}
-
-
-    void Toggle() override;
     void OnKeyEvent(bool state, bool isRepeat, WPARAM key) override;
     void DrawContent() override;
     void DrawSettings() override;
