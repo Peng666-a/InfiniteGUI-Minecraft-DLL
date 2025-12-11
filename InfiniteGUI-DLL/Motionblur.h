@@ -22,10 +22,11 @@ public:
     void Reset() override
     {
         isEnabled = false;
-        float blurriness_value = 10.0f;
-        bool smooth_blur = true;
-        bool clear_color = false;
-        bool velocityAdaptive = true;
+        blurriness_value = 10.0f;
+        cur_blurriness_value = 10.0f;
+        smooth_blur = true;
+        clear_color = false;
+        velocityAdaptive = true;
     }
     void Render() override;
     void Load(const nlohmann::json& j) override;
@@ -42,7 +43,7 @@ public:
 	void copy_to_current() const;
 
     static void velocity_adaptive_blur(bool cameraMoving, float velocity, float* velocity_factor);
-    float cur_blurriness_value = 10.0f;
+    static void Fps_modulate(float fps, float* blurriness_value, float* cur_blurriness_value);
     bool applayOnMenu = true;
 private:
     uint32_t shader_program_;
@@ -57,9 +58,11 @@ private:
     int32_t texture_height_;
 
     float velocity_factor = 0.0f;
+    float cur_blurriness_value = 10.0f;
     float blurriness_value = 10.0f;
     bool smooth_blur = true;
     bool clear_color = false;
     bool velocityAdaptive = true;
+    bool FpsModulate = true;
 
 };

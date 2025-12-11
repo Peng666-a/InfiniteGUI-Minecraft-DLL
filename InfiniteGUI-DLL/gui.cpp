@@ -16,7 +16,7 @@
 
 #include "Menu.h"
 #include "Motionblur.h"
-#include "GameStateDetector.h"
+
 static ImGuiContext* imGuiContext = nullptr;
 
 void Gui::init()
@@ -45,7 +45,6 @@ void Gui::init()
 	font_cfg.OversampleV = 1;
 	font_cfg.PixelSnapH = true;
 
-	ImFont* font;
 	if (GlobalConfig::Instance().fontPath == "default")
 		font = io.Fonts->AddFontFromMemoryCompressedTTF(Fonts::ur.data, Fonts::ur.size, 20.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
 	else
@@ -53,7 +52,7 @@ void Gui::init()
 	if (font == nullptr) {
 		font = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\msyh.ttc", 20.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
 	}
-	App::Instance().iconFont = io.Fonts->AddFontFromMemoryTTF(Fonts::icons.data, Fonts::icons.size, 20.0f, &font_cfg);
+	iconFont = io.Fonts->AddFontFromMemoryTTF(Fonts::icons.data, Fonts::icons.size, 20.0f, &font_cfg);
 
 
 	io.FontDefault = font;
@@ -63,7 +62,6 @@ void Gui::init()
 		/* Problem: glewInit failed, something is seriously wrong. */
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 	}
-
 	isInit = true;
 
 }

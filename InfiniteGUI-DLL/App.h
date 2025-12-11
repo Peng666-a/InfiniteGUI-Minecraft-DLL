@@ -1,21 +1,12 @@
 #pragma once
-#include <GL/glew.h>
 #include <Windows.h>
 #include <string>
-#include "imgui\imgui.h"
 
 struct version
 {
 	int major;
 	int minor;
 	int build;
-};
-
-struct texture
-{
-	GLuint id;
-	int width;
-	int height;
 };
 
 class App
@@ -29,9 +20,6 @@ public:
 	version cloudVersion = { 0, 0, 0 };
 	std::wstring versionUrl = L"https://gitee.com/qc_max/InfiniteGUI/raw/master/version.json";
 	std::wstring announcementUrl = L"https://gitee.com/qc_max/InfiniteGUI/raw/master/announcement.txt";
-	//HWND clientHwnd = nullptr;
-	ImFont* iconFont;
-	texture logoTexture;
 	static App& Instance()
 	{
 		static App instance;

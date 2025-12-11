@@ -6,7 +6,9 @@
 #include <Windows.h>
 #include <map>
 #include <nlohmann/json.hpp>
-#include "App.h"
+
+#include "opengl_hook.h"
+
 namespace ImGuiStd {
 
     static bool InputTextStd(const char* label, std::string& str, ImGuiInputTextFlags flags = 0)
@@ -35,7 +37,8 @@ namespace ImGuiStd {
     static void TextShadow(const char* text, ...)
     {
         ImVec2 pos = ImGui::GetCursorPos();
-        ImGui::SetCursorPos(ImVec2(pos.x + 1, pos.y + 1));
+        float shadowOffset = /*ImGui::GetFontSize() * 0.08f*/ 1.0f;
+        ImGui::SetCursorPos(ImVec2(pos.x + shadowOffset, pos.y + shadowOffset));
         ImGui::TextColored(ImVec4(0, 0, 0, 0.6f), text);  // “ı”∞≤„
 
         ImGui::SetCursorPos(pos);
@@ -55,7 +58,8 @@ namespace ImGuiStd {
     static void TextColoredShadow(ImVec4 color, const char* text, ...)
     {
         ImVec2 pos = ImGui::GetCursorPos();
-        ImGui::SetCursorPos(ImVec2(pos.x + 1, pos.y + 1));
+        float shadowOffset =/* ImGui::GetFontSize() * 0.08f*/ 1.0f;
+        ImGui::SetCursorPos(ImVec2(pos.x + shadowOffset, pos.y + shadowOffset));
         ImGui::TextColored(ImVec4(0, 0, 0, 0.6f), text);  // “ı”∞≤„
 
         ImGui::SetCursorPos(pos);
@@ -147,7 +151,6 @@ namespace ImGuiStd {
             ImGui::SetTooltip(Text);
         }
     }
-
     static bool DrawCenteredButton(const char* label, const ImVec2& buttonSize)
     {
         ImGuiStyle& style = ImGui::GetStyle();
@@ -220,7 +223,7 @@ namespace ImGuiStd {
         }
         if (memcmp(&color, &refColor, sizeof(ImVec4)) != 0)
         {
-            ImGui::PushFont(App::Instance().iconFont);
+            ImGui::PushFont(opengl_hook::gui.iconFont);
             ImGui::SameLine(); if (ImGui::Button(("Z" + std::string(u8"##") + std::to_string(element.id)).c_str())) { color = refColor; changed = true; }
             ImGui::PopFont();
             if (ImGui::IsItemHovered())

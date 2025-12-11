@@ -19,6 +19,10 @@ void ChangeLog::Init()
     AddContent(FIXBUG, u8"修复字体彩色绑定问题");
     AddContent(ADD, u8"添加菜单背景模糊");
     AddContent(ADD, u8"添加多配置管理系统");
+
+    NewVersion("B0.9.3", "25.12.09");
+    AddContent(OPTIMIZE, u8"优化动态模糊,添加FPS调制");
+    AddContent(ADD, u8"全新UI");
 } //我写这个真是个天才，这样就不用手敲Imgui代码了，天才天才天才天
 
 ChangeLog::ChangeLog()

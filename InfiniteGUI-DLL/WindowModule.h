@@ -8,9 +8,7 @@
 #include <nlohmann/json.hpp>
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
-#include "GlobalConfig.h"
 #include "WindowSnapper.h"
-#include "App.h"
 #include "opengl_hook.h"
 static const float SNAP_DISTANCE = 15.0f;
 static bool isSnapping = false;
@@ -85,7 +83,7 @@ private:
         if(custom)
         {
             ImGui::SameLine();
-            ImGui::PushFont(App::Instance().iconFont);
+            ImGui::PushFont(opengl_hook::gui.iconFont);
             if (ImGui::Button((u8"\uE02E" + std::string("##") + label).c_str()))
             {
                 custom = false;
@@ -124,7 +122,7 @@ public:
         if (custom.windowRounding)
         {
             ImGui::SameLine();
-            ImGui::PushFont(App::Instance().iconFont);
+            ImGui::PushFont(opengl_hook::gui.iconFont);
             if (ImGui::Button((u8"\uE02E" + std::string("##windowRounding")).c_str()))
             {
                 custom.windowRounding = false;
@@ -145,7 +143,7 @@ public:
         if (custom.fontSize)
         {
             ImGui::SameLine();
-            ImGui::PushFont(App::Instance().iconFont);
+            ImGui::PushFont(opengl_hook::gui.iconFont);
             if (ImGui::Button((u8"\uE02E" + std::string("##fontSize")).c_str()))
             {
                 custom.fontSize = false;

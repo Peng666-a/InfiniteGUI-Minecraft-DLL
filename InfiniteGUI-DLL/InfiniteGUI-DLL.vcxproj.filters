@@ -89,6 +89,33 @@
     <Filter Include="src\core\shaders">
       <UniqueIdentifier>{28c0a33b-8860-4c8a-ad05-e1b97d8db2c6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\core\items\huds\menu">
+      <UniqueIdentifier>{d4c7b9be-33f7-4a91-a096-58fb0ad0906b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets">
+      <UniqueIdentifier>{582c1011-61e3-4a7a-b707-f327b5b0d819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\left">
+      <UniqueIdentifier>{f92b726f-d8b8-491e-8dbf-c3b5dcc58c3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\right">
+      <UniqueIdentifier>{efe0fcf7-5a01-4b36-857d-4d73481833b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\right\module">
+      <UniqueIdentifier>{749e68cf-cab8-426a-9d53-bf6fc8043b6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\right\setting">
+      <UniqueIdentifier>{a7a4fe98-c881-4e97-b093-827afc7deff4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\right\about">
+      <UniqueIdentifier>{c234b5bd-91dd-4637-ba21-5497731a2e67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\right\more">
+      <UniqueIdentifier>{7ff80251-c5e4-41a3-a462-4dd8c3711f27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\items\huds\menu\widgets\virtual">
+      <UniqueIdentifier>{c8036e59-2f8c-4803-b0cd-abf151745616}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Init.hpp">
@@ -286,14 +313,41 @@
     <ClInclude Include="RenderModule.h">
       <Filter>src\core\items\virtual\modules</Filter>
     </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>src\core\items\huds</Filter>
-    </ClInclude>
     <ClInclude Include="ChangeLog.h">
       <Filter>src\app</Filter>
     </ClInclude>
     <ClInclude Include="Blur.h">
       <Filter>src\core\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>src\core\items\huds\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingMenu.h">
+      <Filter>src\core\items\huds\menu\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleCard.h">
+      <Filter>src\core\items\huds\menu\widgets\right\module</Filter>
+    </ClInclude>
+    <ClInclude Include="ModulesScroll.h">
+      <Filter>src\core\items\huds\menu\widgets\right\module</Filter>
+    </ClInclude>
+    <ClInclude Include="LeftPanel.h">
+      <Filter>src\core\items\huds\menu\widgets\left</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectPanel.h">
+      <Filter>src\core\items\huds\menu\widgets\left</Filter>
+    </ClInclude>
+    <ClInclude Include="PanelButton.h">
+      <Filter>src\core\items\huds\menu\widgets\left</Filter>
+    </ClInclude>
+    <ClInclude Include="MainPanel.h">
+      <Filter>src\core\items\huds\menu\widgets\right</Filter>
+    </ClInclude>
+    <ClInclude Include="CategoryBar.h">
+      <Filter>src\core\items\huds\menu\widgets\right\module</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimButtonBase.h">
+      <Filter>src\core\items\huds\menu\widgets\virtual</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -408,14 +462,14 @@
     <ClCompile Include="Motionblur.cpp">
       <Filter>src\core\items\utils</Filter>
     </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>src\core\items\huds</Filter>
-    </ClCompile>
     <ClCompile Include="ChangeLog.cpp">
       <Filter>src\app</Filter>
     </ClCompile>
     <ClCompile Include="Blur.cpp">
       <Filter>src\core\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>src\core\items\huds\menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -125,10 +125,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AffixModule.h" />
+    <ClInclude Include="AnimButtonBase.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BilibiliFansItem.h" />
     <ClInclude Include="Blur.h" />
+    <ClInclude Include="CategoryBar.h" />
     <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="CounterItem.h" />
     <ClInclude Include="CPSDetector.h" />
@@ -175,12 +177,19 @@
     <ClInclude Include="KeybindModule.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="KeystrokesItem.h" />
+    <ClInclude Include="MainPanel.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="miniaudio\miniaudio.h" />
+    <ClInclude Include="ModuleCard.h" />
+    <ClInclude Include="ModulesScroll.h" />
     <ClInclude Include="Motionblur.h" />
     <ClInclude Include="opengl_hook.h" />
+    <ClInclude Include="SelectPanel.h" />
+    <ClInclude Include="PanelButton.h" />
     <ClInclude Include="pics\MCInjector-small.h" />
     <ClInclude Include="RenderModule.h" />
+    <ClInclude Include="SettingMenu.h" />
+    <ClInclude Include="LeftPanel.h" />
     <ClInclude Include="SoundModule.h" />
     <ClInclude Include="Sprint.h" />
     <ClInclude Include="StringConverter.h" />

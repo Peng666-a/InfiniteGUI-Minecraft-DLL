@@ -9,10 +9,11 @@
 #include "GameStateDetector.h"
 #include "gui.h"
 
-#include "App.h"
 #include "Images.h"
 #include "pics\MCInjector-small.h"
 #include <thread>
+
+#include "App.h"
 //#include <base/voyage.h>
 //#include <mutex>
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -194,7 +195,7 @@ bool detour_wgl_swap_buffers(HDC hdc)
 					App::Instance().GetAnnouncement();
 				});
 			announcementThread.detach();
-			App::Instance().logoTexture.id = LoadTextureFromMemory(logo, logoSize, &App::Instance().logoTexture.width, &App::Instance().logoTexture.height);
+			opengl_hook::gui.logoTexture.id = LoadTextureFromMemory(logo, logoSize, &opengl_hook::gui.logoTexture.width, &opengl_hook::gui.logoTexture.height);
 		});
 
 	// 切换 ImGui 鼠标捕获设置

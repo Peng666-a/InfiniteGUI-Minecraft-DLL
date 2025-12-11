@@ -125,6 +125,11 @@ void Motionblur::Render()
 	else
 		velocity_factor = 0.0f;
 
+	if (FpsModulate)
+		Fps_modulate(ImGui::GetIO().Framerate, &blurriness_value, &cur_blurriness_value);
+	else
+		cur_blurriness_value = blurriness_value;
+
 	draw_texture();
 	copy_to_history();
 
@@ -214,7 +219,7 @@ void Motionblur::resize_texture(int width, int height)
 	texture_height_ = height;
 }
 
-void Motionblur::draw_texture() const
+void Motionblur::draw_texture() const 
 {
 	if (current_texture_ == 0)
 		return;
@@ -231,7 +236,8 @@ void Motionblur::draw_texture() const
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, history_texture_);
 	glUniform1i(glGetUniformLocation(shader_program_, "historyTexture"), 1);
-	auto value = max(0.1, (50 - blurriness_value)) / 100;
+
+	auto value = max(0.1, (50 - cur_blurriness_value)) / 100;
 	glUniform1f(glGetUniformLocation(shader_program_, "blurriness"), (GLfloat)value);
 	glUniform1f(glGetUniformLocation(shader_program_, "velocity_factor"), (GLfloat)velocity_factor);
 	glUniform1f(glGetUniformLocation(shader_program_, "renderRGB"), !clear_color);
@@ -275,6 +281,11 @@ void Motionblur::velocity_adaptive_blur(bool cameraMoving, float cameraSpeed, fl
 	}
 }
 
+void Motionblur::Fps_modulate(float fps, float* blurriness_value, float* cur_blurriness_value)
+{
+	*cur_blurriness_value = *blurriness_value * ImClamp(fps, 0.0f, 500.0f) / 500.0f; //fps越高，模糊强度越高
+}
+
 void Motionblur::Load(const nlohmann::json& j)
 {
 	LoadItem(j);
@@ -283,6 +294,7 @@ void Motionblur::Load(const nlohmann::json& j)
 	if (j.contains("smooth_blur")) smooth_blur = j["smooth_blur"].get<bool>();
 	if (j.contains("applayOnMenu")) applayOnMenu = j["applayOnMenu"].get<bool>();
 	if (j.contains("clear_color")) clear_color = j["clear_color"].get<bool>();
+	if (j.contains("FpsModulate")) FpsModulate = j["FpsModulate"].get<bool>();
 }
 
 void Motionblur::Save(nlohmann::json& j) const
@@ -293,6 +305,7 @@ void Motionblur::Save(nlohmann::json& j) const
 	j["smooth_blur"] = smooth_blur;
 	j["applayOnMenu"] = applayOnMenu;
 	j["clear_color"] = clear_color;
+	j["FpsModulate"] = FpsModulate;
 }
 
 void Motionblur::DrawSettings()
@@ -300,6 +313,8 @@ void Motionblur::DrawSettings()
 	DrawItemSettings();
 	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 40.0f, "%.1f");
 	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
+	ImGui::Checkbox(u8"帧率调制", &FpsModulate);
+	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"模糊强度随着帧率变化，适用于帧率不稳定的情况。");
 	if (ImGui::Checkbox(u8"速度自适应", &velocityAdaptive))
 	{
 		if (!velocityAdaptive) smooth_blur = false;

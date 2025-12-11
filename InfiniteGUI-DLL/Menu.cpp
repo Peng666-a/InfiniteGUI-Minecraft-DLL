@@ -15,7 +15,8 @@
 #include <thread>
 #include "ChangeLog.h"
 #include "ItemManager.h"
-
+#include "SelectPanel.h"
+#include "PanelButton.h"
 void ShowFontSelection(GlobalConfig* globalConfig) {
     static std::vector<FileUtils::FontInfo> fontFiles;
     // Get font files if not loaded yet
@@ -102,7 +103,7 @@ void ShowConfigSelection(GlobalConfig* globalConfig) {
             ImGui::SameLine();
 
             // 图标按钮（占位/未来用）
-            ImGui::PushFont(App::Instance().iconFont);
+            ImGui::PushFont(opengl_hook::gui.iconFont);
             // 重命名按钮（紧跟在 icon 后面；用小字体或图标也行）
             if (ImGui::Button((u8"\uE02F##rename" + std::to_string(i)).c_str())) {
                 renameOldName = profileName;
@@ -296,7 +297,7 @@ void Menu::Render()
 {
     if(!isEnabled)
         return;
-    if (blur.menu_blur) blur.RenderBlur(panelAnim.blurriness);
+    if (blur->menu_blur) blur->RenderBlur(panelAnim.blurriness);
     //使窗口显示在屏幕中间
     ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2((float)opengl_hook::screen_size.x + 10, (float)opengl_hook::screen_size.y + 10), ImGuiCond_Always);
@@ -326,7 +327,7 @@ void Menu::Render()
         ImGui::PushStyleColor(ImGuiCol_WindowBg, itemStyle.bgColor);
         ImGui::PushStyleColor(ImGuiCol_Border, itemStyle.borderColor);
         PushRounding(itemStyle.windowRounding);
-        panelAnim.blurriness = (float)blur.blurriness_value;
+        panelAnim.blurriness = (float)blur->blurriness_value;
         ShowSettings(&opengl_hook::gui.done);
 
         ImGui::PopStyleColor(2);
@@ -405,7 +406,7 @@ void Menu::ShowMain()
         {
             tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.5f);
             panelAnim.state = ImLerp(panelAnim.state, 1.0f, panel_speed);
-            panelAnim.blurriness = ImLerp(panelAnim.blurriness, (float)blur.blurriness_value, panel_speed);
+            panelAnim.blurriness = ImLerp(panelAnim.blurriness, (float)blur->blurriness_value, panel_speed);
         }
         else
         {
@@ -462,7 +463,7 @@ void Menu::ShowSidePanels()
         ImGui::Begin("##AboutPanel", nullptr,
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs);
-        ImGui::PushFont(App::Instance().iconFont, style.FontSizeBase * 1.5f);
+        ImGui::PushFont(opengl_hook::gui.iconFont, style.FontSizeBase * 1.5f);
         ImGuiStd::TextShadow("I");
         ImGui::PopFont();
         ImGui::SameLine();
@@ -505,7 +506,7 @@ void Menu::ShowSidePanels()
         ImGuiStd::TextShadow(u8"日志");
         ImGui::SameLine();
         ImGui::PopFont();
-        ImGui::PushFont(App::Instance().iconFont, style.FontSizeBase * 1.5f);
+        ImGui::PushFont(opengl_hook::gui.iconFont, style.FontSizeBase * 1.5f);
         float right = ImGui::GetContentRegionAvail().x;
         float textWidth =
             ImGui::GetFontSize() +
@@ -541,8 +542,8 @@ void Menu::ShowSidePanels()
 
         // logo 原始大小
         ImVec2 logoSize = ImVec2(
-            (float)App::Instance().logoTexture.width,
-            (float)App::Instance().logoTexture.height
+            (float)opengl_hook::gui.logoTexture.width,
+            (float)opengl_hook::gui.logoTexture.height
         );
 
         // 动画缩放，0~1
@@ -584,7 +585,7 @@ void Menu::ShowSidePanels()
 
             // 居中绘制图片
             ImGui::SetCursorPos(ImVec2(0, 0));
-            ImGui::Image(App::Instance().logoTexture.id,
+            ImGui::Image(opengl_hook::gui.logoTexture.id,
                 finalSize
             );
 
@@ -595,205 +596,202 @@ void Menu::ShowSidePanels()
     }
 }
 
-void Menu::ShowSettings(bool* done)
+ImVec2 menuInnerSize = ImVec2(900, 556);
+ImVec2 menuSize = ImVec2(menuInnerSize.x + 6.0f, menuInnerSize.y + 6.0f);
+void Menu::ShowSettings(bool* done) const
 {
-    static bool isStyleEditorShow = false;
-    if (isStyleEditorShow)
-    {
-
-        ImGui::ShowStyleEditor();
-    }
-
     //使窗口显示在屏幕中间
     ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(1000, 618), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(menuSize, ImGuiCond_Once);
 
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
     //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.1f));
-    ImGui::Begin(u8"主控制面板", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
+    ImGui::Begin(u8"主控制面板", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::PopStyleColor();
 
     ImGui::SetCursorPos(ImVec2(3, 3));
     //设置控件与左边的间隔
-        ImGui::BeginChild(u8"主控制面板Inner", ImVec2(994, 612), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-
-        ImGui::Text(u8"-->主控制面板");
-
-        ImGui::SameLine();
-
-        if (ImGui::Button(u8"保存配置"))
-            ConfigManager::Instance().Save();
-
-
-        ImGui::SameLine();
-
-        //将退出按钮显示在右上角
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 45);
-
-        if (ImGui::Button("  X  "))
-        {
-            isEnabled = false;
-            Toggle();
-            //*done = true;
-        }
-
-        //ImGui::SameLine();
-
-        ////将退出按钮显示在右上角
-        //ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 90);
-
-        //if (ImGui::Button("  +  "))
-        //{
-        //    isStyleEditorShow = !isStyleEditorShow;
-        //}
-
-        ImGui::Separator();
-        ImGui::BeginChild("Content", ImVec2(0, 0), true);
-        //显示公告
-        ImGui::BeginChild("Announce", ImVec2(0, 100), true);
-
-        ImGuiStd::TextShadow(App::Instance().announcement.c_str());
-        ImGui::EndChild();
-
-
-        ImGui::Separator();
-        if (ImGui::CollapsingHeader(u8"全局设置", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
-        {
-            ImGuiStyle& style = ImGui::GetStyle();
-            for (Item* item : ItemManager::Instance().GetAllItems())
-            {
-                if (item->type == Hidden)
-                {
-                    ImGui::PushFont(NULL, style.FontSizeBase * 0.8f);
-                    ImGui::BeginDisabled();
-                    ImGuiStd::TextShadow(item->name.c_str());
-                    ImGui::EndDisabled();
-                    ImGui::PopFont();
-                    item->DrawSettings();
-                }
-            }
-
-            ShowFontSelection(&GlobalConfig::Instance());
-            ShowConfigSelection(&GlobalConfig::Instance());
-        }
-
-        ImGui::Separator();
-
-        // 添加各种信息项按钮
-
-        if (ImGui::Button(u8"添加 文本")) {
-            ItemManager::Instance().AddMulti(std::make_unique<TextItem>());
-        }
-
-        if (ImGui::Button(u8"添加 文件数量")) {
-            ItemManager::Instance().AddMulti(std::make_unique<FileCountItem>());
-        }
-
-        if (ImGui::Button(u8"添加 粉丝数")) {
-            ItemManager::Instance().AddMulti(std::make_unique<BilibiliFansItem>());
-        }
-
-        if (ImGui::Button(u8"添加 计数器"))
-        {
-            ItemManager::Instance().AddMulti(std::make_unique<CounterItem>());
-        }
-
-        ImGui::Separator();
-        DrawItemList();
-
-        ImGui::Separator();
-
-        //显示关于
-        if (ImGui::CollapsingHeader(u8"关于", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
-        {
-            ImGuiStd::TextShadow(App::Instance().appName.c_str());
-            ImGui::SameLine();
-            std::string appVersion = std::to_string(App::Instance().appVersion.major) + "." + std::to_string(App::Instance().appVersion.minor) + "." + std::to_string(App::Instance().appVersion.build);
-            ImGuiStd::TextShadow(("v" + appVersion).c_str());
-            ImGui::SameLine();
-            static std::atomic<bool> checkingUpdate = false;   // 是否在检查
-            static std::atomic<bool> updateFinished = false;   // 检查是否完成
-            static bool updateHasNew = false;                  // 是否发现新版本
-            static std::thread updateThread;                   // 工作线程
-            // 点击按钮：开始异步检查
-            if (ImGui::Button(u8"检查更新"))
-            {
-                // 打开“正在检查”窗口
-                ImGui::OpenPopup(u8"-->检查更新...");
-
-                checkingUpdate = true;
-                updateFinished = false;
-
-                // 启动后台线程
-                updateThread = std::thread([]()
-                    {
-                        bool result = App::Instance().CheckUpdate();
-                        updateHasNew = !result;   // result=false => 有新版本
-                        updateFinished = true;
-                        checkingUpdate = false;
-                    });
-
-                updateThread.detach();
-            }
-            if (ImGui::BeginPopupModal(u8"-->检查更新...", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                if (checkingUpdate)
-                {
-                    ImGuiStd::TextShadow(u8"正在检查更新，请稍候...");
-                }
-                else if (updateFinished)
-                {
-                    if (updateHasNew)
-                    {
-                        ImGuiStd::TextShadow(u8"发现新版本！");
-                        std::string cloudVersion =
-                            std::to_string(App::Instance().cloudVersion.major) + "." +
-                            std::to_string(App::Instance().cloudVersion.minor) + "." +
-                            std::to_string(App::Instance().cloudVersion.build);
-
-                        ImGuiStd::TextShadow((u8"最新版本：" + cloudVersion).c_str());
-                    }
-                    else
-                        ImGuiStd::TextShadow(u8"目前已是最新版本");
-                    if (ImGui::Button(u8"确定"))
-                    {
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-
-                ImGui::EndPopup();
-            }
-            ImGuiStd::TextShadow(u8"作者：");
-            ImGui::SameLine();
-            if (ImGui::Button(App::Instance().appAuthor.c_str()))
-            {
-                ShellExecute(NULL, NULL, L"https://space.bilibili.com/399194206", NULL, NULL, SW_SHOWNORMAL);
-            }
-            ImGuiStd::TextShadow(u8"相关链接：");
-            ImGui::SameLine();
-            if (ImGui::Button(u8"爱发电"))
-            {
-                ShellExecute(NULL, NULL, L"https://ifdian.net/a/qc_max", NULL, NULL, SW_SHOWNORMAL);
-            }
-            ImGui::SameLine();
-            ImGuiStd::TextShadow(u8" & ");
-
-            ImGui::SameLine();
-            if (ImGui::Button(u8"GitHub"))
-            {
-                ShellExecute(NULL, NULL, L"https://github.com/QCMaxcer/InfiniteGUI-Minecraft-DLL", NULL, NULL, SW_SHOWNORMAL);
-            }
-        }
-
-        //if (ImGui::Button(u8"自毁"))
-        //{
-        //    *done = true;
-        //}
-        ImGui::EndChild();
-        ImGui::EndChild();
+    settingMenu->Draw();
 
     ImGui::End();
+}
+
+void Menu::OldSettings()
+{
+    ImGui::Text(u8"-->主控制面板");
+
+    ImGui::SameLine();
+
+    if (ImGui::Button(u8"保存配置"))
+        ConfigManager::Instance().Save();
+
+
+    ImGui::SameLine();
+
+    //将退出按钮显示在右上角
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 45);
+
+    if (ImGui::Button("  X  "))
+    {
+        isEnabled = false;
+        Toggle();
+        //*done = true;
+    }
+
+    //ImGui::SameLine();
+
+    ////将退出按钮显示在右上角
+    //ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 90);
+
+    //if (ImGui::Button("  +  "))
+    //{
+    //    isStyleEditorShow = !isStyleEditorShow;
+    //}
+
+    ImGui::Separator();
+    ImGui::BeginChild("Content", ImVec2(0, 0), true);
+    //显示公告
+    ImGui::BeginChild("Announce", ImVec2(0, 100), true);
+
+    ImGuiStd::TextShadow(App::Instance().announcement.c_str());
+    ImGui::EndChild();
+
+
+    ImGui::Separator();
+    if (ImGui::CollapsingHeader(u8"全局设置", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        for (Item* item : ItemManager::Instance().GetAllItems())
+        {
+            if (item->type == Hidden)
+            {
+                ImGui::PushFont(NULL, style.FontSizeBase * 0.8f);
+                ImGui::BeginDisabled();
+                ImGuiStd::TextShadow(item->name.c_str());
+                ImGui::EndDisabled();
+                ImGui::PopFont();
+                item->DrawSettings();
+            }
+        }
+
+        ShowFontSelection(&GlobalConfig::Instance());
+        ShowConfigSelection(&GlobalConfig::Instance());
+    }
+
+    ImGui::Separator();
+
+    // 添加各种信息项按钮
+
+    if (ImGui::Button(u8"添加 文本")) {
+        ItemManager::Instance().AddMulti(std::make_unique<TextItem>());
+    }
+
+    if (ImGui::Button(u8"添加 文件数量")) {
+        ItemManager::Instance().AddMulti(std::make_unique<FileCountItem>());
+    }
+
+    if (ImGui::Button(u8"添加 粉丝数")) {
+        ItemManager::Instance().AddMulti(std::make_unique<BilibiliFansItem>());
+    }
+
+    if (ImGui::Button(u8"添加 计数器"))
+    {
+        ItemManager::Instance().AddMulti(std::make_unique<CounterItem>());
+    }
+
+    ImGui::Separator();
+    DrawItemList();
+    ImGui::PushFont(NULL, ImGui::GetFontSize() * 1.25f);
+    ImGui::PopFont();
+    ImGui::Separator();
+
+    //显示关于
+    if (ImGui::CollapsingHeader(u8"关于", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding))
+    {
+        ImGuiStd::TextShadow(App::Instance().appName.c_str());
+        ImGui::SameLine();
+        std::string appVersion = std::to_string(App::Instance().appVersion.major) + "." + std::to_string(App::Instance().appVersion.minor) + "." + std::to_string(App::Instance().appVersion.build);
+        ImGuiStd::TextShadow(("v" + appVersion).c_str());
+        ImGui::SameLine();
+        static std::atomic<bool> checkingUpdate = false;   // 是否在检查
+        static std::atomic<bool> updateFinished = false;   // 检查是否完成
+        static bool updateHasNew = false;                  // 是否发现新版本
+        static std::thread updateThread;                   // 工作线程
+        // 点击按钮：开始异步检查
+        if (ImGui::Button(u8"检查更新"))
+        {
+            // 打开“正在检查”窗口
+            ImGui::OpenPopup(u8"-->检查更新...");
+
+            checkingUpdate = true;
+            updateFinished = false;
+
+            // 启动后台线程
+            updateThread = std::thread([]()
+                {
+                    bool result = App::Instance().CheckUpdate();
+                    updateHasNew = !result;   // result=false => 有新版本
+                    updateFinished = true;
+                    checkingUpdate = false;
+                });
+
+            updateThread.detach();
+        }
+        if (ImGui::BeginPopupModal(u8"-->检查更新...", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            if (checkingUpdate)
+            {
+                ImGuiStd::TextShadow(u8"正在检查更新，请稍候...");
+            }
+            else if (updateFinished)
+            {
+                if (updateHasNew)
+                {
+                    ImGuiStd::TextShadow(u8"发现新版本！");
+                    std::string cloudVersion =
+                        std::to_string(App::Instance().cloudVersion.major) + "." +
+                        std::to_string(App::Instance().cloudVersion.minor) + "." +
+                        std::to_string(App::Instance().cloudVersion.build);
+
+                    ImGuiStd::TextShadow((u8"最新版本：" + cloudVersion).c_str());
+                }
+                else
+                    ImGuiStd::TextShadow(u8"目前已是最新版本");
+                if (ImGui::Button(u8"确定"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+
+            ImGui::EndPopup();
+        }
+        ImGuiStd::TextShadow(u8"作者：");
+        ImGui::SameLine();
+        if (ImGui::Button(App::Instance().appAuthor.c_str()))
+        {
+            ShellExecute(NULL, NULL, L"https://space.bilibili.com/399194206", NULL, NULL, SW_SHOWNORMAL);
+        }
+        ImGuiStd::TextShadow(u8"相关链接：");
+        ImGui::SameLine();
+        if (ImGui::Button(u8"爱发电"))
+        {
+            ShellExecute(NULL, NULL, L"https://ifdian.net/a/qc_max", NULL, NULL, SW_SHOWNORMAL);
+        }
+        ImGui::SameLine();
+        ImGuiStd::TextShadow(u8" & ");
+
+        ImGui::SameLine();
+        if (ImGui::Button(u8"GitHub"))
+        {
+            ShellExecute(NULL, NULL, L"https://github.com/QCMaxcer/InfiniteGUI-Minecraft-DLL", NULL, NULL, SW_SHOWNORMAL);
+        }
+    }
+
+    //if (ImGui::Button(u8"自毁"))
+    //{
+    //    *done = true;
+    //}
+    ImGui::EndChild();
 }
 
 void Menu::DrawItemList()
@@ -877,16 +875,16 @@ void Menu::DrawSettings()
 {
     DrawItemSettings();
     DrawKeybindSettings();
-    ImGui::Checkbox(u8"背景模糊", &blur.menu_blur);
-    ImGui::SliderInt(u8"模糊强度", &blur.blurriness_value, 0, 10);
+    ImGui::Checkbox(u8"背景模糊", &blur->menu_blur);
+    ImGui::SliderInt(u8"模糊强度", &blur->blurriness_value, 0, 10);
     DrawStyleSettings();
 }
 
 void Menu::Load(const nlohmann::json& j)
 {
     LoadKeybind(j);
-    if(j.contains("menu_blur")) blur.menu_blur = j["menu_blur"].get<bool>();
-    if(j.contains("blurriness_value")) blur.blurriness_value = j["blurriness_value"].get<int>();
+    if(j.contains("menu_blur")) blur->menu_blur = j["menu_blur"].get<bool>();
+    if(j.contains("blurriness_value")) blur->blurriness_value = j["blurriness_value"].get<int>();
     LoadStyle(j);
     //LoadItem(j);
 }
@@ -894,8 +892,8 @@ void Menu::Load(const nlohmann::json& j)
 void Menu::Save(nlohmann::json& j) const
 {
     SaveKeybind(j);
-    j["menu_blur"] = blur.menu_blur;
-    j["blurriness_value"] = blur.blurriness_value;
+    j["menu_blur"] = blur->menu_blur;
+    j["blurriness_value"] = blur->blurriness_value;
     SaveStyle(j);
     j["type"] = name;
 }

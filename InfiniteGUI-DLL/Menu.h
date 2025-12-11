@@ -4,6 +4,7 @@
 #include "WindowStyleModule.h"
 #include "KeybindModule.h"
 #include "Blur.h"
+#include "SettingMenu.h"
 enum MenuState {
     MENU_STATE_MAIN,
     MENU_STATE_SETTINGS,
@@ -29,7 +30,13 @@ public:
         name = u8"≤Àµ•";
         description = u8"œ‘ æ≤Àµ•";
         isEnabled = false;
+        settingMenu = new SettingMenu();
+        blur = new Blur();
         Reset();
+    }
+    ~Menu() {
+        delete settingMenu;
+        delete blur;
     }
     panel_element panelAnim;
 
@@ -60,9 +67,11 @@ public:
     int GetKeyBind();
 private:
     void ShowMain();
-    void ShowSettings(bool* done);
+    void ShowSettings(bool* done) const;
+    void OldSettings();
     void ShowSidePanels();
     void DrawItemList();
     void DrawItemEditor(Item* item);
-    Blur blur;
+    Blur * blur;
+    SettingMenu * settingMenu;
 };
