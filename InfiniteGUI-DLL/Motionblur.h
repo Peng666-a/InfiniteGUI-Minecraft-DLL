@@ -22,9 +22,9 @@ public:
     void Reset() override
     {
         isEnabled = false;
-        blurriness_value = 10.0f;
-        cur_blurriness_value = 10.0f;
-        smooth_blur = true;
+        blurriness_value = 15.0f;
+        cur_blurriness_value = 15.0f;
+        smooth_blur = false;
         clear_color = false;
         velocityAdaptive = true;
     }
@@ -58,9 +58,9 @@ private:
     int32_t texture_height_;
 
     float velocity_factor = 0.0f;
-    float cur_blurriness_value = 10.0f;
-    float blurriness_value = 10.0f;
-    bool smooth_blur = true;
+    float cur_blurriness_value = 15.0f;
+    float blurriness_value = 15.0f;
+    bool smooth_blur = false;
     bool clear_color = false;
     bool velocityAdaptive = true;
     bool FpsModulate = true;

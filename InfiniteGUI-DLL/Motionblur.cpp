@@ -310,16 +310,39 @@ void Motionblur::Save(nlohmann::json& j) const
 
 void Motionblur::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
+
+	float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(bigItemWidth);
 	//DrawItemSettings();
 	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 40.0f, "%.1f");
-	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"帧率调制", &FpsModulate);
 	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"模糊强度随着帧率变化，适用于帧率不稳定的情况。");
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(centerX + bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::Checkbox(u8"速度自适应", &velocityAdaptive))
 	{
 		if (!velocityAdaptive) smooth_blur = false;
 	}
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
 	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。");
-	if (velocityAdaptive) { ImGui::Checkbox(u8"柔和模糊", &smooth_blur); ImGui::SameLine(); ImGuiStd::HelpMarker(u8"柔和化模糊拖影，但会使MCUI模糊。");  }
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(centerX + bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"Im Faded~", &clear_color);
+
+	if (velocityAdaptive) { 
+		ImGui::SetCursorPosX(bigPadding);
+		ImGui::SetNextItemWidth(itemWidth);
+
+		ImGui::Checkbox(u8"柔和模糊", &smooth_blur); ImGui::SameLine(); ImGuiStd::HelpMarker(u8"柔和化模糊拖影，但会使MCUI模糊。"); 
+	}
 }

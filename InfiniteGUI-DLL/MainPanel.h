@@ -1,6 +1,9 @@
 ﻿#pragma once
+#include "AboutsPanel.h"
+#include "GlobalSettings.h"
 #include "menuRule.h"
 #include "ModulesPanel.h"
+#include "MoresPanel.h"
 
 enum PanelType
 {
@@ -16,10 +19,16 @@ public:
 	MainPanel()
 	{
 		m_modulesPanel = new ModulesPanel();
+		m_globalSettings = new GlobalSettings();
+		m_aboutsPanel = new AboutsPanel();
+		m_moresPanel = new MoresPanel();
 	}
 	~MainPanel()
 	{
 		delete m_modulesPanel;
+		delete m_globalSettings;
+		delete m_aboutsPanel;
+		delete m_moresPanel;
 	}
 	void Draw() const
 	{
@@ -47,16 +56,22 @@ public:
 		case SettingsPanel:
 			ImGuiStd::TextShadow(u8"设置");
 			ImGui::PopFont();
+			ImGui::SetCursorScreenPos(ImVec2(screenPos.x + padding, screenPos.y + 60 + padding * 0.625f));
+			m_globalSettings->Draw();
 			// Draw Settings Panel
 			break;
 		case MorePanel:
 			ImGuiStd::TextShadow(u8"更多");
 			ImGui::PopFont();
+			ImGui::SetCursorScreenPos(ImVec2(screenPos.x + padding, screenPos.y + 60 + padding * 0.625f));
+			m_moresPanel->Draw();
 			// Draw More Panel
 			break;
 		case AboutPanel:
 			ImGuiStd::TextShadow(u8"关于");
 			ImGui::PopFont();
+			ImGui::SetCursorScreenPos(ImVec2(screenPos.x + padding, screenPos.y + 60 + padding * 0.625f));
+			m_aboutsPanel->Draw();
 			// Draw About Panel
 			break;
 		}
@@ -91,4 +106,7 @@ public:
 private:
 	PanelType m_panelType;
 	ModulesPanel *m_modulesPanel;
+	GlobalSettings *m_globalSettings;
+	AboutsPanel *m_aboutsPanel;
+	MoresPanel* m_moresPanel;
 };

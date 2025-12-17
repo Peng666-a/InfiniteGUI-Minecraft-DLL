@@ -86,17 +86,42 @@ void ClickEffect::Save(nlohmann::json& j) const
 
 void ClickEffect::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
+	float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	//DrawItemSettings();
 	ImGui::Checkbox(u8"游戏内启用", &enabledInGame);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(bigPadding + centerX);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"游戏内菜单启用", &enabledInGameMenu);
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"无限GUI菜单内启用", &enabledInMenu);
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"左键", &enableLeftClick);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(bigPadding + centerX);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"右键", &enableRightClick);
+
+	ImGui::PushFont(NULL, ImGui::GetFontSize() * 0.8f);
+	ImGui::BeginDisabled();
 	ImGuiStd::TextShadow(u8"圆圈特效设置");
-	ImGui::Separator();
-	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
-	ImGui::SliderFloat(u8"动画速度", &clickCircleSettings.animSpeed, 3.0f, 30.0f, "%.1f");
+	ImGui::EndDisabled();
+	ImGui::PopFont();
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(bigItemWidth);
+	ImGui::SliderFloat(u8"动画速度", &clickCircleSettings.animSpeed, 1.0f, 30.0f, "%.1f");
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(bigItemWidth);
 	ImGui::SliderFloat(u8"半径", &clickCircleSettings.radius, 5.0f, 100.0f, "%.1f");
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGuiStd::EditColor(u8"颜色", clickCircleSettings.color, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-	ImGui::PopItemWidth();
+
 }

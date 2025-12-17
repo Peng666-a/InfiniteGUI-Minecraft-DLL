@@ -15,12 +15,12 @@ struct ClickCircleSettings
 {
 	float radius = 50.0f;
 	ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-	float animSpeed = 10.0f;
+	float animSpeed = 5.0f;
 	void Reset()
 	{
 		radius = 50.0f;
 		color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		animSpeed = 10.0f;
+		animSpeed = 5.0f;
 	}
 };
 

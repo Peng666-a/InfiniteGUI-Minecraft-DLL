@@ -78,6 +78,12 @@ void BilibiliFansItem::DrawContent()
 void BilibiliFansItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
     //DrawItemSettings();
+
+    float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(bigItemWidth);
+
     static std::string uidStr = std::to_string(uid);
     ImGuiStd::InputTextStd(u8"Bվ UID", uidStr);
     ImGui::SameLine();

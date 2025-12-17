@@ -15,18 +15,14 @@ public:
         ImGui::EndDisabled();
         ImGui::PopFont();
 
-        // 当前 Y 位置
-        float startY = ImGui::GetCursorPosY();
         float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
         // ===== 左：提示音 =====
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
 
         ImGui::Checkbox(u8"提示音", &isPlaySound);
 
-
-        startY += ImGui::GetFrameHeightWithSpacing();
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(bigItemWidth);
         ImGui::SliderFloat(u8"音量", &soundVolume, 0.0f, 1.0f, "%.2f");
     }

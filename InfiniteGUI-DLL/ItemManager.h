@@ -26,7 +26,7 @@ public:
     void Load(const nlohmann::json& j);
     void Save(nlohmann::json& j) const;
 
-    const std::vector<Item*>& GetAllItems() const { return Items; }
+    const std::vector<Item*>& GetItems() const { return Items; }
 
 private:
     std::vector<Item*> Items;                      // 全部 item（指针，不析构）

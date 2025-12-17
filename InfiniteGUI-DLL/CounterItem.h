@@ -35,6 +35,8 @@ public:
         ResetSound();
         ResetKeybind();
 
+        isEnabled = false;
+
         keybinds.insert(std::make_pair(u8"增加快捷键：", VK_F6));
         keybinds.insert(std::make_pair(u8"减少快捷键：", VK_F5));
         keybinds.insert(std::make_pair(u8"清空快捷键：", NULL));

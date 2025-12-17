@@ -41,7 +41,6 @@ void TimeItem::DrawContent()
 void TimeItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
     //DrawItemSettings();
-    ImGui::Text(u8"时钟 无额外设置");
     DrawAffixSettings(bigPadding, centerX, itemWidth);
     DrawWindowSettings(bigPadding, centerX, itemWidth);
 }

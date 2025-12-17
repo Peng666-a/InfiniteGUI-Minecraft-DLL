@@ -7827,12 +7827,12 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         window->ScrollMax.x = ImMax(0.0f, window->ContentSize.x + window->WindowPadding.x * 2.0f - window->InnerRect.GetWidth());
         window->ScrollMax.y = ImMax(0.0f, window->ContentSize.y + window->WindowPadding.y * 2.0f - window->InnerRect.GetHeight());
 
-        float scrollSpeed = std::clamp(20.0f * g.IO.DeltaTime, 0.05f, 50.0f);
-
+        float scrollSpeed = std::clamp(20.0f * g.IO.DeltaTime, 0.01f, 50.0f);
         // Apply scrolling
         window->ScrollAnimTarget = CalcNextScrollFromScrollTargetAndClamp(window);
-        window->Scroll = ImLerp(window->Scroll, window->ScrollAnimTarget, scrollSpeed);
-        if (std::abs(window->ScrollAnimTarget.y - window->Scroll.y) < 1.0f) window->Scroll = window->ScrollAnimTarget;
+        window->Scroll = ImLerp(window->Scroll, window->ScrollAnimTarget, scrollSpeed); //不要给窗口加scrollbar，目前会出问题！！！
+        if (std::abs(window->ScrollAnimTarget.y - window->Scroll.y) < 1.0f) window->Scroll.y = window->ScrollAnimTarget.y;
+        if (std::abs(window->ScrollAnimTarget.x - window->Scroll.x) < 1.0f) window->Scroll.x = window->ScrollAnimTarget.x;
         window->ScrollTarget = ImVec2(FLT_MAX, FLT_MAX);
         window->DecoInnerSizeX1 = window->DecoInnerSizeY1 = 0.0f;
         //flag max addon 2
@@ -11682,7 +11682,7 @@ static float CalcScrollEdgeSnap(float target, float snap_min, float snap_max, fl
 
 static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
 {
-    ImVec2 scroll = window->ScrollAnimTarget;  //flag max addon 3
+    ImVec2 scroll = window->ScrollAnimTarget;  
     ImVec2 decoration_size(window->DecoOuterSizeX1 + window->DecoInnerSizeX1 + window->DecoOuterSizeX2, window->DecoOuterSizeY1 + window->DecoInnerSizeY1 + window->DecoOuterSizeY2);
     for (int axis = 0; axis < 2; axis++)
     {
@@ -11702,7 +11702,7 @@ static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
         if (!window->Collapsed && !window->SkipItems)
             scroll[axis] = ImMin(scroll[axis], window->ScrollMax[axis]);
     }
-    return scroll;
+    return scroll; //flag max addon 3
 }
 
 void ImGui::ScrollToItem(ImGuiScrollFlags flags)

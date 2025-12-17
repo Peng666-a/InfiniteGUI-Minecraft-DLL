@@ -22,7 +22,9 @@ public:
 	{
 		DrawHeader();
 		ImGui::SetCursorPos(ImVec2(20.0f, 115.0f));
+		ImGui::PushFont(NULL, ImGui::GetFontSize() * 1.20f);
 		selectedIndex = selectedPanel->Draw();
+		ImGui::PopFont();
 	}
 	int GetSelectedIndex() const { return selectedIndex; }
 private:

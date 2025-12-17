@@ -119,8 +119,8 @@ bool ConfigManager::SwitchProfile(const std::string& name, bool saveCurrent)
         Save();
 
     ItemManager::Instance().Clear(true);
-
     currentProfile = name;
+    SaveGlobal(); // Save global config to reflect new profile
     return LoadProfile();
 }
 

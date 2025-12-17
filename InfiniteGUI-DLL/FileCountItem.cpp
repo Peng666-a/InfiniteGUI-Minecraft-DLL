@@ -103,9 +103,22 @@ void FileCountItem::DrawContent()
 void FileCountItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
     //DrawItemSettings();
+
+    float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(bigItemWidth);
     ImGuiStd::InputTextStd(u8"文件夹路径", folderPath);
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::Checkbox(u8"递归扫描(包括子文件夹)", &recursive);
-    ImGuiStd::InputTextStd(u8"扩展名过滤 (.txt)", extensionFilter);
+    if(recursive)
+    {
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(bigPadding + centerX);
+        ImGui::SetNextItemWidth(itemWidth);
+        ImGuiStd::InputTextStd(u8"扩展名过滤 (.txt)", extensionFilter);
+    }
 
     DrawAffixSettings(bigPadding, centerX, itemWidth);
     DrawSoundSettings(bigPadding, centerX, itemWidth);

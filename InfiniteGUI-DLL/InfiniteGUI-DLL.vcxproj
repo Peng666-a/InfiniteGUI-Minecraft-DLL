@@ -143,6 +143,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AboutsPanel.h" />
     <ClInclude Include="AffixModule.h" />
     <ClInclude Include="Anim.h" />
     <ClInclude Include="AnimButtonBase.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="ClickEffect.h" />
     <ClInclude Include="ClickEffectBase.h" />
     <ClInclude Include="ConfigManager.h" />
+    <ClInclude Include="ConfigSelector.h" />
     <ClInclude Include="CounterItem.h" />
     <ClInclude Include="CPSDetector.h" />
     <ClInclude Include="CPSItem.h" />
@@ -167,12 +169,14 @@
     <ClInclude Include="FileCountItem.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="fonts.h" />
+    <ClInclude Include="FontSelector.h" />
     <ClInclude Include="fonts\AlibabaPuHuiTi-3-85-Bold.h" />
     <ClInclude Include="fonts\IconFont.h" />
     <ClInclude Include="fonts\Uranus_Pixel_11Px.h" />
     <ClInclude Include="FpsItem.h" />
     <ClInclude Include="GameStateDetector.h" />
     <ClInclude Include="GlobalConfig.h" />
+    <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="GlobalWindowStyle.h" />
     <ClInclude Include="gl\glew.h" />
     <ClInclude Include="gl\glxew.h" />
@@ -265,6 +269,7 @@
     <ClCompile Include="KeyState.cpp" />
     <ClCompile Include="KeystrokesItem.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="MoresPanel.h" />
     <ClCompile Include="Motionblur.cpp" />
     <ClCompile Include="opengl_hook.cpp" />
     <ClCompile Include="Sprint.cpp" />

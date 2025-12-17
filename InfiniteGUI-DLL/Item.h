@@ -14,7 +14,9 @@ enum ItemType{
     Hud,
     Util,
     Visual,
-    Hidden
+    Server,
+    Hidden,
+    All
 }; //改成可同时拥有多个类型
 
 enum MultiType {

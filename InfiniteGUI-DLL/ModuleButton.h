@@ -124,7 +124,18 @@ public:
 
 	void SetSelected(bool selected)
 	{
-		m_state = selected ? Selected : Normal;
+		if (selected)
+		{
+			ImVec4 borderColor = ImVec4(0.2f, 0.8f, 0.2f, 1.0f);
+			m_hovered.button.borderColor = borderColor; //绿色边框 代表开启状态
+			m_state = Selected;
+		}
+		else
+		{
+			ImVec4 borderColor = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
+			m_hovered.button.borderColor = borderColor;//红色边框 代表关闭状态
+			m_state = Normal;
+		}
 	}
 
 	bool IsSelected() const

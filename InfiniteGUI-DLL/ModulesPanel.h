@@ -38,7 +38,7 @@ public:
 		{
 			delete moduleCard;
 		}
-		for (auto item : ItemManager::Instance().GetAllItems())
+		for (auto item : ItemManager::Instance().GetItems())
 		{
 			if (item->type != Hidden)
 				m_moduleCard.push_back(new ModuleCard(item));
@@ -69,7 +69,19 @@ private:
 		bool joinModuleSettings = false;
 		//获取窗口是否在scroll
 		ImVec2 startPos = ImGui::GetCursorPos();
-		int typeIndex = m_categoryBar->Draw();
+		if (m_categoryBar->Draw())
+		{
+			switch (m_categoryBar->GetSelectedIndex())
+			{
+			case 0: selectedType = ItemType::All; break;
+			case 1: selectedType = ItemType::Hud; break;
+			case 2: selectedType = ItemType::Visual; break;
+			case 3: selectedType = ItemType::Util; break;
+			case 4: selectedType = ItemType::Server; break;
+			default: selectedType = ItemType::All; break;
+			}
+		}
+
 		startPos.y += m_categoryBar->GetButtonHeight() + 13;
 		ImGui::SetCursorPos(startPos);
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
@@ -77,10 +89,13 @@ private:
 		ImGui::SetCursorPos(ImVec2(padding, padding));
 		for (auto moduleCard : m_moduleCard)
 		{
-			if (moduleCard->Draw())
+			if(selectedType == All || selectedType == moduleCard->GetItem()->type)
 			{
-				joinModuleSettings = true;
-				selectedItem = moduleCard->GetItem();
+				if (moduleCard->Draw())
+				{
+					joinModuleSettings = true;
+					selectedItem = moduleCard->GetItem();
+				}
 			}
 		}
 		ImGui::Dummy(ImVec2(0, 10));
@@ -115,6 +130,7 @@ private:
 	}
 	bool isInModuleSettings = false;
 	Item *selectedItem = nullptr;
+	ItemType selectedType = All;
 	CategoryBar* m_categoryBar;
 	ModuleSettings* m_moduleSettings; //二级设置 
 	std::vector<ModuleCard*> m_moduleCard;

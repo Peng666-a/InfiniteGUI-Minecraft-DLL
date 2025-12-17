@@ -15,16 +15,13 @@ public:
         ImGui::EndDisabled();
         ImGui::PopFont();
 
-        // 当前 Y 位置
-        float startY = ImGui::GetCursorPosY();
-
         // ===== 左：前缀 =====
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         ImGuiStd::InputTextStd(u8"前缀", prefix);
-
+        ImGui::SameLine();
         // ===== 右：后缀（以窗口中心线 + 边距为起点）=====
-        ImGui::SetCursorPos(ImVec2(centerX + bigPadding, startY));
+        ImGui::SetCursorPosX(centerX + bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         ImGuiStd::InputTextStd(u8"后缀", suffix);
     }

@@ -33,6 +33,7 @@ public:
         ResetAffix();
         ResetSound();
         ResetWindow();
+        isEnabled = false;
         prefix = "[";
         suffix = u8"¸öÎÄ¼þ]";
         fileCount = 0;

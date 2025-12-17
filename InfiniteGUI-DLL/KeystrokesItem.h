@@ -77,7 +77,6 @@ public:
         icon = u8"\uE05D";
         updateIntervalMs = 5;
         lastUpdateTime = std::chrono::steady_clock::now();
-
         Reset();
     }
     ~KeystrokesItem() {}

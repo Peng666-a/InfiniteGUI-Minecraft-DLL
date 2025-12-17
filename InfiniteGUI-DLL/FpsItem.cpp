@@ -27,7 +27,6 @@ void FpsItem::DrawContent()
 void FpsItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
 	//DrawItemSettings();
-	ImGui::Text(u8"FPS Œﬁ∂ÓÕ‚…Ë÷√");
 	DrawAffixSettings(bigPadding, centerX, itemWidth);
 	DrawWindowSettings(bigPadding, centerX, itemWidth);
 }

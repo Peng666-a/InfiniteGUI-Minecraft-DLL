@@ -18,6 +18,11 @@ void GlobalWindowStyle::Save(nlohmann::json& j) const
 
 void GlobalWindowStyle::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
+	ImGui::PushFont(NULL, ImGui::GetFontSize() * 0.8f);
+	ImGui::BeginDisabled();
+	ImGuiStd::TextShadow(u8"全局窗口样式设置");
+	ImGui::EndDisabled();
+	ImGui::PopFont();
 	DrawStyleSettings(bigPadding, centerX, itemWidth);
 }
 

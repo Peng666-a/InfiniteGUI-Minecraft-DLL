@@ -24,25 +24,41 @@ namespace ImGuiStd {
         return false;
     }
 
-    static void TextShadow(const char* text, ImVec4 shadowColor, ImVec2 offset, ...)
+    static void TextShadow(const char* text,
+        ImVec2 offset = ImVec2(1, 1),
+        ImVec4 shadow_col = ImVec4(0, 0, 0, 0.6f))
     {
-        ImVec2 pos = ImGui::GetCursorPos();
-        ImGui::SetCursorPos(ImVec2(pos.x + offset.x, pos.y + offset.y));
-        ImGui::TextColored(shadowColor, text);  // 阴影层
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        if (window->SkipItems)
+            return;
 
-        ImGui::SetCursorPos(pos);
-        ImGui::Text(text);  // 正常文字
-    }
+        ImDrawList* draw = window->DrawList;
+        ImFont* font = ImGui::GetFont();
+        float size = ImGui::GetFontSize();
 
-    static void TextShadow(const char* text, ...)
-    {
-        ImVec2 pos = ImGui::GetCursorPos();
-        float shadowOffset = /*ImGui::GetFontSize() * 0.08f*/ 1.0f;
-        ImGui::SetCursorPos(ImVec2(pos.x + shadowOffset, pos.y + shadowOffset));
-        ImGui::TextColored(ImVec4(0, 0, 0, 0.6f), text);  // 阴影层
+        ImVec2 pos = ImGui::GetCursorScreenPos();
 
-        ImGui::SetCursorPos(pos);
-        ImGui::Text(text);  // 正常文字
+        // 阴影
+        draw->AddText(
+            font,
+            size,
+            ImVec2(pos.x + offset.x, pos.y + offset.y),
+            ImGui::GetColorU32(shadow_col),
+            text
+        );
+
+        // 正文
+        draw->AddText(
+            font,
+            size,
+            pos,
+            ImGui::GetColorU32(ImGuiCol_Text),
+            text
+        );
+
+        // 手动推进光标（关键）
+        ImVec2 text_size = ImGui::CalcTextSize(text);
+        ImGui::Dummy(ImVec2(text_size.x, text_size.y));
     }
 
     static void TextColoredShadow(ImVec4 color, ImVec4 shadowColor, const char* text, ImVec2 offset, ...)

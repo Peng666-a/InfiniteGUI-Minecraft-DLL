@@ -78,17 +78,26 @@ void KeystrokesItem::DrawContent()
 
 void KeystrokesItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
-    //DrawItemSettings();
-    ImGui::Checkbox(u8"显示空格", &showSpace);
+    float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
 
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(itemWidth);
+    ImGui::Checkbox(u8"显示空格", &showSpace);
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(bigPadding + centerX);
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::Checkbox(u8"显示鼠标", &showMouse);
-    ImGui::Checkbox(u8"显示CPS", &showCps);
-    ImGui::Separator();
+    //ImGui::Checkbox(u8"显示CPS", &showCps);
+    //ImGui::Separator();
     bool needResize = false;
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(bigItemWidth);
     if(ImGui::SliderFloat(u8"按键边长", &min_box_size, 12.0f, 108.0f, "%.1f"))
     {
         needResize = true;
     }
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(bigItemWidth);
     if(ImGui::SliderFloat(u8"按键间隔", &padding, 1.0f, 18.0f, "%.1f"))
     {
         needResize = true;

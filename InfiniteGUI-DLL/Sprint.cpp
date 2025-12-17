@@ -108,8 +108,15 @@ void Sprint::DrawContent()
 
 void Sprint::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
+    float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(itemWidth);
     //DrawItemSettings();
     ImGui::Checkbox(u8"¼¤»î", &isActivated);
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(bigPadding + centerX);
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::Checkbox(u8"ÏÔÊ¾´°¿Ú", &isWindowShow);
 
     DrawKeybindSettings(bigPadding, centerX, itemWidth);

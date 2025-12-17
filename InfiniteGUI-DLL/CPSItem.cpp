@@ -24,8 +24,18 @@ void CPSItem::DrawContent()
 void CPSItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
     //DrawItemSettings();
+
+    float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::Checkbox(u8"×ó¼ü", &showLeft);
+
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(bigPadding + centerX);
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::Checkbox(u8"ÓÒ¼ü", &showRight);
+
     DrawAffixSettings(bigPadding, centerX, itemWidth);
     DrawWindowSettings(bigPadding, centerX, itemWidth);
 }

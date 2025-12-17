@@ -25,12 +25,8 @@ public:
 
             // 设置按钮的“是否选中”
             btn.SetSelected(i == selectedButtonIndex);
-
             // 绘制按钮
-
-            ImGui::PushFont(NULL, ImGui::GetFontSize() * 1.20f);
             bool clicked = btn.Draw(moving);
-            ImGui::PopFont();
             if (clicked)
             {
                 selectedButtonIndex = i;

@@ -32,6 +32,11 @@ void GameStateDetector::Save(nlohmann::json& j) const
 
 void GameStateDetector::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
+	ImGui::PushFont(NULL, ImGui::GetFontSize() * 0.8f);
+	ImGui::BeginDisabled();
+	ImGuiStd::TextShadow(u8"游戏状态检测设置");
+	ImGui::EndDisabled();
+	ImGui::PopFont();
 	ImGui::SetCursorPosX(bigPadding);
 	ImGui::PushItemWidth(itemWidth);
 	ImGui::Checkbox(u8"仅在游戏内显示窗口", &hideItemInGui);

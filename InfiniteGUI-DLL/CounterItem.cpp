@@ -61,7 +61,13 @@ void CounterItem::DrawContent()
 void CounterItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
     //DrawItemSettings();
+
+    float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
+
+    ImGui::SetCursorPosX(bigPadding);
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::InputInt(u8"¼ÆÊýÖµ", &count);
+
     DrawKeybindSettings(bigPadding, centerX, itemWidth);
     DrawAffixSettings(bigPadding, centerX, itemWidth);
     DrawSoundSettings(bigPadding, centerX, itemWidth);

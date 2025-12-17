@@ -13,10 +13,10 @@ public:
         buttons.emplace_back(u8"服务器", buttonSize);
     }
 
-    int Draw()
+    bool Draw()
     {
         ImVec2 curPos = ImGui::GetCursorPos();
-        int clickedIndex = -1;
+        int clickedOne = false;
         for (int i = 0; i < buttons.size(); i++)
         {
             MyButton& btn = buttons[i];
@@ -31,12 +31,12 @@ public:
             if (clicked)
             {
                 selectedButtonIndex = i;
-                clickedIndex = i;
+                clickedOne = true;
             }
             curPos.x += buttonSize.x + padding * 0.625f;
         }
 
-        return clickedIndex;   // -1 表示没有点击
+        return clickedOne;   // -1 表示没有点击
     }
 
     int GetSelectedIndex() const { return selectedButtonIndex; }

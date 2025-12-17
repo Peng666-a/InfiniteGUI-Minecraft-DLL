@@ -21,40 +21,35 @@ public:
     }
     void DrawStyleSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
     {
-        ImGui::PushFont(NULL, ImGui::GetFontSize() * 0.8f);
-        ImGui::BeginDisabled();
-        ImGuiStd::TextShadow(u8"窗口样式设置"); 
-        ImGui::EndDisabled();
-        ImGui::PopFont();
-
-        float itemHeight = ImGui::GetFrameHeightWithSpacing();
-        // 当前 Y 位置
-        float startY = ImGui::GetCursorPosY();
+        //ImGui::PushFont(NULL, ImGui::GetFontSize() * 0.8f);
+        //ImGui::BeginDisabled();
+        //ImGuiStd::TextShadow(u8"窗口样式设置"); 
+        //ImGui::EndDisabled();
+        //ImGui::PopFont();
 
         float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
 
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(bigItemWidth);
 
         ImGui::SliderFloat(u8"窗口圆角", &itemStyle.windowRounding, 0.0f, 10.0f, "%.1f");
         //字体大小设置
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(bigItemWidth);
         ImGui::InputFloat(u8"字体大小", &itemStyle.fontSize, 1.0f, 1.0f, "%.1f");
         //颜色设置
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         ImGuiStd::EditColor(u8"字体颜色", itemStyle.fontColor, defaultStyle.fontColor);
         ImGui::SameLine();
         ImGui::Checkbox(u8"彩虹", &itemStyle.rainbowFont);
 
-        ImGui::SetCursorPos(ImVec2(centerX + bigPadding, startY));
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(centerX + bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         ImGuiStd::EditColor(u8"背景颜色", itemStyle.bgColor, defaultStyle.bgColor);
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         ImGuiStd::EditColor(u8"边框颜色", itemStyle.borderColor, defaultStyle.borderColor);
     }

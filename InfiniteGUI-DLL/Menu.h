@@ -57,7 +57,7 @@ public:
         ResetWindowStyle();
 
         keybinds.insert(std::make_pair(u8"²Ëµ¥¿ì½Ý¼ü£º", VK_OEM_5));
-        itemStyle.fontSize = 24.0f;
+        itemStyle.fontSize = 22.0f;
         itemStyle.bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.15f);
     }
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;
@@ -69,9 +69,6 @@ private:
     void ShowMain();
     void ShowSidePanels() const;
     void ShowSettings(bool* done);
-    void OldSettings();
-    void DrawItemList() const;
-    void DrawItemEditor(Item* item, const float& bigPadding, const float& centerX, const float& itemWidth) const;
     Blur * blur;
     SettingMenu * settingMenu;
     bool initialized = false;

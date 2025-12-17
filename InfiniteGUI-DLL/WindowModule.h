@@ -41,7 +41,7 @@ public:
     }
     virtual void DrawContent() = 0;       // 绘制内容（文本、图形等）
 
-private:
+protected:
     void SetStyle()
     {
         if (custom.windowRounding)
@@ -72,7 +72,7 @@ private:
             itemStylePtr.borderColor = &GlobalWindowStyle::Instance().GetGlobeStyle().borderColor;
     }
 
-    ImVec4* EditWindowColor(const char* label, ImVec4* color,ImVec4* globalColorPtr, bool& custom, ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel)
+    static ImVec4* EditWindowColor(const char* label, ImVec4* color,ImVec4* globalColorPtr, bool& custom, ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel)
     {
         if (ImGuiStd::EditColor(label, *color))
         {
@@ -94,7 +94,6 @@ private:
             }
             return color;
         }
-        else
             return globalColorPtr;
     }
 public:
@@ -106,50 +105,43 @@ public:
         ImGuiStd::TextShadow(u8"窗口设置");
         ImGui::EndDisabled();
         ImGui::PopFont();
-        float itemHeight = ImGui::GetFrameHeightWithSpacing();
-        // 当前 Y 位置
-        float startY = ImGui::GetCursorPosY();
 
         float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
 
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
 
         ImGui::Checkbox(u8"固定", &clickThrough);
-
-        ImGui::SetCursorPos(ImVec2(bigPadding + centerX, startY));
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(bigPadding + centerX);
         ImGui::SetNextItemWidth(itemWidth);
 
         ImGui::Checkbox(u8"自定义窗口大小", &isCustomSize);
         if (isCustomSize) {
-            startY += itemHeight;
 
-
-            ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+            ImGui::SetCursorPosX(bigPadding);
             ImGui::SetNextItemWidth(itemWidth);
             ImGui::InputFloat(u8"宽度", &width, 1.0f, 1.0f, "%.1f");
-            ImGui::SetCursorPos(ImVec2(bigPadding + centerX, startY));
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(bigPadding + centerX);
             ImGui::SetNextItemWidth(itemWidth);
             ImGui::InputFloat(u8"高度", &height, 1.0f, 1.0f, "%.1f");
         }
 
-        startY += itemHeight;
-
-
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         ImGui::InputFloat(u8"窗口 X", &x, 1.0f, 1.0f, "%.1f");
-        ImGui::SetCursorPos(ImVec2(bigPadding + centerX, startY));
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(bigPadding + centerX);
         ImGui::SetNextItemWidth(itemWidth);
         ImGui::InputFloat(u8"窗口 Y", &y, 1.0f, 1.0f, "%.1f");
 
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(bigItemWidth);
         if (ImGui::SliderFloat(u8"窗口圆角", &itemStyle.windowRounding, 0.0f, 10.0f, "%.1f"))
         {
             custom.windowRounding = true;
-            itemStylePtr.windowRounding = &itemStyle.windowRounding;
+            //itemStylePtr.windowRounding = &itemStyle.windowRounding;
         }
         if (custom.windowRounding)
         {
@@ -158,8 +150,8 @@ public:
             if (ImGui::Button((u8"\uE02E" + std::string("##windowRounding")).c_str()))
             {
                 custom.windowRounding = false;
-                itemStyle.windowRounding = GlobalWindowStyle::Instance().GetGlobeStyle().windowRounding;
-                itemStylePtr.windowRounding = &GlobalWindowStyle::Instance().GetGlobeStyle().windowRounding;
+                //itemStyle.windowRounding = GlobalWindowStyle::Instance().GetGlobeStyle().windowRounding;
+                //itemStylePtr.windowRounding = &GlobalWindowStyle::Instance().GetGlobeStyle().windowRounding;
             }
             ImGui::PopFont();
             if (ImGui::IsItemHovered())
@@ -167,13 +159,13 @@ public:
                 ImGui::SetTooltip(u8"使用全局样式");
             }
         }
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(bigItemWidth);
         if(ImGui::InputFloat(u8"字体大小", &itemStyle.fontSize, 1.0f, 1.0f, "%.1f"))
         {
             custom.fontSize = true;
-            itemStylePtr.fontSize = &itemStyle.fontSize;
+            //itemStylePtr.fontSize = &itemStyle.fontSize;
         } 
         if (custom.fontSize)
         {
@@ -182,8 +174,8 @@ public:
             if (ImGui::Button((u8"\uE02E" + std::string("##fontSize")).c_str()))
             {
                 custom.fontSize = false;
-                itemStyle.fontSize = GlobalWindowStyle::Instance().GetGlobeStyle().fontSize;
-                itemStylePtr.fontSize = &GlobalWindowStyle::Instance().GetGlobeStyle().fontSize;
+                //itemStyle.fontSize = GlobalWindowStyle::Instance().GetGlobeStyle().fontSize;
+                //itemStylePtr.fontSize = &GlobalWindowStyle::Instance().GetGlobeStyle().fontSize;
             }
             ImGui::PopFont();
             if (ImGui::IsItemHovered())
@@ -194,8 +186,7 @@ public:
 
         ImVec4* colors = ImGui::GetStyle().Colors;
 
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
 
         itemStylePtr.fontColor = EditWindowColor(u8"字体颜色", &itemStyle.fontColor, &GlobalWindowStyle::Instance().GetGlobeStyle().fontColor, custom.fontColor);
@@ -204,22 +195,22 @@ public:
         {
             custom.fontColor = true;
         }
-        if (custom.fontColor)
-        {
-            itemStylePtr.fontColor = &itemStyle.fontColor;
-            itemStylePtr.rainbowFont = &itemStyle.rainbowFont;
-        }
-        else
-        {
-            itemStylePtr.rainbowFont = &GlobalWindowStyle::Instance().GetGlobeStyle().rainbowFont;
-            itemStylePtr.fontColor = &GlobalWindowStyle::Instance().GetGlobeStyle().fontColor;
-        }
-        ImGui::SetCursorPos(ImVec2(centerX + bigPadding, startY));
+        //if (custom.fontColor)
+        //{
+        //    itemStylePtr.fontColor = &itemStyle.fontColor;
+        //    itemStylePtr.rainbowFont = &itemStyle.rainbowFont;
+        //}
+        //else
+        //{
+        //    itemStylePtr.rainbowFont = &GlobalWindowStyle::Instance().GetGlobeStyle().rainbowFont;
+        //    itemStylePtr.fontColor = &GlobalWindowStyle::Instance().GetGlobeStyle().fontColor;
+        //}
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(centerX + bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         itemStylePtr.bgColor = EditWindowColor(u8"背景颜色", &itemStyle.bgColor, &GlobalWindowStyle::Instance().GetGlobeStyle().bgColor, custom.bgColor);
        
-        startY += itemHeight;
-        ImGui::SetCursorPos(ImVec2(bigPadding, startY));
+        ImGui::SetCursorPosX(bigPadding);
         ImGui::SetNextItemWidth(itemWidth);
         itemStylePtr.borderColor = EditWindowColor(u8"边框颜色", &itemStyle.borderColor, &GlobalWindowStyle::Instance().GetGlobeStyle().borderColor, custom.borderColor);
     }
@@ -241,7 +232,7 @@ public:
                 ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
         }
         HWND g_hwnd = opengl_hook::handle_window;
-
+        SetStyle();  //明明可以不加这个的，但是不加会崩，我无语...
         if (isTransparentBg)
         {
             ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 背景透明
@@ -274,10 +265,6 @@ public:
 
         isHovered = ImGui::IsWindowHovered();
 
-        if (custom.fontSize)
-            itemStylePtr.fontSize = &itemStyle.fontSize;
-        else
-            itemStylePtr.fontSize = &GlobalWindowStyle::Instance().GetGlobeStyle().fontSize;  //明明可以不加这个的，但是不加会崩，我无语...
         ImGui::PushFont(NULL, *itemStylePtr.fontSize);
         DrawContent();
         ImGui::PopFont();
