@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "ModuleButton.h"
-#include "MyButton.h"
+#include "ModuleButton.hpp"
+#include "MyButton.hpp"
 #include "ItemManager.h"
 #include <vector>
 

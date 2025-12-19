@@ -3,8 +3,9 @@
 #include "GlobalConfig.h"
 #include "SelectPanel.h"
 #include "menuRule.h"
-#include "MyButton.h"
+#include "MyButton.hpp"
 #include "opengl_hook.h"
+#include "NotificationItem.h"
 constexpr ImVec2 headerLogoPos = ImVec2(45.0f, 6.0f);
 constexpr ImVec2 heaaderLogoSize = ImVec2(100.0f, 100.0f);
 
@@ -80,6 +81,7 @@ public:
 			savedTime = std::chrono::steady_clock::now();
 			saved = true;
 			ConfigManager::Instance().Save();
+			NotificationItem::Instance().AddNotification(NotificationType_Success,u8"配置文件已保存");
 		}
 		ImGui::PopFont();
 	}

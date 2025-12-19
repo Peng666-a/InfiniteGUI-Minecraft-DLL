@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MyButton.h"
+#include "MyButton.hpp"
 
 class MainMenuButton : public MyButton
 {
@@ -45,6 +45,7 @@ public:
 		}
 
 		bool pressed = DrawInvisibleButton(m_current.button);
+		if(pressed) ClickSound::Instance().PlayClickSound();
 		rightClicked = ImGui::IsItemClicked(1); //右键单击
 		bool hovered = ImGui::IsItemHovered();
 		bool active = ImGui::IsItemActive();
@@ -93,7 +94,6 @@ public:
 
 		// 为下一个控件设置 Cursor ScreenPos（按钮垂直堆叠）
 		SetNextCursorScreenPos();
-
 		// 返回是否被点击（按下 -> 松开的那一帧）
 		return pressed;
 	}

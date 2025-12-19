@@ -2,7 +2,7 @@
 #include "CategoryBar.h"
 #include "CounterItem.h"
 #include "FileCountItem.h"
-#include "ModuleButton.h"
+#include "ModuleButton.hpp"
 #include "ModuleCard.h"
 #include "ModuleSettings.h"
 #include "ItemManager.h"

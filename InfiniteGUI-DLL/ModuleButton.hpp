@@ -1,34 +1,28 @@
 ﻿#pragma once
-#include <string>
-
-#include "imgui\imgui.h"
-#include "imgui\imgui_internal.h"
-
-#include "opengl_hook.h"
-
 #include "AnimButtonBase.h"
-
-struct PanelButtonStateData
+struct ModuleButtonStateData
 {
 	ButtonAnimTarget button; // size + pos
 	TextAnimTarget   icon;
 	TextAnimTarget   label;
+	TextAnimTarget   description;
 };
 
-constexpr float textSpacing = 5.0f; //图标与文字的间距
+constexpr float textSpacingY = 0.0f;
+constexpr ImVec2 moduleButtonSize = ImVec2(548.0f, 60.0f);
+class ModuleButton : public AnimButtonBase
 
-class PanelButton : public AnimButtonBase
 {
 public:
-	PanelButton(const char* iconText, const char* labelText, bool isExit = false, const ImVec2& size = panelButtonSize, const float& padding = 20.0f)
+	ModuleButton(const char* iconText, const char* labelText, const char* descriptionText, const ImVec2& size = moduleButtonSize, const float& padding = 20.0f)
 	{
-		this->isExitButton = isExit;
 		this->iconText.text = iconText;
 		this->labelText.text = labelText;
+		this->descriptionText.text = descriptionText;
 		m_padding = padding;
 		m_normal.button.size = size;
 	}
-	~PanelButton() = default;
+	~ModuleButton() = default;
 
 	bool Draw(ImDrawFlags flags = ImDrawFlags_RoundCornersAll) override //返回是否被点击
 	{
@@ -56,6 +50,7 @@ public:
 			lastScreenPos = screenPos;
 		}
 
+
 		fontSize = ImGui::GetFontSize();
 		if (IsFontSizeChanged(fontSize, lastFontSize))
 		{
@@ -66,6 +61,7 @@ public:
 
 		bool pressed = DrawInvisibleButton(m_current.button);
 		rightClicked = ImGui::IsItemClicked(1); //右键单击
+		//if (pressed || rightClicked) ClickSound::Instance().PlayClickSound();
 		bool hovered = ImGui::IsItemHovered();
 		bool active = ImGui::IsItemActive();
 
@@ -76,7 +72,7 @@ public:
 		if (m_state == Selected)
 		{
 			if (active) m_state = Active;
-			else if (hovered) m_state = Selected; //覆盖hover
+			else if (hovered) m_state = Hovered; //覆盖hover
 			else m_state = Selected;
 		}
 		else
@@ -115,14 +111,15 @@ public:
 			ImGuiIO& io = ImGui::GetIO();
 			LerpAll(m_current, *m_target, animSpeed, io.DeltaTime);
 		}
-	// -------------------------------------------------
+		// -------------------------------------------------
 		// 绘制
 		// -------------------------------------------------
 
 		DrawBackground(m_current.button, flags);
-		DrawBorder(m_current.button, flags);
+		DrawBorder(m_current.button, flags, 2.0f);
 		DrawLabel(m_current.icon, iconText);
 		DrawLabel(m_current.label, labelText);
+		DrawLabel(m_current.description, descriptionText);
 
 		//if (!skipAnim)
 		//{
@@ -139,7 +136,18 @@ public:
 
 	void SetSelected(bool selected)
 	{
-		m_state = selected ? Selected : Normal;
+		if (selected)
+		{
+			ImVec4 borderColor = ImVec4(0.2f, 0.8f, 0.2f, 1.0f);
+			m_hovered.button.borderColor = borderColor; //绿色边框 代表开启状态
+			m_state = Selected;
+		}
+		else
+		{
+			ImVec4 borderColor = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
+			m_hovered.button.borderColor = borderColor;//红色边框 代表关闭状态
+			m_state = Normal;
+		}
 	}
 
 	bool IsSelected() const
@@ -154,27 +162,26 @@ public:
 	void SetSize(const ImVec2 size);
 	void SetPosition(const ImVec2 pos);
 private:
-	bool isExitButton = false; //是否是退出按钮
 
-	//图标
+	//文字
 	ButtonText iconText;
 	float iconFontSize = 24.0f;
-	//文字
 	ButtonText labelText;
+	ButtonText descriptionText; //描述文字
 
-	PanelButtonStateData m_normal; //未激活普通状态
-	PanelButtonStateData m_selected; //激活的普通状态
-	PanelButtonStateData m_hovered; //鼠标悬停状态
-	PanelButtonStateData m_active; //鼠标按住状态
-	PanelButtonStateData m_current; //当前状态
-	PanelButtonStateData* m_target; //用这个指针设置目标状态
-
+	ModuleButtonStateData m_normal; //未激活普通状态
+	ModuleButtonStateData m_selected; //激活的普通状态
+	ModuleButtonStateData m_hovered; //鼠标悬停状态
+	ModuleButtonStateData m_active; //鼠标按住状态
+	ModuleButtonStateData m_current; //当前状态
+	ModuleButtonStateData* m_target; //用这个指针设置目标状态
 
 	void ApllyCenterPositionChange() override
 	{
 		ImVec2 value = CalPostionChangedValue(screenPos, lastScreenPos);
 		ApllyButtonPositionChange(m_current.button, value);
 		ApllyTextPositionChange(m_current.label, value);
+		ApllyTextPositionChange(m_current.description, value);
 		ApllyTextPositionChange(m_current.icon, value);
 	}
 
@@ -206,161 +213,161 @@ private:
 		ImVec4 bgColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Button));
 		bgColor.w = 0.35f;
 		m_normal.button.color = bgColor;
-		ImVec4 borderColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Border));
-		borderColor.w = 0.0f;
-		m_normal.button.borderColor = borderColor;
+		ImVec4 borderColor = ImVec4(0.8f, 0.2f, 0.2f, 0.8f); 
+		m_normal.button.borderColor = borderColor;//红色边框 代表关闭状态
 
 		//设置m_normal的图标
-		//图标居中显示，灰色
+		//图标靠左显示，灰色
 		m_normal.icon.fontSize = iconFontSize;
-		//位置在按钮中心对齐
-		m_normal.icon.center = ImVec2(screenPos.x + m_normal.button.size.x / 2, screenPos.y + m_normal.button.size.y / 2);
-		//m_normal.icon.CalculatePos();
+		//位置在按钮靠左
+		
+		m_normal.icon.center = ImVec2(screenPos.x + m_normal.button.size.y / 2, screenPos.y + m_normal.button.size.y / 2);
 		m_normal.icon.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
 		//设置m_normal的文字
-		//文字居中显示，透明度为0
+		//文字在图标右边显示，上下居中
 		m_normal.label.fontSize = fontSize * 1.0f;
-		m_normal.label.center = ImVec2(screenPos.x + m_normal.button.size.x / 2, screenPos.y + m_normal.button.size.y / 2);
-		//m_normal.label.CalculatePos();
-		ImVec4 labelColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_TextDisabled));
-		labelColor.w = 0.0f;
+		ImVec2 labelPos = ImVec2(screenPos.x + m_normal.button.size.y, screenPos.y + (m_normal.button.size.y - m_normal.label.fontSize) * 0.5f);
+		m_normal.label.CalculateCenter(labelPos, labelText);
+		ImVec4 labelColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
 		m_normal.label.color = labelColor;
+
+		//描述与文字高度重叠，但是颜色为灰色透明
+
+		m_normal.description.fontSize = fontSize * 0.8f;
+		ImVec2 descriptionPos = ImVec2(screenPos.x + m_normal.button.size.y, screenPos.y + (m_normal.button.size.y - m_normal.description.fontSize) * 0.5f);
+		m_normal.description.CalculateCenter(descriptionPos, descriptionText);
+		ImVec4 descriptionColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_TextDisabled));
+		descriptionColor.w = 0.0f;
+		m_normal.description.color = descriptionColor;
+
 	}
 
-	void SetSelectedStateData(const PanelButtonStateData& normal)
+	void SetSelectedStateData(const ModuleButtonStateData& normal)
 	{
 		//设置m_selected的按钮
 		//按钮状态与普通状态相同
 		m_selected.button.size = normal.button.size;
 		m_selected.button.center = normal.button.center;
 		m_selected.button.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Button));
-		m_selected.button.borderColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Border));
+		ImVec4 borderColor = ImVec4(0.2f, 0.8f, 0.2f, 0.8f);
+		m_selected.button.borderColor = borderColor; //绿色边框 代表开启状态
 
 		//设置m_selected的图标
-		//图标向左移动，并正常显示
-		m_selected.icon.fontSize = iconFontSize * 1.1f;
-
+		//图标正常显示
+		m_selected.icon.fontSize = iconFontSize * 1.0f;
+		m_selected.icon.center = normal.icon.center;
 		m_selected.icon.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
 
 		//设置m_selected的文字
-		//文字向右移动，并正常显示
+		//文字向上移动，并正常显示
 		m_selected.label.fontSize = fontSize * 1.0f;
-		if (isExitButton)
-			m_selected.label.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f);
-		else
-			m_selected.label.color = ImVec4(0.2f, 0.9f, 0.2f, 1.0f);
+		m_selected.label.center = normal.label.center;
+		m_selected.label.color = normal.label.color;
 
-		ComputeTextLayout(
-			m_selected.icon,
-			m_selected.label,
-			m_selected.button,
-			opengl_hook::gui.iconFont,
-			labelText.font ? labelText.font : ImGui::GetFont(),
-			textSpacing
-		);
+		m_selected.description.fontSize = fontSize * 0.8f;
+		m_selected.description.center = normal.description.center;
+		//ImVec4 descriptionColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_TextDisabled));
+		m_selected.description.color = normal.description.color;
+
 
 	}
+	
 
-	void SetHoveredStateData(const PanelButtonStateData& normal)
+	void SetHoveredStateData(const ModuleButtonStateData& normal)
 	{
 		//设置m_hovered的按钮
 		//hovered 按钮稍稍抬起，大小稍稍变大，但是按钮依旧水平居中
 		m_hovered.button.size = ImVec2(normal.button.size.x + buttonSizeOffset, normal.button.size.y + buttonSizeOffset);
 		m_hovered.button.center = ImVec2(normal.button.center.x, normal.button.center.y - buttonHeightOffset);
 		m_hovered.button.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_ButtonHovered));
-		ImVec4 borderColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Border));
-		borderColor.w = 0.5f;
+		ImVec4 borderColor = ImVec4(0.8f, 0.8f, 0.8f, 0.5f);
 		m_hovered.button.borderColor = borderColor;
 
-		//图标向左移动，并正常显示
-		m_hovered.icon.fontSize = iconFontSize * 1.1f;
+		//设置m_selected的图标
+		//图标正常显示
+		m_hovered.icon.fontSize = iconFontSize * 1.2f;
+		m_hovered.icon.center = ImVec2(normal.icon.center.x, screenPos.y + m_hovered.button.size.y / 2 - buttonHeightOffset);
 		m_hovered.icon.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
 
-		//设置m_hovered的文字
-		//文字向右移动，并正常显示
+		//设置m_selected的文字
+		//文字向上移动，并正常显示
 		m_hovered.label.fontSize = fontSize * 1.0f;
-		m_hovered.label.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
+		m_hovered.label.color = normal.label.color;
 
-		ComputeTextLayout(
-			m_hovered.icon,
-			m_hovered.label,
-			m_hovered.button,
-			opengl_hook::gui.iconFont,
-			labelText.font ? labelText.font : ImGui::GetFont(),
-			textSpacing
-		);
+		m_hovered.description.fontSize = fontSize * 0.8f;
+		ImVec4 descriptionColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_TextDisabled));
+		m_hovered.description.color = descriptionColor;
+
+		m_hovered.label.center.x = normal.label.center.x;
+		m_hovered.description.center.x = normal.description.center.x;
+
+		ComputeTextLayout_Vertical(m_hovered.label, m_hovered.description, m_hovered.button, textSpacingY);
 
 	}
 
-	void SetActiveStateData(const PanelButtonStateData& normal)
+	void SetActiveStateData(const ModuleButtonStateData& normal)
 	{
 		//设置m_active的按钮
 		//按钮变小，中心位置向下移动
 		m_active.button.size = ImVec2(normal.button.size.x - buttonSizeOffset, normal.button.size.y - buttonSizeOffset);
 		m_active.button.center = ImVec2(normal.button.center.x, normal.button.center.y + buttonHeightOffset);
 		m_active.button.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_ButtonActive));
-		ImVec4 borderColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Border));
-		borderColor.w = 1.0f;
+		ImVec4 borderColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
 		m_active.button.borderColor = borderColor;
 
 		//设置m_active的图标
-		//图标向左移动，并正常显示
-		m_active.icon.fontSize = iconFontSize * 0.9f;
+		//图标正常显示
+		m_active.icon.fontSize = iconFontSize * 1.0f;
+		m_active.icon.center = ImVec2(normal.icon.center.x, screenPos.y + m_active.button.size.y * 0.5f + buttonHeightOffset + buttonSizeOffset * 0.5f);
 		m_active.icon.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
 
 		//设置m_active的文字
-		//文字向右移动，并正常显示
-		m_active.label.fontSize = fontSize * 0.9f;
-		if (isExitButton)
-			m_active.label.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f);
-		else
-			m_active.label.color = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
+		//文字向上移动，并正常显示
+		m_active.label.fontSize = fontSize * 1.0f;
+		m_active.label.color = normal.label.color;
 
-		ComputeTextLayout(
-			m_active.icon,
-			m_active.label,
-			m_active.button,
-			opengl_hook::gui.iconFont,
-			labelText.font ? labelText.font : ImGui::GetFont(),
-			2.0f
-		);
+		m_active.description.fontSize = fontSize * 0.8f;
+		ImVec4 descriptionColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_TextDisabled));
+		m_active.description.color = descriptionColor;
 
+		m_active.label.center.x = normal.label.center.x;
+		m_active.description.center.x = normal.description.center.x;
+
+		ComputeTextLayout_Vertical(m_active.label, m_active.description, m_active.button, -4.0f);
 	}
 
-	void ComputeTextLayout(
-		TextAnimTarget& icon,
+	static void ComputeTextLayout_Vertical(
 		TextAnimTarget& label,
+		TextAnimTarget& description,
 		const ButtonAnimTarget& button,
-		ImFont* iconFont,
-		ImFont* labelFont,
-		float spacing) const
+		float spacing)
 	{
-		float icon_w = iconFont->CalcTextSizeA(icon.fontSize, FLT_MAX, 0, iconText.text).x;
-		float label_w = labelFont->CalcTextSizeA(label.fontSize, FLT_MAX, 0, labelText.text).x;
+		// 计算高度（注意：用 fontSize 作为高度基准）
+		float icon_h = label.fontSize;
+		float label_h = description.fontSize;
 
-		float total_w = icon_w + spacing + label_w;
+		float total_h = icon_h + spacing + label_h;
 
-		float center_x = button.center.x;
-		float start_x = center_x - total_w * 0.5f;
+		float center_y = button.center.y;
+		float start_y = center_y - total_h * 0.5f;
 
-		float icon_x = start_x;
-		float label_x = start_x + icon_w + spacing;
+		float icon_y = start_y;
+		float label_y = start_y + icon_h + spacing;
 
-		icon.center.x = icon_x + icon_w * 0.5f;
-		label.center.x = label_x + label_w * 0.5f;
-
-		// 垂直方向保持居中
-		icon.center.y = button.center.y;
-		label.center.y = button.center.y;
+		// 垂直方向中心
+		label.center.y = icon_y + icon_h * 0.5f;
+		description.center.y = label_y + label_h * 0.5f;
 	}
 
 
-	void LerpAll(PanelButtonStateData& cur, const PanelButtonStateData& target, float damping, float deltaTime)
+
+	void LerpAll(ModuleButtonStateData& cur, const ModuleButtonStateData& target, float damping, float deltaTime)
 	{
 		LerpButton(cur.button, target.button, damping, deltaTime);
 		LerpText(cur.icon, target.icon, damping, deltaTime);
 		LerpText(cur.label, target.label, damping, deltaTime);
+		LerpText(cur.description, target.description, damping, deltaTime);
 	}
 
 	bool IsAnimating() const
@@ -368,12 +375,12 @@ private:
 		return !IsAllEqual(m_current, *m_target);
 	}
 
-	static bool IsAllEqual(const PanelButtonStateData& a, const PanelButtonStateData& b)
+	static bool IsAllEqual(const ModuleButtonStateData& a, const ModuleButtonStateData& b)
 	{
 		return IsEqual(a.button, b.button)
 			&& IsEqual(a.icon, b.icon)
-			&& IsEqual(a.label, b.label);
+			&& IsEqual(a.label, b.label)
+			&& IsEqual(a.description, b.description);
 	}
-
 
 };

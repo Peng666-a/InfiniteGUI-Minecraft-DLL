@@ -1,10 +1,7 @@
 #pragma once
+#include "ClickSound.h"
 #include "AnimButtonBase.h"
-
 #include "imgui\imgui.h"
-#include "imgui\imgui_internal.h"
-
-#include "opengl_hook.h"
 
 struct MyButtonStateData
 {
@@ -57,6 +54,7 @@ public:
 		}
 
 		bool pressed = DrawInvisibleButton(m_current.button);
+		//if (pressed) ClickSound::Instance().PlayClickSound();
 		rightClicked = ImGui::IsItemClicked(1); //ÓÒ¼üµ¥»÷
 		bool hovered = ImGui::IsItemHovered();
 		bool active = ImGui::IsItemActive();

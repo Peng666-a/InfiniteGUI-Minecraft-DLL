@@ -9,9 +9,11 @@
 #include "CounterItem.h"
 #include "opengl_hook.h"
 #include <thread>
+
+#include "AudioManager.h"
 #include "ChangeLog.h"
 #include "ItemManager.h"
-#include "MainMenuButton.h"
+#include "MainMenuButton.hpp"
 
 static ImVec4 myWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 static ImVec4 tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
@@ -90,6 +92,7 @@ int Menu::GetKeyBind()
 {
     return keybinds.at(u8"菜单快捷键：");
 }
+
 MainMenuButton* myButton;
 void Menu::ShowMain()
 {
@@ -407,6 +410,8 @@ void Menu::DrawSettings(const float& bigPadding, const float& centerX, const flo
     ImGui::PushItemWidth(bigItemWidth);
     ImGui::SliderInt(u8"模糊强度", &blur->blurriness_value, 0, 10);
     DrawKeybindSettings(bigPadding, centerX, itemWidth);
+    DrawSoundSettings(bigPadding, centerX, itemWidth);
+    ClickSound::Instance().Init(isPlaySound, soundVolume);
     DrawStyleSettings(bigPadding, centerX, itemWidth);
 }
 
@@ -415,6 +420,7 @@ void Menu::Load(const nlohmann::json& j)
     LoadKeybind(j);
     if(j.contains("menu_blur")) blur->menu_blur = j["menu_blur"].get<bool>();
     if(j.contains("blurriness_value")) blur->blurriness_value = j["blurriness_value"].get<int>();
+    LoadSound(j);
     LoadStyle(j);
     //LoadItem(j);
 }
@@ -424,6 +430,7 @@ void Menu::Save(nlohmann::json& j) const
     SaveKeybind(j);
     j["menu_blur"] = blur->menu_blur;
     j["blurriness_value"] = blur->blurriness_value;
+    SaveSound(j);
     SaveStyle(j);
     j["type"] = name;
 }

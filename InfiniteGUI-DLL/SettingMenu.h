@@ -24,7 +24,6 @@ public:
 	}
 	bool Draw(bool &done)
 	{
-
 		ImGui::BeginChild(u8"主控制面板Inner", settingMenuSize, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 		//将退出按钮显示在右上角

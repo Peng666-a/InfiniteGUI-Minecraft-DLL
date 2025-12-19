@@ -15,9 +15,6 @@
 #include "GlobalConfig.h"
 #include "GuiFrameLimiter.h"
 
-#include "Menu.h"
-
-
 static ImGuiContext* imGuiContext = nullptr;
 static CachedDrawData g_Cache;
 void Gui::init()

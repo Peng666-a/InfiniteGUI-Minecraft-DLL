@@ -21,7 +21,7 @@ struct panel_element {
     float blurriness = 0;
 };
 
-class Menu : public RenderModule, public WindowStyleModule, public Item, public KeybindModule {
+class Menu : public RenderModule, public WindowStyleModule, public Item, public KeybindModule, public SoundModule {
 public:
 
     Menu() {
@@ -58,6 +58,9 @@ public:
     {
         ResetKeybind();
         ResetWindowStyle();
+        ResetSound();
+        soundVolume = 0.1f;
+        ClickSound::Instance().Init(isPlaySound, soundVolume);
         keybinds.insert(std::make_pair(u8"²Ëµ¥¿ì½Ý¼ü£º", VK_OEM_5));
         itemStyle.fontSize = 22.0f;
         itemStyle.bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.15f);

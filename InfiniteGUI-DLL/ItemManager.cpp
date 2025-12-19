@@ -20,6 +20,7 @@
 #include "GlobalWindowStyle.h"
 
 #include "Menu.h"
+#include "NotificationItem.h"
 #include <algorithm>
 #include <chrono>
 
@@ -48,6 +49,8 @@ void ItemManager::Init()
     AddItem(&TextItem::Instance());
     AddItem(&FileCountItem::Instance());
     AddItem(&CounterItem::Instance());
+
+    AddItem(&NotificationItem::Instance());
 
     AddItem(&GlobalWindowStyle::Instance());
     AddItem(&GameStateDetector::Instance());

@@ -5,6 +5,8 @@
 #include "FileUtils.h"
 #include "GlobalConfig.h"
 #include "ItemManager.h"
+#include "Menu.h"
+#include "Notification.h"
 
 namespace Paths {
     std::string root = FileUtils::configPath;
@@ -213,5 +215,9 @@ bool ConfigManager::LoadProfile()
     nlohmann::json j;
     f >> j;
     ItemManager::Instance().Load(j);
+    int key = Menu::Instance().GetKeyBind();
+    std::string hotkeyStr = keys[key];
+    std::string notify = u8"无限Gui启动成功！\n按\"" + hotkeyStr + u8"\"键打开菜单。";
+    NotificationItem::Instance().AddNotification(NotificationType_Info, notify);
     return true;
 }

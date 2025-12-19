@@ -128,6 +128,9 @@
     <Filter Include="src\core\items\visual\clickEffect">
       <UniqueIdentifier>{64c6ef2e-a27d-4cce-8fda-226113a71e7a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\core\items\huds\notification">
+      <UniqueIdentifier>{bba6f803-0e8b-42e9-9676-e43ba4226528}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Init.hpp">
@@ -352,16 +355,16 @@
     <ClInclude Include="fonts\AlibabaPuHuiTi-3-85-Bold.h">
       <Filter>src\ui\hooks\gui\resources\fonts</Filter>
     </ClInclude>
-    <ClInclude Include="PanelButton.h">
+    <ClInclude Include="PanelButton.hpp">
       <Filter>src\core\items\huds\menu\widgets\buttons</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleButton.h">
+    <ClInclude Include="ModuleButton.hpp">
       <Filter>src\core\items\huds\menu\widgets\buttons</Filter>
     </ClInclude>
-    <ClInclude Include="MyButton.h">
+    <ClInclude Include="MyButton.hpp">
       <Filter>src\core\items\huds\menu\widgets\buttons</Filter>
     </ClInclude>
-    <ClInclude Include="MainMenuButton.h">
+    <ClInclude Include="MainMenuButton.hpp">
       <Filter>src\core\items\huds\menu\widgets\buttons</Filter>
     </ClInclude>
     <ClInclude Include="ModuleSettings.h">
@@ -400,7 +403,16 @@
     <ClInclude Include="TextItem.h">
       <Filter>src\core\items\huds\text</Filter>
     </ClInclude>
+    <ClInclude Include="NotificationItem.h">
+      <Filter>src\core\items\huds\notification</Filter>
+    </ClInclude>
+    <ClInclude Include="Notification.h">
+      <Filter>src\core\items\huds\notification</Filter>
+    </ClInclude>
     <ClInclude Include="Menu.h">
+      <Filter>src\core\items\huds\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="ClickSound.h">
       <Filter>src\core\items\huds\menu</Filter>
     </ClInclude>
   </ItemGroup>
@@ -533,6 +545,12 @@
     </ClCompile>
     <ClCompile Include="ClickEffect.cpp">
       <Filter>src\core\items\visual\clickEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="NotificationItem.cpp">
+      <Filter>src\core\items\huds\notification</Filter>
+    </ClCompile>
+    <ClCompile Include="Notification.cpp">
+      <Filter>src\core\items\huds\notification</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

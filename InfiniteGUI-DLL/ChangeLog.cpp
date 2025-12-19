@@ -29,9 +29,10 @@ void ChangeLog::Init()
     AddContent(CHANGE, u8"改进架构,仅文本显示可多例");
     AddContent(ADD, u8"完美实现退出(detach)");
 
-    NewVersion("B0.9.4", "25.12.18");
+    NewVersion("B0.9.4", "25.12.19");
     AddContent(OPTIMIZE, u8"帧率高时detach不再崩端");
     AddContent(OPTIMIZE, u8"优化帧率，降低CPU性能开销");
+    AddContent(ADD, u8"添加弹窗");
 } //我写这个真是个天才，这样就不用手敲Imgui代码了，天才天才天才天
 
 ChangeLog::ChangeLog()
