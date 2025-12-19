@@ -20,6 +20,7 @@ enum SprintState {
 
 struct sprint_element {
     ImVec4 color;
+    ImVec4 targetTextColor;
 };
 
 class Sprint : public WindowModule, public UpdateModule, public KeybindModule, public AffixModule, public Item, public SoundModule
@@ -32,7 +33,7 @@ public:
         icon = "o";
         updateIntervalMs = 5;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        Sprint::Reset();
     }
 
     static Sprint& Instance() {
@@ -60,6 +61,8 @@ public:
         state = Idle;
 
         color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void OnKeyEvent(bool state, bool isRepeat, WPARAM key) override;
 

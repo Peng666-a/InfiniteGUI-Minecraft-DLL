@@ -1,5 +1,7 @@
 #pragma once
 #include "Sprint.h"
+
+#include "Anim.h"
 #include "AudioManager.h"
 #include "GameStateDetector.h"
 void Sprint::Toggle()
@@ -23,6 +25,8 @@ void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
                 color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
                 if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
             }
+            dirtyState.contentDirty = true;
+            dirtyState.animating = true;
         }
 
     }
@@ -33,9 +37,7 @@ void Sprint::GetSneaking()
 {
     if (keyStateHelper.GetKeyDown(keybinds.at(u8"潜行键：")) && GameStateDetector::Instance().IsInGame())
     {
-        color.color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f); //灰色
         state = Sneaking;
-        lastState = state;
     }
 }
 
@@ -44,7 +46,6 @@ void Sprint::GetWalking()
     if (keyStateHelper.GetKeyDown(keybinds.at(u8"前进键：")) && GameStateDetector::Instance().IsInGame())
     {
         state = isActivated ? Sprinting : Walking;
-        lastState = state;
     }
 }
 
@@ -52,7 +53,6 @@ void Sprint::SetSprinting()
 {
     if (state == Sprinting)
     {
-        color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
         keyStateHelper.SetKeyDown(keybinds.at(u8"疾跑键："), 1);
     }
     if (state != Sprinting && lastState == Sprinting)
@@ -68,6 +68,13 @@ void Sprint::Update()
     state = Idle;
     GetWalking();
     GetSneaking();
+    if (lastState != state)
+    {
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
+        lastState = state;
+    }
+
     if (!isActivated) return;
     SetSprinting();
 
@@ -75,32 +82,41 @@ void Sprint::Update()
 
 void Sprint::DrawContent()
 {
-    ImVec4 targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
 
-    //获取io
-    ImGuiIO& io = ImGui::GetIO();
-
-    //计算速度
-    float speed = 3.0f * io.DeltaTime;
-    color.color = ImLerp(color.color, targetTextColor, speed);
 
     std::string text;
     switch (state)
     {
     case Idle:
         text = u8"空闲中";
+        color.targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
         break;
     case Sprinting:
         text = u8"疾跑中";
+        color.targetTextColor = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
         break;
     case Sneaking:
+        color.targetTextColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
         text = u8"潜行中";
         break;
     case Walking:
         text = u8"行走中";
+        color.targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
         break;
     default:
         break;
+    }
+
+    //获取io
+    ImGuiIO& io = ImGui::GetIO();
+
+    //计算速度
+    float speed = 3.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
+    color.color = ImLerp(color.color, color.targetTextColor, speed);
+    if (Anim::AlmostEqual(color.color, color.targetTextColor))
+    {
+        color.color = color.targetTextColor;
+        dirtyState.animating = false;
     }
 
     ImGuiStd::TextColoredShadow(color.color, (prefix + text + suffix).c_str());

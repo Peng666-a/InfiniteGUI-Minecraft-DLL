@@ -8,16 +8,16 @@ class TextItem : public Item, public RenderModule
 {
 public:
     TextItem() {
-        type = Hud; // 信息项类型
+        type = Hud;
         name = u8"文本显示";
         description = u8"显示一段文本";
         icon = "(";
-        Reset();
+        TextItem::Reset();
     }
 
     static TextItem& Instance() {
-        static TextItem text;
-        return text;
+        static TextItem instance;
+        return instance;
     }
 
     void Toggle() override;
@@ -27,7 +27,9 @@ public:
         texts.clear();
         texts.emplace_back();
     }
-    void Render() override;
+    void RenderGui() override;
+    void RenderBeforeGui() override;
+    void RenderAfterGui() override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;

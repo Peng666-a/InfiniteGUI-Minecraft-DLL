@@ -218,7 +218,7 @@ public:
     // ---------------------------
 //   渲染整个窗口（统一逻辑）
 // ---------------------------
-    virtual void Render() override
+    virtual void RenderGui() override
     {
         if (!isWindowShow) return;
         if (!isCustomSize)
@@ -294,6 +294,16 @@ public:
         ImGui::End();
         ImGui::PopStyleVar(7);
         ImGui::PopStyleColor(4);
+    }
+
+    virtual void RenderBeforeGui() override
+    {
+
+    }
+
+    virtual void RenderAfterGui() override
+    {
+
     }
 
     bool IsClickThrough() const {

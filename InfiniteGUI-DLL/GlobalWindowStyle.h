@@ -9,9 +9,8 @@ public:
         name = u8"全局窗口样式";
         description = u8"设置全局窗口样式";
         icon = "L";
-        Reset();
+        GlobalWindowStyle::Reset();
     }
-    ~GlobalWindowStyle() {}
 
     static GlobalWindowStyle& Instance()
     {

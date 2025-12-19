@@ -3,7 +3,9 @@
 #include "UpdateModule.h"
 #include <Windows.h>
 
-class GameStateDetector : public UpdateModule, public Item{
+#include "RenderModule.h"
+
+class GameStateDetector : public UpdateModule, public Item, public RenderModule{
 public:
 
 
@@ -14,9 +16,8 @@ public:
         icon = u8"\uE039";
         updateIntervalMs = 10;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        GameStateDetector::Reset();
     }
-    ~GameStateDetector() {}
 
     static GameStateDetector& Instance()
     {
@@ -29,8 +30,18 @@ public:
     {
         isEnabled = true;
         bool hideItemInGui = true;
+        dirtyState.contentDirty = true;
     }
     void Update() override;
+    void RenderGui() override
+    {
+    }
+    void RenderBeforeGui() override
+    {
+    }
+    void RenderAfterGui() override
+    {
+    }
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;
@@ -52,6 +63,7 @@ private:
     bool hideItemInGui = true;
     //GameState currentState = GameState::Paused;
     GameState currentState = InGameMenu;
+    GameState lastState = InGameMenu;
     int centerLevel = 1;
 
     float movementThreshold = 1.0f; // 小于这个视为静止，用于防抖动

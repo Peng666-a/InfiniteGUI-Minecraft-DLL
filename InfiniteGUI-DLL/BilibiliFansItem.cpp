@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include "AudioManager.h"
 #include "HttpUpdateWorker.h"
-
+#include "Anim.h"
 
 void BilibiliFansItem::Toggle()
 {
@@ -46,6 +46,9 @@ void BilibiliFansItem::Update()
 
     fansCount = newFans;
 
+    // 内容发生变化
+    dirtyState.contentDirty = false;
+
     if (fansCount > lastFansCount)
     {
         color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
@@ -56,7 +59,10 @@ void BilibiliFansItem::Update()
         color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
         if (isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_down.wav", soundVolume);
     }
+    else return;
 
+    dirtyState.contentDirty = true;
+    dirtyState.animating = true;
     lastFansCount = fansCount;
 
 }
@@ -68,9 +74,15 @@ void BilibiliFansItem::DrawContent()
     //获取io
     ImGuiIO& io = ImGui::GetIO();
 
-    //计算速度
-    float speed = 3.0f * io.DeltaTime;
+    float speed = 3.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
     color.color = ImLerp(color.color, targetTextColor, speed);
+
+    // 判断动画是否结束
+    if (Anim::AlmostEqual(color.color, targetTextColor))
+    {
+        color.color = targetTextColor;
+        dirtyState.animating = false;
+    }
 
     ImGuiStd::TextColoredShadow(color.color, (prefix + std::to_string(fansCount) + suffix).c_str());
 }

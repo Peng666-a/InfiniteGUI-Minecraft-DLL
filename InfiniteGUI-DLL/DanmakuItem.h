@@ -39,10 +39,8 @@ public:
         icon = u8"\uE021";
         updateIntervalMs = 50;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        DanmakuItem::Reset();
     }
-
-    virtual ~DanmakuItem();
 
     static DanmakuItem& Instance() {
         static DanmakuItem instance;
@@ -57,6 +55,8 @@ public:
         isEnabled = false;
         maxDanmakuCount = 16;
         logPath = "lastrun.txt";
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void Update() override;
     void DrawContent() override;

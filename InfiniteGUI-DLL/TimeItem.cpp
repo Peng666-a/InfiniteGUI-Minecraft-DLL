@@ -1,6 +1,8 @@
 #include "TimeItem.h"
 #include <iomanip>
 #include <sstream>
+
+#include "Anim.h"
 #include "ImGuiStd.h"
 
 void TimeItem::Toggle()
@@ -25,6 +27,7 @@ void TimeItem::Update()
     ss << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S");
 
     currentTimeStr = ss.str();
+    dirtyState.contentDirty = true;
 }
 
 void TimeItem::DrawContent()
@@ -33,8 +36,14 @@ void TimeItem::DrawContent()
     //获取io
     ImGuiIO& io = ImGui::GetIO();
     //计算速度
-    float speed = 3.0f * io.DeltaTime;
+    float speed = 3.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
     color.color = ImLerp(color.color, targetTextColor, speed);
+    // 判断动画是否结束
+    if (Anim::AlmostEqual(color.color, targetTextColor))
+    {
+        color.color = targetTextColor;
+        dirtyState.animating = false;
+    }
     ImGuiStd::TextColoredShadow(color.color, (prefix + currentTimeStr + suffix).c_str());
 }
 

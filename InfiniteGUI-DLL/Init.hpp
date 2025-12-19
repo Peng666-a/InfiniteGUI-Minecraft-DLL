@@ -31,11 +31,15 @@ void StopThreads() {
 }
 
 void Uninit() {
+	opengl_hook::remove_hook();
 	opengl_hook::clean();
+	while(opengl_hook::gui.isInit) //µÈhookÍË³ö
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	g_running = false;
 	StopThreads();
 	HttpUpdateWorker::Instance().Stop();
 	AudioManager::Instance().Shutdown();
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	FreeLibraryAndExitThread(g_hModule, 0);
 
 }
@@ -63,6 +67,7 @@ DWORD WINAPI InitApp(LPVOID)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	Uninit();
 
     return 0;

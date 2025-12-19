@@ -181,6 +181,7 @@
     <ClInclude Include="gl\glxew.h" />
     <ClInclude Include="gl\wglew.h" />
     <ClInclude Include="gui.h" />
+    <ClInclude Include="GuiFrameLimiter.h" />
     <ClInclude Include="HttpClient.h" />
     <ClInclude Include="HttpModule.h" />
     <ClInclude Include="HttpUpdateWorker.h" />

@@ -12,6 +12,7 @@ struct screen
 namespace opengl_hook
 {
 	void init();
+	void remove_hook();
 	bool clean();
 	inline HDC handle_device_ctx;
 	inline HGLRC o_gl_ctx;//mc原来的gl上下文

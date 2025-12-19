@@ -14,7 +14,11 @@ void GameStateDetector::Update()
 		currentState = InGameMenu;
 	else
 		currentState = InGame;
-
+	if (currentState != lastState)
+	{
+		dirtyState.contentDirty = true;
+		lastState = currentState;
+	}
 
 }
 

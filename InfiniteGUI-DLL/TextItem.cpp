@@ -1,17 +1,24 @@
 #include "TextItem.h"
 
 #include "GameStateDetector.h"
-#include "ImGuiStd.h"
 
 void TextItem::Toggle()
 {
 }
 
-void TextItem::Render()
+void TextItem::RenderGui()
 {
     if (GameStateDetector::Instance().IsNeedHide()) return;
     for(auto& text : texts)
-        if(text.GetEnabled()) text.Render();
+        if(text.GetEnabled()) text.RenderGui();
+}
+
+void TextItem::RenderBeforeGui()
+{
+}
+
+void TextItem::RenderAfterGui()
+{
 }
 
 void TextItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)

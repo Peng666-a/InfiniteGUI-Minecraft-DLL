@@ -1,5 +1,7 @@
 #include "FileCountItem.h"
 #include <filesystem>
+
+#include "Anim.h"
 #include "StringConverter.h"
 #include "AudioManager.h"
 #include "imgui\imgui_internal.h"
@@ -83,6 +85,10 @@ void FileCountItem::Update()
         lastFileCount = fileCount;
         if (isPlaySound) AudioManager::Instance().playSound("filecount\\filecount_down.wav", soundVolume);
     }
+    else return;
+
+    dirtyState.animating = true;
+    dirtyState.contentDirty = true;
 
 }
 
@@ -94,8 +100,14 @@ void FileCountItem::DrawContent()
     ImGuiIO& io = ImGui::GetIO();
 
     //计算速度
-    float speed = 3.0f * io.DeltaTime;
+    float speed = 3.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
     color.color = ImLerp(color.color, targetTextColor, speed);
+    // 判断动画是否结束
+    if (Anim::AlmostEqual(color.color, targetTextColor))
+    {
+        color.color = targetTextColor;
+        dirtyState.animating = false;
+    }
 
     ImGuiStd::TextColoredShadow(color.color, (prefix + std::to_string(fileCount) + errorMessage + suffix).c_str());
 }

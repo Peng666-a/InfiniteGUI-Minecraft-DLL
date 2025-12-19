@@ -11,6 +11,17 @@ void ClickEffect::Toggle()
 
 void ClickEffect::Update()
 {
+	if (clickEffects.empty()) {
+		dirtyState.animating = false;
+	}
+	else
+	{
+		if (clickEffects.front()->IsFinished())
+		{
+			delete clickEffects.front();
+			clickEffects.pop_front();
+		}
+	}
 	if(opengl_hook::handle_window != GetForegroundWindow()) return;
 	GameState state = GameStateDetector::Instance().GetCurrentState();
 	bool yes = false;
@@ -43,19 +54,21 @@ void ClickEffect::Update()
 	{
 		ClickCircle* clickCircle = new ClickCircle(mousePos, clickCircleSettings);
 		AddClickEffect(clickCircle);
-	}
-
-	if (clickEffects.empty()) return;
-	if(clickEffects.front()->IsFinished()) 
-	{
-		delete clickEffects.front();
-		clickEffects.pop_front();
+		dirtyState.animating = true;
 	}
 }
 
-void ClickEffect::Render()
+void ClickEffect::RenderGui()
 {
 	Draw();
+}
+
+void ClickEffect::RenderBeforeGui()
+{
+}
+
+void ClickEffect::RenderAfterGui()
+{
 }
 
 void ClickEffect::Load(const nlohmann::json& j)

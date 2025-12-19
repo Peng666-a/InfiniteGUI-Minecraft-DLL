@@ -15,11 +15,13 @@
 
 static ImVec4 myWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 static ImVec4 tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
-void Menu::Render()
+void Menu::RenderGui()
 {
     if(!isEnabled)
+    {
         return;
-    if (blur->menu_blur) blur->RenderBlur(panelAnim.blurriness);
+    }
+
     //使窗口显示在屏幕中间
     ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - ImGui::GetIO().DisplaySize.x / 2), (ImGui::GetIO().DisplaySize.y - ImGui::GetIO().DisplaySize.y / 2)), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2((float)opengl_hook::screen_size.x + 10, (float)opengl_hook::screen_size.y + 10), ImGuiCond_Always);
@@ -28,7 +30,7 @@ void Menu::Render()
     //获取io
     ImGuiIO& io = ImGui::GetIO();
     //计算速度
-    float speed = 5.0f * io.DeltaTime;
+    float speed = 5.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
     myWindowBgColor = ImLerp(myWindowBgColor, tarWindowBgColor, speed);
     ImGui::PushStyleColor(ImGuiCol_WindowBg, myWindowBgColor);
     ImGui::Begin(u8"菜单背景", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNav);
@@ -60,6 +62,15 @@ void Menu::Render()
     ImGui::End();
 
     return;
+}
+
+void Menu::RenderBeforeGui()
+{
+    if (blur->menu_blur) blur->RenderBlur(panelAnim.blurriness);
+}
+
+void Menu::RenderAfterGui()
+{
 }
 
 void Menu::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
@@ -346,6 +357,7 @@ void Menu::ShowSettings(bool* done)
 
 void Menu::Toggle()
 {
+    static std::thread updateThread;                   // 工作线程
     if (!isEnabled)
     {
         RECT rect;
@@ -361,9 +373,25 @@ void Menu::Toggle()
         myWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
         panelAnim.state = 0.0f;
         panelAnim.blurriness = 0.0f;
+
+        //// 启动后台线程
+        //updateThread = std::thread([&]()
+        //    {
+        //        for(int i = 0; i < 10; i++)
+        //        {
+        //            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        //            if(!isEnabled) dirtyState.animating = false;
+        //        }
+        //    });
+        //updateThread.detach();
+        dirtyState.animating = false;
+        dirtyState.contentDirty = true; //下一次更新
     }
     else
     {
+        if (updateThread.joinable())
+            updateThread.join();
+        dirtyState.animating = true;
         state = MENU_STATE_MAIN;
     }
 }

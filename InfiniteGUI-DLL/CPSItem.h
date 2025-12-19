@@ -1,17 +1,15 @@
 #pragma once
-#include <Windows.h>
 #include "imgui\imgui.h"
 #include "Item.h"
 #include "WindowModule.h"
 #include "AffixModule.h"
-#include <string>
-#include <chrono>
+#include "UpdateModule.h"
 
 struct cps_element {
     ImVec4 color;
 
 };
-class CPSItem : public Item, public WindowModule, public AffixModule
+class CPSItem : public Item, public WindowModule, public AffixModule, public UpdateModule
 {
 public:
     CPSItem() {
@@ -19,9 +17,8 @@ public:
         name = u8"CPSœ‘ æ";
         description = u8"œ‘ æ◊Û”“º¸CPS";
         icon = "!";
-        Reset();
+        CPSItem::Reset();
     }
-    ~CPSItem() {}
 
     static CPSItem& Instance() {
         static CPSItem instance;
@@ -38,7 +35,10 @@ public:
         suffix = "]";
         showLeft = true;
         showRight = true;
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
+    void Update() override;
     void DrawContent() override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;
     void Load(const nlohmann::json& j) override;
@@ -47,6 +47,10 @@ private:
 
     bool showLeft = true;
     bool showRight = true;
+
+    int cpsLeft = 0;
+    int cpsRight = 0;
+
     cps_element color;
 
 };

@@ -373,9 +373,6 @@
     <ClInclude Include="menuRule.h">
       <Filter>src\core\items\huds\menu\widgets</Filter>
     </ClInclude>
-    <ClInclude Include="TextItem.h">
-      <Filter>src\core\items\huds\text</Filter>
-    </ClInclude>
     <ClInclude Include="Text.h">
       <Filter>src\core\items\huds\text</Filter>
     </ClInclude>
@@ -399,6 +396,12 @@
     </ClInclude>
     <ClInclude Include="FontSelector.h">
       <Filter>src\core\items\huds\menu\widgets\right\setting</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiFrameLimiter.h">
+      <Filter>src\ui\hooks\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="TextItem.h">
+      <Filter>src\core\items\huds\text</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -22,6 +22,8 @@ public:
         ResetAffix();
         ResetWindow();
         text = u8"ÇëÊäÈëÎÄ±¾";
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void DrawContent() override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth);

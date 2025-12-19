@@ -22,7 +22,7 @@ public:
         icon = "a";
         updateIntervalMs = 1000;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        TimeItem::Reset();
     }
     //Instance()
     static TimeItem& Instance() {
@@ -37,6 +37,8 @@ public:
         ResetAffix();
         currentTimeStr = u8"正在获取系统时间...";
         isEnabled = false;
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void Update() override;
     void DrawContent() override;

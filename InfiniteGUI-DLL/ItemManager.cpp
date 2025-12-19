@@ -78,7 +78,7 @@ void ItemManager::UpdateAll() const
 }
 
 // ------------------------------------------------
-void ItemManager::RenderAll() const
+void ItemManager::RenderAllGui() const
 {
     bool isWindowNeedHide = false;
     if (GameStateDetector::Instance().IsNeedHide())
@@ -88,15 +88,64 @@ void ItemManager::RenderAll() const
         if (!item->isEnabled) continue;
         if (auto ren = dynamic_cast<RenderModule*>(item))
         {
-            if (auto motionblur = dynamic_cast<Motionblur*>(ren))
-                if (motionblur->applayOnMenu && Menu::Instance().isEnabled) continue;
-
-            if (auto win = dynamic_cast<WindowModule*>(ren) && isWindowNeedHide)
+            if(!ren->IsRenderGui()) continue;
+            if (dynamic_cast<WindowModule*>(ren) && isWindowNeedHide)
                 continue;
-
-            ren->Render();
+            ren->RenderGui();
         }
     }
+}
+
+// ------------------------------------------------
+void ItemManager::RenderAllBeforeGui() const
+{
+    for (auto item : Items)
+    {
+        if (!item->isEnabled) continue;
+        if (auto ren = dynamic_cast<RenderModule*>(item))
+        {
+            if (!ren->IsRenderBeforeGui()) continue;
+            ren->RenderBeforeGui();
+        }
+    }
+}
+
+// ------------------------------------------------
+void ItemManager::RenderAllAfterGui() const
+{
+    for (auto item : Items)
+    {
+        if (!item->isEnabled) continue;
+        if (auto ren = dynamic_cast<RenderModule*>(item))
+        {
+            if (!ren->IsRenderAfterGui()) continue;
+            ren->RenderAfterGui();
+        }
+    }
+}
+
+bool ItemManager::IsDirty() const
+{
+    bool isDirty = false;
+    for (auto item : Items)
+    {
+        if (!item->isEnabled) continue;
+        if (auto ren = dynamic_cast<RenderModule*>(item))
+        {
+            if (ren->IsAnimating()) //动画中
+            {
+                isDirty = true;
+                break;
+            }
+            if (ren->IsContentDirty()) //内容变化
+            {
+                ren->SetContentDirty(false);
+                isDirty = true;
+                break;
+            }
+        }
+    }
+    return isDirty;
 }
 
 // ------------------------------------------------
@@ -117,7 +166,7 @@ void ItemManager::ProcessKeyEvents(bool state, bool isRepeat, WPARAM key) const
 // ------------------------------------------------
 // JSON Load / Save
 // ------------------------------------------------
-void ItemManager::Load(const nlohmann::json& j)
+void ItemManager::Load(const nlohmann::json& j) const
 {
     // ---- 加载Item ----
     if (j.contains("Items"))

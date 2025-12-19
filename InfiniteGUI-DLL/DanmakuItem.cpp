@@ -1,7 +1,6 @@
 #include "DanmakuItem.h"
 #include "imgui\imgui.h"
 #include "imgui\imgui_internal.h"
-#include "ConfigManager.h"
 #include "StringConverter.h"
 #include "ImGuiStd.h"
 
@@ -11,9 +10,8 @@
 #include <deque>
 #include <unordered_set>
 #include <windows.h>
-DanmakuItem::~DanmakuItem()
-{
-}
+
+#include "Anim.h"
 
 std::unordered_set<danmaku_id> pendingErase;
 void DanmakuItem::AddDanmaku(const std::string& username, const std::string& message)
@@ -28,6 +26,8 @@ void DanmakuItem::AddDanmaku(const std::string& username, const std::string& mes
         danmakuList.pop_back();
     }
     danmakuList.push_front(danmaku);
+    dirtyState.contentDirty = true;
+    dirtyState.animating = true;
 }
 
 void DanmakuItem::AddCaptain(const std::string& username, const std::string& captainName, const std::string& captainCount)
@@ -37,7 +37,7 @@ void DanmakuItem::AddCaptain(const std::string& username, const std::string& cap
 
     bottomMessage = giftMessage;
     bottomMessageType = BTM_CAPTAIN;
-
+    dirtyState.contentDirty = true;
 }
 
 void DanmakuItem::AddGift(const std::string& username, const std::string& giftName, const std::string& giftCount)
@@ -47,6 +47,7 @@ void DanmakuItem::AddGift(const std::string& username, const std::string& giftNa
 
     bottomMessage = giftMessage;
     bottomMessageType = BTM_GIFT;
+    dirtyState.contentDirty = true;
 }
 
 void DanmakuItem::AddUserEntry(const std::string& username)
@@ -54,6 +55,7 @@ void DanmakuItem::AddUserEntry(const std::string& username)
     //std::lock_guard<std::mutex> lock(danmakuMutex);
     bottomMessage = username + u8" 进入了直播间";
     bottomMessageType = BTM_ENTRY;
+    dirtyState.contentDirty = true;
 }
 
 void DanmakuItem::AddUserLike(const std::string& username)
@@ -61,6 +63,7 @@ void DanmakuItem::AddUserLike(const std::string& username)
     //std::lock_guard<std::mutex> lock(danmakuMutex);
     bottomMessage = username + u8" 点赞了";
     bottomMessageType = BTM_LIKE;
+    dirtyState.contentDirty = true;
 }
 
 namespace fs = std::filesystem;
@@ -293,7 +296,7 @@ void DanmakuItem::DrawContent()
     {
         ImGui::SetCursorPosY(curPosY); //设置弹幕位置
     }
-
+    bool animating = false;
     for (auto it = copy_danmakuList.rbegin(); it != copy_danmakuList.rend(); ++it) {
         auto& danmaku = *it;
         float textHeight = 0.0f;
@@ -304,10 +307,20 @@ void DanmakuItem::DrawContent()
             it_anim = anim.find(danmaku.id);
         }
 
-        float colorSpeed = io.DeltaTime * 3.0f;
-        float scrollSpeed = io.DeltaTime * 5.0f;
-        ImVec4 endColor = ImGui::ColorConvertU32ToFloat4( ImGui::GetColorU32(ImGuiCol_Text) );
+        float scrollSpeed = std::clamp(io.DeltaTime, 0.0f, 0.05f) * 5.0f;
+
+
+        float colorSpeed = std::clamp(io.DeltaTime, 0.0f, 0.05f) * 3.0f;
+
+        ImVec4 endColor = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text));
         it_anim->second.color = ImLerp(it_anim->second.color, endColor, colorSpeed);                  //颜色动画
+        // 判断动画是否结束
+        if (Anim::AlmostEqual(it_anim->second.color, endColor))
+        {
+            it_anim->second.color = endColor;
+        }
+        else
+            animating = true;
 
         ImGui::Separator();
         textHeight += ImGui::GetItemRectSize().y + ImGui::GetStyle().ItemSpacing.y;
@@ -325,6 +338,7 @@ void DanmakuItem::DrawContent()
         if (it_anim->second.curHeight < it_anim->second.tarHeight)
             it_anim->second.curHeight = ImLerp(it_anim->second.curHeight, it_anim->second.tarHeight, scrollSpeed) + 1.0f; // 弹幕高度动画
     }
+    if (!animating) dirtyState.animating = false;
     ImGui::PopTextWrapPos();
 
     ImGui::EndChild();

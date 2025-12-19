@@ -4,7 +4,9 @@
 #include "ImGuiStd.h"
 #include <string>
 #include <windows.h>
-#include "App.h"
+
+#include "Anim.h"
+
 void KeystrokesItem::Toggle()
 {
 }
@@ -18,6 +20,11 @@ void KeystrokesItem::Update()
             key_box.state = true;
         else
             key_box.state = false;
+        if (key_box.lastState != key_box.state)
+        {
+            dirtyState.animating = true;
+            key_box.lastState = key_box.state;
+        }
     }
 }
 
@@ -32,6 +39,7 @@ void KeystrokesItem::DrawContent()
     ImGui::PushStyleColor(ImGuiCol_Border, *itemStylePtr.borderColor);
     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, *itemStylePtr.windowRounding);
     //ImGui::PushStyleColor(ImGuiCol_ChildBg, *itemStylePtr.bgColor);
+    bool animating = false;
     for (auto& key_box : key_boxes)
     {
         if(key_box.type == space && !showSpace) continue;
@@ -40,11 +48,17 @@ void KeystrokesItem::DrawContent()
         ImVec4 targetBgColor = key_box.state ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
 
         //计算速度
-        float speed_off = 15.0f * io.DeltaTime;
+        float speed_off = 15.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
         float speed_on = speed_off * 2.5f;
         key_box.color.fontColor = ImLerp(key_box.color.fontColor, targetTextColor, key_box.state ? speed_on : speed_off);
         key_box.color.backgroundColor = ImLerp(key_box.color.backgroundColor, targetBgColor, key_box.state ? speed_on : speed_off);
-
+        if (Anim::AlmostEqual(key_box.color.fontColor, targetTextColor) && Anim::AlmostEqual(key_box.color.backgroundColor, targetBgColor))
+        {
+            key_box.color.fontColor = targetTextColor;
+            key_box.color.backgroundColor = targetBgColor;
+        }
+        else
+            animating = true;
         ImGui::SetCursorPos(cursorPos);
 
         //设置child的背景颜色
@@ -72,6 +86,7 @@ void KeystrokesItem::DrawContent()
         else
             cursorPos.x += key_box.width + padding;
     }
+    if (!animating) dirtyState.animating = false;
     ImGui::PopStyleVar(); //窗口圆角
     ImGui::PopStyleColor(); //是否显示边框
 }

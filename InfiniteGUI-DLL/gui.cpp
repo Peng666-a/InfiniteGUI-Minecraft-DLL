@@ -15,10 +15,11 @@
 #include "GlobalConfig.h"
 
 #include "Menu.h"
-#include "Motionblur.h"
+
 
 static ImGuiContext* imGuiContext = nullptr;
-
+static GuiFrameLimiter uiTick;
+static CachedDrawData g_Cache;
 void Gui::init()
 {
 	Fonts::init();
@@ -66,10 +67,11 @@ void Gui::init()
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 	}
 	isInit = true;
-
+	uiTick.Init();
 }
 void Gui::clean()
 {
+	g_Cache.Clear();
 	if (imGuiContext)ImGui::GetIO().Fonts->Clear();
 	if ((ImGui::GetCurrentContext() ? (void*)ImGui::GetIO().BackendRendererUserData : nullptr))ImGui_ImplOpenGL3_Shutdown();
 	if ((ImGui::GetCurrentContext() ? (void*)ImGui::GetIO().BackendPlatformUserData : nullptr))ImGui_ImplWin32_Shutdown();
@@ -79,21 +81,19 @@ void Gui::clean()
 
 static std::atomic_flag clipCursor = ATOMIC_FLAG_INIT;
 static RECT originalClip;
-void Gui::render() const
+void Gui::render()
 {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-	ImGuiContext* context = ImGui::GetCurrentContext();
-	if (context->WithinFrameScope)
+	ItemManager::Instance().RenderAllBeforeGui();
+	if (uiTick.ShouldUpdate() && ItemManager::Instance().IsDirty())
 	{
-		ItemManager::Instance().RenderAll();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+		ItemManager::Instance().RenderAllGui();
+		ImGui::Render();
+		CacheDrawData(g_Cache, ImGui::GetDrawData());
 	}
-	ImGui::EndFrame();
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	if (Motionblur::Instance().isEnabled &&
-		Motionblur::Instance().applayOnMenu &&
-		Menu::Instance().isEnabled) 
-		Motionblur::Instance().Render();
+	// 每一帧都画
+	RenderCachedDrawData(g_Cache);
+	ItemManager::Instance().RenderAllAfterGui();
 }

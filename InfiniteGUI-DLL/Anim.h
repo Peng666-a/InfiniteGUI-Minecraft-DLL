@@ -3,11 +3,8 @@
 #include "imgui\imgui_internal.h"
 class Anim
 {
-
-
 public:
 
-protected:
 	// ²åÖµ
 	template<typename T>
 	static void SmoothLerp(T& cur, const T& target, float damping, float dt)

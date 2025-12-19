@@ -19,7 +19,7 @@ public:
         icon = u8"\uE02A";
         updateIntervalMs = 1000;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        FileCountItem::Reset();
     }
 
     static FileCountItem& Instance() {
@@ -42,6 +42,8 @@ public:
         errorMessage = "";
         recursive = false;
         extensionFilter = "";
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void Update() override;
     void DrawContent() override;

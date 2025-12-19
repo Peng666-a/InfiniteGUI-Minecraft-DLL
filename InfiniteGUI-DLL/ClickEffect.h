@@ -16,7 +16,7 @@ public:
 		icon = "&";
 		updateIntervalMs = 5;
 		lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        ClickEffect::Reset();
     }
     ~ClickEffect() override {
 		ClearClickEffects();
@@ -35,9 +35,13 @@ public:
         enableRightClick = false;
         enableLeftClick = true;
         clickCircleSettings.Reset();
+		dirtyState.contentDirty = true;
+		dirtyState.animating = true;
     }
     void Update() override;
-    void Render() override;
+    void RenderGui() override;
+	void RenderBeforeGui() override;
+	void RenderAfterGui() override;
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;

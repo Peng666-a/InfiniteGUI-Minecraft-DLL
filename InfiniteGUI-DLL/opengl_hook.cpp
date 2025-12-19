@@ -19,6 +19,15 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static bool detour_wgl_swap_buffers(HDC hdc);
 
+static void windowResizeHandler(LPARAM lParam) {
+
+	int width = LOWORD(lParam);
+	int height = HIWORD(lParam);
+	opengl_hook::screen_size = { width, height };
+
+
+}
+
 static LRESULT CALLBACK wndproc_hook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	bool isRepeat = (lParam & (1 << 30)) != 0;
@@ -64,9 +73,7 @@ static LRESULT CALLBACK wndproc_hook(HWND hWnd, UINT message, WPARAM wParam, LPA
 	break;
 	case WM_SIZE:
 	{
-		int width = LOWORD(lParam);
-		int height = HIWORD(lParam);
-		opengl_hook::screen_size = { width, height };
+		windowResizeHandler(lParam);
 		break;
 	}
 	default:
@@ -142,20 +149,30 @@ void opengl_hook::init()
 
 	return;
 }
+
+void opengl_hook::remove_hook()
+{
+	SetWindowLongPtrW(handle_window, GWLP_WNDPROC, (LONG_PTR)o_wndproc);
+	wgl_swap_buffers_hook.RemoveHook();
+}
+
 bool opengl_hook::clean()
 {
 
 	wglMakeCurrent(handle_device_ctx, opengl_hook::o_gl_ctx);
 	wglDeleteContext(custom_gl_ctx);
-	SetWindowLongPtrW(handle_window, GWLP_WNDPROC, (LONG_PTR)o_wndproc);
-	wgl_swap_buffers_hook.RemoveHook();
 	gui.clean();
 	//ImGui::DestroyContext();
 	return false;
 }
-//#include <base/features/events/events.h>
+
 bool detour_wgl_swap_buffers(HDC hdc)
 {
+	if (opengl_hook::gui.done)
+	{
+		return wgl_swap_buffers_hook.GetOrignalFunc()(hdc);
+	} //detach
+	//glPushMatrix();
 	opengl_hook::o_gl_ctx = wglGetCurrentContext();
 	opengl_hook::handle_device_ctx = hdc;
 	static std::once_flag flag;
@@ -183,27 +200,25 @@ bool detour_wgl_swap_buffers(HDC hdc)
 		});
 	if (WindowFromDC(hdc) != opengl_hook::handle_window) return wgl_swap_buffers_hook.GetOrignalFunc()(hdc);
 
-	if(!opengl_hook::gui.done)
-	{
-		wglMakeCurrent(hdc, opengl_hook::custom_gl_ctx);
+	wglMakeCurrent(hdc, opengl_hook::custom_gl_ctx);
 
-		static std::once_flag flag2;
-		std::call_once(flag2, [&]
-			{
-				static std::thread announcementThread;
-				// 启动后台线程
-				announcementThread = std::thread([]()
-					{
-						App::Instance().GetAnnouncement();
-					});
-				announcementThread.detach();
-				opengl_hook::gui.logoTexture.id = LoadTextureFromMemory(logo, logoSize, &opengl_hook::gui.logoTexture.width, &opengl_hook::gui.logoTexture.height);
-			});
+	static std::once_flag flag2;
+	std::call_once(flag2, [&]
+		{
+			static std::thread announcementThread;
+			// 启动后台线程
+			announcementThread = std::thread([]()
+				{
+					App::Instance().GetAnnouncement();
+				});
+			announcementThread.detach();
+			opengl_hook::gui.logoTexture.id = LoadTextureFromMemory(logo, logoSize, &opengl_hook::gui.logoTexture.width, &opengl_hook::gui.logoTexture.height);
+		});
 
-		//渲染代码
+	//渲染代码
+	if(opengl_hook::gui.isInit)
 		opengl_hook::gui.render();
-		wglMakeCurrent(hdc, opengl_hook::o_gl_ctx);
-	}
-
+	wglMakeCurrent(hdc, opengl_hook::o_gl_ctx);
+	//glPopMatrix();
 	return wgl_swap_buffers_hook.GetOrignalFunc()(hdc);
 }

@@ -1,9 +1,6 @@
 #pragma once
-#include <Windows.h>
 #include "Item.h"
 #include "UpdateModule.h"
-#include <string>
-#include <vector>
 #include <deque>
 #include <chrono>
 #include "KeyState.h"
@@ -71,7 +68,7 @@ struct click_container {
 
     void processClick()
     {
-        if (leftContainer.size() > 0)
+        if (!leftContainer.empty())
         {
             auto now = std::chrono::steady_clock::now();
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - leftContainer.front()).count();
@@ -80,7 +77,7 @@ struct click_container {
                 leftContainer.pop_front();
             }
         }
-        if (rightContainer.size() > 0)
+        if (!rightContainer.empty())
         {
             auto now = std::chrono::steady_clock::now();
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - rightContainer.front()).count();
@@ -91,12 +88,12 @@ struct click_container {
         }   
     }
 
-    int GetLeftCPS()
+    int GetLeftCPS() const
     {
         int left = (int)leftContainer.size();
         return left;
     }
-    int GetRightCPS()
+    int GetRightCPS() const
     {
         int right = (int)rightContainer.size();
         return right;
@@ -114,10 +111,8 @@ public:
         icon = "!";
         updateIntervalMs = 2;
         lastUpdateTime = std::chrono::steady_clock::now();
-        //lastCpsTime = std::chrono::steady_clock::now();
-        Reset();
+        CPSDetector::Reset();
     } 
-    ~CPSDetector() {}
 
     static CPSDetector& Instance() {
         static CPSDetector instance;

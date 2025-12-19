@@ -8,9 +8,8 @@ public:
         name = u8"动态模糊";
         description = u8"采用帧混合技术实现的动态模糊";
         icon = u8"\uE059";
-        Reset();
+        Motionblur::Reset();
     }
-    ~Motionblur() {}
 
     static Motionblur& Instance()
     {
@@ -27,8 +26,13 @@ public:
         smooth_blur = false;
         clear_color = false;
         velocityAdaptive = true;
+        applayOnMenu = true;
+        processApplyOnMenu();
     }
-    void Render() override;
+    void RenderGui() override;
+    void RenderBeforeGui() override;
+    void RenderAfterGui() override;
+    void Render();
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;
@@ -46,6 +50,21 @@ public:
     static void Fps_modulate(float fps, float* blurriness_value, float* cur_blurriness_value);
     bool applayOnMenu = true;
 private:
+
+    void processApplyOnMenu()
+    {
+        renderTask.clear();
+        if (applayOnMenu)
+        {
+            renderTask.after = true;
+            renderTask.before = false;
+        }
+        else
+        {
+            renderTask.after = false;
+            renderTask.before = true;
+        }
+    }
     uint32_t shader_program_;
 
     uint32_t current_texture_;

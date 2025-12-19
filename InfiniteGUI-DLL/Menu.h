@@ -32,7 +32,8 @@ public:
         isEnabled = false;
         settingMenu = new SettingMenu();
         blur = new Blur();
-        Reset();
+        renderTask.before = true;
+        Menu::Reset();
     }
     ~Menu() {
         delete settingMenu;
@@ -49,13 +50,14 @@ public:
         return instance;
     }
 
-    void Render() override;
+    void RenderGui() override;
+    void RenderBeforeGui() override;
+    void RenderAfterGui() override;
     void Toggle() override;
     void Reset() override
     {
         ResetKeybind();
         ResetWindowStyle();
-
         keybinds.insert(std::make_pair(u8"²Ëµ¥¿ì½Ý¼ü£º", VK_OEM_5));
         itemStyle.fontSize = 22.0f;
         itemStyle.bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.15f);

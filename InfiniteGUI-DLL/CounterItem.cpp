@@ -6,6 +6,8 @@
 #include <string>
 #include <windows.h>
 
+#include "Anim.h"
+
 void CounterItem::Toggle()
 {
 }
@@ -39,20 +41,28 @@ void CounterItem::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
             lastCount = count;
             if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
         }
+        else return;
+
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
 }
 
 void CounterItem::DrawContent()
 {
-
     ImVec4 targetTextColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
 
     //获取io
     ImGuiIO& io = ImGui::GetIO();
-
     //计算速度
-    float speed = 3.0f * io.DeltaTime;
+    float speed = 3.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
     color.color = ImLerp(color.color, targetTextColor, speed);
+    // 判断动画是否结束
+    if (Anim::AlmostEqual(color.color, targetTextColor))
+    {
+        color.color = targetTextColor;
+        dirtyState.animating = false;
+    }
 
     ImGuiStd::TextColoredShadow(color.color, (prefix + std::to_string(count) + suffix).c_str());
 

@@ -77,6 +77,21 @@ void Motionblur::Toggle()
 {
 }
 
+void Motionblur::RenderGui()
+{
+
+}
+
+void Motionblur::RenderBeforeGui()
+{
+	Render();
+}
+
+void Motionblur::RenderAfterGui()
+{
+	Render();
+}
+
 void Motionblur::Render()
 {
 	if (!isEnabled) return;
@@ -121,7 +136,7 @@ void Motionblur::Render()
 
 	//计算blurriness_value值
 	if (velocityAdaptive)
-		velocity_adaptive_blur(GameStateDetector::Instance().IsCameraMoving(),GameStateDetector::Instance().GetCameraSpeed(), &velocity_factor);
+		velocity_adaptive_blur(GameStateDetector::Instance().IsCameraMoving(), GameStateDetector::Instance().GetCameraSpeed(), &velocity_factor);
 	else
 		velocity_factor = 0.0f;
 
@@ -293,6 +308,7 @@ void Motionblur::Load(const nlohmann::json& j)
 	if (j.contains("velocityAdaptive")) velocityAdaptive = j["velocityAdaptive"].get<bool>();
 	if (j.contains("smooth_blur")) smooth_blur = j["smooth_blur"].get<bool>();
 	if (j.contains("applayOnMenu")) applayOnMenu = j["applayOnMenu"].get<bool>();
+	processApplyOnMenu();
 	if (j.contains("clear_color")) clear_color = j["clear_color"].get<bool>();
 	if (j.contains("FpsModulate")) FpsModulate = j["FpsModulate"].get<bool>();
 }
@@ -331,7 +347,10 @@ void Motionblur::DrawSettings(const float& bigPadding, const float& centerX, con
 	}
 
 	ImGui::SetCursorPosX(bigPadding);
-	ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu);
+	if (ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu))
+	{
+		processApplyOnMenu();
+	}
 	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。");
 
 	ImGui::SameLine();

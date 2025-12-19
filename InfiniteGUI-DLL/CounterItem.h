@@ -18,9 +18,8 @@ public:
         name = u8"计数器";
         description = u8"显示计数器";
         icon = "X";
-        Reset();
+        CounterItem::Reset();
     }
-    ~CounterItem() {}
 
     static CounterItem& Instance() {
         static CounterItem text;
@@ -46,6 +45,8 @@ public:
 
         count = 0;
         lastCount = 0;
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void OnKeyEvent(bool state, bool isRepeat, WPARAM key) override;
     void DrawContent() override;

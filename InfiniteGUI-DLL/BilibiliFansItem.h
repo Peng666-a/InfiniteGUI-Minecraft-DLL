@@ -22,7 +22,7 @@ public:
         httpUpdateIntervalMs = 3000;
         updateIntervalMs = 50;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        BilibiliFansItem::Reset();
     }
 
     ~BilibiliFansItem() override {
@@ -53,6 +53,8 @@ public:
         uid = 399194206;
         fansCount = -1;
         lastFansCount = -1;
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void HttpAddTask() override;
     void HttpRemoveTask() override;

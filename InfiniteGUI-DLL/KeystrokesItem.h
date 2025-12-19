@@ -24,6 +24,7 @@ struct key_box
     key_type type;
     std::string label;
     bool state;
+    bool lastState;
     float width;
     float height;
     bool needReturn;
@@ -60,6 +61,7 @@ struct key_box
         this->type = type;
         this->label = label;
         this->state = false;
+        this->lastState = false;
         SetSize(min_box_size, padding);
         this->needReturn = needReturn;
         this->color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_FrameBg)), ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
@@ -77,9 +79,8 @@ public:
         icon = u8"\uE05D";
         updateIntervalMs = 5;
         lastUpdateTime = std::chrono::steady_clock::now();
-        Reset();
+        KeystrokesItem::Reset();
     }
-    ~KeystrokesItem() {}
 
     static KeystrokesItem& Instance() {
         static KeystrokesItem instance;
@@ -106,6 +107,8 @@ public:
         showCps = false;
         padding = 6.0f;
         min_box_size = 32.0f;
+        dirtyState.contentDirty = true;
+        dirtyState.animating = true;
     }
     void Update() override;
     void DrawContent() override;

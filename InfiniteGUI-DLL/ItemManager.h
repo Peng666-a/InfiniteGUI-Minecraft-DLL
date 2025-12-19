@@ -18,12 +18,14 @@ public:
     void AddItem(Item* item);
     void UpdateAll() const;
 
-    void RenderAll() const;
+    void RenderAllGui() const;
+    void RenderAllBeforeGui() const;
+    void RenderAllAfterGui() const;
+    bool IsDirty() const;
     void ProcessKeyEvents(bool state, bool isRepeat, WPARAM key) const;
 
-
     void Clear(bool resetSingletons) const;
-    void Load(const nlohmann::json& j);
+    void Load(const nlohmann::json& j) const;
     void Save(nlohmann::json& j) const;
 
     const std::vector<Item*>& GetItems() const { return Items; }
