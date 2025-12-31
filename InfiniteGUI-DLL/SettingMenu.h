@@ -45,6 +45,11 @@ public:
 		draw->AddRectFilled(LeftPanelBg1, LeftPanelBg2, ImGui::GetColorU32(ImGuiCol_WindowBg));
 
 		leftPanel->Draw();
+		showExitConfirmDialog(done);
+		ImVec2 pos1 = ImVec2(padding * 2 + 150.0f + screenPos.x, screenPos.y);
+		ImVec2 pos2 = ImVec2(padding * 2 + 150.0f + screenPos.x, settingMenuSize.y + screenPos.y);
+		draw->AddLine(pos1, pos2, ImGui::GetColorU32(ImGuiCol_Separator), 1.0f);
+		ImGui::SetCursorPos(ImVec2(padding * 2 + 150.0f, 0.0f));
 		int index = leftPanel->GetSelectedIndex();
 		if (index == 4)
 		{
@@ -53,16 +58,20 @@ public:
 			ImGui::OpenPopup(u8"退出确认");
 		}
 		else
-			lastSelectedIndex = index;
-		showExitConfirmDialog(done);
-		ImVec2 pos1 = ImVec2(padding * 2 + 150.0f + screenPos.x, screenPos.y);
-		ImVec2 pos2 = ImVec2(padding * 2 + 150.0f + screenPos.x, settingMenuSize.y + screenPos.y);
-		draw->AddLine(pos1, pos2, ImGui::GetColorU32(ImGuiCol_Separator), 1.0f);
-		ImGui::SetCursorPos(ImVec2(padding * 2 + 150.0f, 0.0f));
-		mainPanel->SetPanelType(lastSelectedIndex);
+		{
+			if (index != lastSelectedIndex)
+				mainPanel->SetPanelType(index);
+			lastSelectedIndex = index; //不重复执行SetPanelType
+		}
 		mainPanel->Draw();
 		ImGui::EndChild();
 		return exit;
+	}
+
+	void Enter() const
+	{
+		leftPanel->Enter();
+		mainPanel->Enter();
 	}
 
 private:

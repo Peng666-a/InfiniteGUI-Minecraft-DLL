@@ -25,13 +25,6 @@ public:
         BilibiliFansItem::Reset();
     }
 
-    ~BilibiliFansItem() override {
-        if (httpTaskId != -1)
-        {
-            HttpRemoveTask();
-        }
-    }
-
     static BilibiliFansItem& Instance() {
         static BilibiliFansItem instance;
         return instance;
@@ -46,18 +39,14 @@ public:
         isEnabled = false;
         prefix = u8"[粉丝数:";
         suffix = "]";
-        if (httpTaskId != -1)
-        {
-            HttpRemoveTask();
-        }
         uid = 399194206;
         fansCount = -1;
         lastFansCount = -1;
         dirtyState.contentDirty = true;
         dirtyState.animating = true;
+        firstLoad = true;
     }
-    void HttpAddTask() override;
-    void HttpRemoveTask() override;
+    void UpdateHttp() override;
     void Update() override;
     void DrawContent() override;
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;
@@ -69,6 +58,7 @@ private:
     std::atomic<int> pendingFans{ -1 };   // 后台线程写，主线程读
     int fansCount = -1;                 // 主线程内部值
     int lastFansCount = -1;             // 主线程上一帧值
+    bool firstLoad = true;              // 第一次加载
 
     bilibili_fans_element color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
 };

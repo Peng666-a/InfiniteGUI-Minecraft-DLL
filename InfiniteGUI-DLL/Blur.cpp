@@ -230,7 +230,8 @@ void Blur::initialize_quad()
 
 void Blur::initialize_shader()
 {
-    shader_program_ = glCreateProgram();
+    if (!shader_program_)
+        shader_program_ = glCreateProgram();
 
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_code2, nullptr);

@@ -80,6 +80,18 @@ void ItemManager::UpdateAll() const
     }
 }
 
+void ItemManager::UpdateHttpAll() const
+{
+    for (auto item : Items)
+    {
+        if (!item->isEnabled) continue;
+        if (auto httpupd = dynamic_cast<HttpModule*>(item))
+        {
+            httpupd->UpdateHttp();
+        }
+    }
+}
+
 // ------------------------------------------------
 void ItemManager::RenderAllGui() const
 {

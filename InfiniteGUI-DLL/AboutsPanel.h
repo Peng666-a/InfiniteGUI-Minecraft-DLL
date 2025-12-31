@@ -6,7 +6,7 @@
 #include "ChangeLog.h"
 #include "ImGuiStd.h"
 #include "imgui/imgui.h"
-#
+#include "FileUtils.h"
 class AboutsPanel
 {
 public:
@@ -91,6 +91,16 @@ public:
         }
         ImGui::SameLine();
         ImGui::SetCursorPosX(bigPadding + centerX);
+        ImGuiStd::TextShadow(u8"用户协议：");
+        ImGui::SameLine();
+        if (ImGui::Button(u8"InfiniteGui-License"))
+        {
+            std::wstring path = StringConverter::Utf8ToWstring(FileUtils::modulePath) + L"\\InfiniteGui-License.txt";
+            ShellExecute(NULL, NULL, path.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+        }
+
+        ImGui::SetCursorPosX(bigPadding);
         ImGuiStd::TextShadow(u8"作者：");
         ImGui::SameLine();
         if (ImGui::Button(App::Instance().appAuthor.c_str()))
@@ -98,8 +108,8 @@ public:
             ShellExecute(NULL, NULL, L"https://space.bilibili.com/399194206", NULL, NULL, SW_SHOWNORMAL);
         }
 
-
-        ImGui::SetCursorPosX(bigPadding);
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(bigPadding + centerX);
         ImGuiStd::TextShadow(u8"相关链接：");
         ImGui::SameLine();
         if (ImGui::Button(u8"爱发电"))

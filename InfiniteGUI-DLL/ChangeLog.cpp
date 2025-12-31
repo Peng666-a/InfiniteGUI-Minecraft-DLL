@@ -42,6 +42,16 @@ void ChangeLog::Init()
     AddContent(FIXBUG, u8"修复强制疾跑卡键Bug");
     AddContent(FIXBUG, u8"修复帧率调制失效Bug");
     AddContent(ADD, u8"完善弹窗显示");
+
+    NewVersion("V1.0.0", "25.12.26");
+    AddContent(CHANGE, u8"菜单打开时会返回默认状态");
+    AddContent(FIXBUG, u8"修复动态模糊遗留问题");
+    AddContent(FIXBUG, u8"修复按键显示拖拽问题");
+    AddContent(INFO, u8"发布第一支正式版本");
+
+    NewVersion("V1.0.1", "25.12.31");
+    AddContent(CHANGE, u8"动态模糊可在游戏暂停时关闭");
+    AddContent(FIXBUG, u8"解决1.8全屏检测不了游戏状态问题");
     
 } //我写这个真是个天才，这样就不用手敲Imgui代码了，天才天才天才天
 

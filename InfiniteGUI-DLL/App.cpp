@@ -26,7 +26,9 @@ bool App::CheckUpdate()
         // 网络请求失败，返回空对象
         MessageBox(NULL, L"网络请求失败，请检查网络连接", L"提示", MB_OK);
     }
-    if (cloudVersion.major > appVersion.major || cloudVersion.minor > appVersion.minor || cloudVersion.build > appVersion.build)
+    long long cloudNum = cloudVersion.major * 100000000 + cloudVersion.minor * 10000 + cloudVersion.build;
+    long long appNum = appVersion.major * 100000000 + appVersion.minor * 10000 + appVersion.build;
+    if (cloudNum > appNum)
     {
         // 有新版本，弹出提示框
         return false;

@@ -11,32 +11,50 @@
 
 void BilibiliFansItem::Toggle()
 {
-    if (isEnabled)
-        HttpAddTask();
-    else
-        HttpRemoveTask();
+    //if (isEnabled)
+    //    HttpAddTask();
+    //else
+    //    HttpRemoveTask();
 }
 
-void BilibiliFansItem::HttpAddTask()
+//void BilibiliFansItem::HttpAddTask()
+//{
+//    httpTaskId = HttpUpdateWorker::Instance().AddTask(
+//        L"https://api.bilibili.com/x/relation/stat?vmid=" + std::to_wstring(uid),
+//        httpUpdateIntervalMs,
+//        [this](const std::string& response) {
+//            try {
+//                auto j = nlohmann::json::parse(response);
+//                pendingFans = j["data"]["follower"].get<int>();
+//            }
+//            catch (...) {
+//                pendingFans = -1;
+//            }
+//        }
+//    );
+//}
+//
+//void BilibiliFansItem::HttpRemoveTask()
+//{
+//    HttpUpdateWorker::Instance().RemoveTask(httpTaskId);
+//}
+
+void BilibiliFansItem::UpdateHttp()
 {
-    httpTaskId = HttpUpdateWorker::Instance().AddTask(
-        L"https://api.bilibili.com/x/relation/stat?vmid=" + std::to_wstring(uid),
-        httpUpdateIntervalMs,
-        [this](const std::string& response) {
-            try {
-                auto j = nlohmann::json::parse(response);
-                pendingFans = j["data"]["follower"].get<int>();
-            }
-            catch (...) {
-                pendingFans = -1;
-            }
+    std::wstring url = L"https://api.bilibili.com/x/relation/stat?vmid=" + std::to_wstring(uid);
+    std::string response;
+    bool ok = HttpClient::HttpGet(url, response);
+    if(ok)
+    {
+        try {
+            auto j = nlohmann::json::parse(response);
+            pendingFans = j["data"]["follower"].get<int>();
         }
-    );
-}
-
-void BilibiliFansItem::HttpRemoveTask()
-{
-    HttpUpdateWorker::Instance().RemoveTask(httpTaskId);
+        catch (...) {
+            pendingFans = -1;
+        }
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(httpUpdateIntervalMs));
 }
 
 void BilibiliFansItem::Update()
@@ -51,24 +69,29 @@ void BilibiliFansItem::Update()
     // 内容发生变化
     dirtyState.contentDirty = false;
 
-    if (fansCount > lastFansCount)
+    if(!firstLoad)
     {
-        color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
-        if (isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_up.wav", soundVolume);
-        int count = fansCount - lastFansCount;
-        std::string msg = u8"涨粉 " + std::to_string(count) + u8" 位。";
-        NotificationItem::Instance().AddNotification(NotificationType_Info, msg);
+        if (fansCount > lastFansCount)
+        {
+            color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
+            if (isPlaySound)
+                AudioManager::Instance().playSound("bilibilifans\\bilibilifans_up.wav", soundVolume);
+            int count = fansCount - lastFansCount;
+            std::string msg = u8"涨粉 " + std::to_string(count) + u8" 位。";
+            NotificationItem::Instance().AddNotification(NotificationType_Info, msg);
+        }
+        else if (fansCount < lastFansCount)
+        {
+            color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
+            if (isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_down.wav", soundVolume);
+            int count = lastFansCount - fansCount;
+            std::string msg = u8"掉粉 " + std::to_string(count) + u8" 位。";
+            NotificationItem::Instance().AddNotification(NotificationType_Info, msg);
+        }
+        else return;
     }
-    else if (fansCount < lastFansCount)
-    {
-        color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
-        if (isPlaySound) AudioManager::Instance().playSound("bilibilifans\\bilibilifans_down.wav", soundVolume);
-        int count = lastFansCount - fansCount;
-        std::string msg = u8"掉粉 " + std::to_string(count) + u8" 位。";
-        NotificationItem::Instance().AddNotification(NotificationType_Info, msg);
-    }
-    else return;
-
+    else 
+        firstLoad = false;
     dirtyState.contentDirty = true;
     dirtyState.animating = true;
     lastFansCount = fansCount;
@@ -97,7 +120,6 @@ void BilibiliFansItem::DrawContent()
 
 void BilibiliFansItem::DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth)
 {
-    //DrawItemSettings();
 
     float bigItemWidth = centerX * 2.0f - bigPadding * 4.0f;
 
@@ -124,7 +146,6 @@ void BilibiliFansItem::DrawSettings(const float& bigPadding, const float& center
         else
         {
             uid = std::stoll(uidStr);
-            HttpResetTask();
         }
     }
     DrawAffixSettings(bigPadding, centerX, itemWidth);
@@ -141,7 +162,7 @@ void BilibiliFansItem::Load(const nlohmann::json& j)
     if (j.contains("uid")) uid = j["uid"];
     if (j.contains("fansCount")) fansCount = j["fansCount"];
     lastFansCount = fansCount;
-    if(isEnabled) HttpAddTask();
+    //if(isEnabled) HttpAddTask();
 }
 
 void BilibiliFansItem::Save(nlohmann::json& j) const

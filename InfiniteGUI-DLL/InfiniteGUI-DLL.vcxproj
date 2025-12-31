@@ -204,6 +204,7 @@
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemManager.h" />
     <ClInclude Include="KeybindModule.h" />
+    <ClInclude Include="Keybox.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="KeystrokesItem.h" />
     <ClInclude Include="MainMenuButton.hpp" />

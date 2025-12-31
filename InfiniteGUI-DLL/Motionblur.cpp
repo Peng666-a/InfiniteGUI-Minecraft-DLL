@@ -35,7 +35,7 @@ uniform bool smooth_blur;
 
 vec4 blurHistory(vec2 uv)
 {
-    float offset = 0.0005 * velocity_factor;
+    float offset = 0.0006 * velocity_factor;
     vec4 sum = vec4(0.0);
 
     sum += texture(historyTexture, uv + vec2(-offset, 0.0)) * 0.25;
@@ -53,7 +53,7 @@ void main()
     float cur_blurriness = blurriness;
     vec4 blurredHistory = history;
 	if(velocity_factor > 0.0){
-		float base_blurriness = blurriness / 2.0;
+		float base_blurriness = blurriness * 0.5;
 		cur_blurriness = base_blurriness + (1.0 - velocity_factor) * base_blurriness;
 		if(smooth_blur)
 		{
@@ -99,6 +99,8 @@ void Motionblur::RenderAfterGui()
 void Motionblur::Render()
 {
 	if (!isEnabled) return;
+	if (!applyOnGameMenu && GameStateDetector::Instance().GetCurrentState() == InGameMenu)
+		return;
 	static bool first = true;
 
 	const int width = opengl_hook::screen_size.x;
@@ -141,7 +143,7 @@ void Motionblur::Render()
 	if (velocityAdaptive)
 		velocity_adaptive_blur(GameStateDetector::Instance().IsCameraMoving(), GameStateDetector::Instance().GetCameraSpeed(), &velocity_factor);
 	else
-		velocity_factor = 0.0f;
+		velocity_factor = 1.0f;
 
 	if (FpsModulate)
 		Fps_modulate(FpsItem::Instance().GetInstantaneousFPS(), &blurriness_value, &cur_blurriness_value);
@@ -236,7 +238,8 @@ void Motionblur::initialize_quad()
 
 void Motionblur::initialize_shader()
 {
-	shader_program_ = glCreateProgram();
+	if (!shader_program_)
+		shader_program_ = glCreateProgram();
 
 	const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex_shader, 1, &vertex_shader_code, nullptr);
@@ -335,26 +338,17 @@ void Motionblur::copy_to_current() const
 
 void Motionblur::velocity_adaptive_blur(bool cameraMoving, float cameraSpeed, float* velocity_factor)
 {
-	//cameraSpeed 1~10
-	ImGuiIO& io = ImGui::GetIO();
-	float lerpSpeed = 10.0f * io.DeltaTime;
 	float tar_velocity_factor = std::clamp((cameraSpeed - 1.0f), 0.0f, 15.0f) / 15.0f;
 
 	if (cameraMoving)
 	{
 		*velocity_factor = tar_velocity_factor;
 	}
-	else
-	{
-		*velocity_factor = ImLerp(*velocity_factor, 0.0f, lerpSpeed);
-		if(*velocity_factor < 0.01f)
-			*velocity_factor = 0.0f;
-	}
 }
 
-void Motionblur::Fps_modulate(float fps, float* blurriness_value, float* cur_blurriness_value)
+void Motionblur::Fps_modulate(const float &fps,const float* blurriness_value, float* cur_blurriness_value)
 {
-	*cur_blurriness_value = *blurriness_value * ImClamp(fps, 0.0f, 500.0f) / 500.0f; //fps越高，模糊强度越高
+	*cur_blurriness_value = *blurriness_value * std::clamp(fps, 0.0f, 1000.0f) / 1000.0f; //fps越高，模糊强度越高
 }
 
 void Motionblur::Load(const nlohmann::json& j)
@@ -363,7 +357,8 @@ void Motionblur::Load(const nlohmann::json& j)
 	if (j.contains("blurriness")) blurriness_value = j["blurriness"].get<float>();
 	if (j.contains("velocityAdaptive")) velocityAdaptive = j["velocityAdaptive"].get<bool>();
 	if (j.contains("smooth_blur")) smooth_blur = j["smooth_blur"].get<bool>();
-	if (j.contains("applayOnMenu")) applayOnMenu = j["applayOnMenu"].get<bool>();
+	if (j.contains("applayOnMenu")) applyOnMenu = j["applayOnMenu"].get<bool>();
+	if (j.contains("applyOnGameMenu")) applyOnGameMenu = j["applyOnGameMenu"].get<bool>();
 	processApplyOnMenu();
 	if (j.contains("clear_color")) clear_color = j["clear_color"].get<bool>();
 	if (j.contains("FpsModulate")) FpsModulate = j["FpsModulate"].get<bool>();
@@ -375,7 +370,8 @@ void Motionblur::Save(nlohmann::json& j) const
 	j["blurriness"] = blurriness_value;
 	j["velocityAdaptive"] = velocityAdaptive;
 	j["smooth_blur"] = smooth_blur;
-	j["applayOnMenu"] = applayOnMenu;
+	j["applyOnMenu"] = applyOnMenu;
+	j["applyOnGameMenu"] = applyOnGameMenu;
 	j["clear_color"] = clear_color;
 	j["FpsModulate"] = FpsModulate;
 }
@@ -388,7 +384,19 @@ void Motionblur::DrawSettings(const float& bigPadding, const float& centerX, con
 	ImGui::SetCursorPosX(bigPadding);
 	ImGui::SetNextItemWidth(bigItemWidth);
 	//DrawItemSettings();
-	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 40.0f, "%.1f");
+	ImGui::SliderFloat(u8"模糊强度", &blurriness_value, 0.0f, 30.0f, "%.1f");
+
+	ImGui::SetCursorPosX(bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
+	if (ImGui::Checkbox(u8"菜单中开启", &applyOnMenu))
+	{
+		processApplyOnMenu();
+	}
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(centerX + bigPadding);
+	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::Checkbox(u8"游戏菜单中开启", &applyOnGameMenu);
+	ImGui::SameLine();ImGuiStd::HelpMarker(u8"打开背包、暂停、打字等非游戏时Gui的显示。");
 
 	ImGui::SetCursorPosX(bigPadding);
 	ImGui::SetNextItemWidth(itemWidth);
@@ -401,19 +409,13 @@ void Motionblur::DrawSettings(const float& bigPadding, const float& centerX, con
 	{
 		if (!velocityAdaptive) smooth_blur = false;
 	}
-	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。");
+	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"根据视角移动速度调整模糊强度，能有效解决鬼影问题。\n对于mc1.12及以下版本此功能将失效。");
 	ImGui::SetCursorPosX(bigPadding);
-	if (ImGui::Checkbox(u8"菜单动态模糊", &applayOnMenu))
-	{
-		processApplyOnMenu();
-	}
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(centerX + bigPadding);
-	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::Checkbox(u8"Im Faded~", &clear_color);
 
 	if (velocityAdaptive) { 
-		ImGui::SetCursorPosX(bigPadding);
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(bigPadding + centerX);
 		ImGui::SetNextItemWidth(itemWidth);
 
 		ImGui::Checkbox(u8"柔和模糊", &smooth_blur); ImGui::SameLine(); ImGuiStd::HelpMarker(u8"柔和化模糊拖影，但会使MCUI模糊。"); 

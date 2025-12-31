@@ -62,7 +62,7 @@ public:
         ResetSound();
         soundVolume = 0.1f;
         keybinds.insert(std::make_pair(u8"²Ëµ¥¿ì½Ý¼ü£º", VK_OEM_5));
-        itemStyle.fontSize = 22.0f;
+        itemStyle.fontSize = 20.0f;
         itemStyle.bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.15f);
     }
     void DrawSettings(const float& bigPadding, const float& centerX, const float& itemWidth) override;

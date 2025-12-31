@@ -45,13 +45,13 @@ public:
     void Load(const nlohmann::json& j) override;
     void Save(nlohmann::json& j) const override;
 
-    double GetLastFrameTimeMs() const
+    double GetGameDeltaTime() const
     {
-        return lastFrameTimeMs;
+        return deltaTime;
     }
     double GetInstantaneousFPS() const
     {
-        return 1.0 / lastFrameTimeMs;
+        return 1.0 / deltaTime;
     }
 
 private:
@@ -68,7 +68,7 @@ private:
     float guiFPS = 0.0f;
     bool showGuiFPS = false;
     fps_element color;
-    double lastFrameTimeMs = 0.0;
+    double deltaTime = 0.0;
     using Clock = std::chrono::steady_clock;
     Clock::time_point lastFrameTime;
 };

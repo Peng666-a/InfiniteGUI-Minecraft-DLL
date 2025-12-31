@@ -12,6 +12,8 @@
 #include "GuiFrameLimiter.h"
 HMODULE g_hModule = NULL;
 std::thread g_updateThread;
+std::thread g_httpThread;
+
 static std::atomic_bool g_running = ATOMIC_VAR_INIT(true);
 // 线程函数：更新所有 item 状态
 inline void UpdateThread() {
@@ -21,16 +23,30 @@ inline void UpdateThread() {
 	}
 }
 
+// 线程函数：更新所有 http
+inline void HttpThread() {
+	while (g_running.load()) {
+		if (opengl_hook::gui.isInit) ItemManager::Instance().UpdateHttpAll();  // 调用UpdateAll()来更新所有item
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));  // 休眠1ms，可以根据实际需求调整
+	}
+}
+
 // 启动更新线程
 inline void StartThreads() {
 	g_updateThread = std::thread(UpdateThread);
 	g_updateThread.detach();  // 将线程设为后台线程
+	g_httpThread = std::thread(HttpThread);
+	g_httpThread.detach();  // 将线程设为后台线程
+
 }
 
 // 停止更新线程
 inline void StopThreads() {
 	if (g_updateThread.joinable()) {
 		g_updateThread.join();
+	}
+	if (g_httpThread.joinable()) {
+		g_httpThread.join();
 	}
 }
 
@@ -41,7 +57,6 @@ inline void Uninit() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	g_running = false;
 	StopThreads();
-	HttpUpdateWorker::Instance().Stop();
 	AudioManager::Instance().Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	FreeLibraryAndExitThread(g_hModule, 0);
@@ -54,9 +69,7 @@ inline DWORD WINAPI MainApp(LPVOID)
     FileUtils::InitPaths(g_hModule);
 	//加载配置文件
 	ConfigManager::Instance().Init();
-
 	ConfigManager::Instance().LoadGlobal();
-
 	GuiFrameLimiter::Instance().Init();
     opengl_hook::init();
 	while (!opengl_hook::gui.isInit)
@@ -67,11 +80,8 @@ inline DWORD WINAPI MainApp(LPVOID)
 	//初始化音频管理器
 	AudioManager::Instance().Init();
 	ClickSound::PlayIntroSound();
-	HttpUpdateWorker::Instance().Start();
 	StartThreads();
-
 	App::Instance().GetAnnouncement();
-
 	while (!opengl_hook::gui.done)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -80,7 +90,6 @@ inline DWORD WINAPI MainApp(LPVOID)
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	Uninit();
-
     return 0;
 
 }

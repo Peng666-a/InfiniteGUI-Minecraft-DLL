@@ -26,7 +26,8 @@ public:
         smooth_blur = false;
         clear_color = false;
         velocityAdaptive = true;
-        applayOnMenu = true;
+        applyOnMenu = true;
+        applyOnGameMenu = true;
         processApplyOnMenu();
     }
     void RenderGui() override;
@@ -48,14 +49,13 @@ public:
 	void copy_to_current() const;
 
     static void velocity_adaptive_blur(bool cameraMoving, float velocity, float* velocity_factor);
-    static void Fps_modulate(float fps, float* blurriness_value, float* cur_blurriness_value);
-    bool applayOnMenu = true;
+    static void Fps_modulate(const float& fps, const float* blurriness_value, float* cur_blurriness_value);
 private:
 
     void processApplyOnMenu()
     {
         renderTask.clear();
-        if (applayOnMenu)
+        if (applyOnMenu)
         {
             renderTask.after = true;
             renderTask.before = false;
@@ -67,6 +67,8 @@ private:
         }
     }
 
+    bool applyOnMenu = true;
+    bool applyOnGameMenu = true;
     bool initialized_ = false;
 
     uint32_t shader_program_;
@@ -81,8 +83,8 @@ private:
     int32_t texture_height_;
 
     float velocity_factor = 0.0f;
-    float cur_blurriness_value = 15.0f;
-    float blurriness_value = 15.0f;
+    float cur_blurriness_value = 10.0f;
+    float blurriness_value = 10.0f;
     bool smooth_blur = false;
     bool clear_color = false;
     bool velocityAdaptive = true;

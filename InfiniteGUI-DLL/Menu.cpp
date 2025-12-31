@@ -120,6 +120,7 @@ void Menu::ShowMain()
     ImGui::PushFont(NULL, style.FontSizeBase * 1.5f);
     if (myButton->Draw(isWindowDraging))
     {
+        settingMenu->Enter();
         state = MENU_STATE_SETTINGS;
         tarWindowBgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.3f);
     }
@@ -130,7 +131,7 @@ void Menu::ShowMain()
     ImGui::Dummy(ImVec2(0.0f, 10.0f));
     ImGui::PopFont();
     ImGui::PopStyleColor(4);
-    float panel_speed = 10.0f * io.DeltaTime;
+    float panel_speed = 10.0f * std::clamp(io.DeltaTime, 0.0f, 0.05f);
     if (state == MENU_STATE_MAIN)
     {
         if (isBtnHovered)

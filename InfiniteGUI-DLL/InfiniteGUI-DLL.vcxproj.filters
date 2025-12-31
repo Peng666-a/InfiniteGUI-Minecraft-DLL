@@ -131,6 +131,9 @@
     <Filter Include="src\core\items\huds\notification">
       <UniqueIdentifier>{bba6f803-0e8b-42e9-9676-e43ba4226528}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\core\items\huds\keystrokes">
+      <UniqueIdentifier>{7daae9f0-050a-422e-8d00-6b6090de87c8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Init.hpp">
@@ -230,9 +233,6 @@
       <Filter>src\core\items\huds</Filter>
     </ClInclude>
     <ClInclude Include="FpsItem.h">
-      <Filter>src\core\items\huds</Filter>
-    </ClInclude>
-    <ClInclude Include="KeystrokesItem.h">
       <Filter>src\core\items\huds</Filter>
     </ClInclude>
     <ClInclude Include="TimeItem.h">
@@ -415,6 +415,12 @@
     <ClInclude Include="ClickSound.h">
       <Filter>src\core\items\huds\menu</Filter>
     </ClInclude>
+    <ClInclude Include="KeystrokesItem.h">
+      <Filter>src\core\items\huds\keystrokes</Filter>
+    </ClInclude>
+    <ClInclude Include="Keybox.h">
+      <Filter>src\core\items\huds\keystrokes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -483,9 +489,6 @@
     <ClCompile Include="FpsItem.cpp">
       <Filter>src\core\items\huds</Filter>
     </ClCompile>
-    <ClCompile Include="KeystrokesItem.cpp">
-      <Filter>src\core\items\huds</Filter>
-    </ClCompile>
     <ClCompile Include="TimeItem.cpp">
       <Filter>src\core\items\huds</Filter>
     </ClCompile>
@@ -551,6 +554,9 @@
     </ClCompile>
     <ClCompile Include="Notification.cpp">
       <Filter>src\core\items\huds\notification</Filter>
+    </ClCompile>
+    <ClCompile Include="KeystrokesItem.cpp">
+      <Filter>src\core\items\huds\keystrokes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

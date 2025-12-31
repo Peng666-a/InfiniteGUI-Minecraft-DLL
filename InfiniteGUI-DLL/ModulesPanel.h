@@ -14,14 +14,11 @@ public:
 	ModulesPanel()
 	{
 		m_categoryBar = new CategoryBar();
-		m_moduleSettings = new ModuleSettings();
 		filter = m_categoryBar->GetFilter();
-		//m_moduleButton = new ModuleButton("1", "TestModule", "TestModuleDesc", ImVec2(548, 60));
 	}
 	~ModulesPanel()
 	{
 		delete m_categoryBar;
-		delete m_moduleSettings;
 		for (auto moduleCard : m_moduleCard)
 		{
 			delete moduleCard;
@@ -30,7 +27,6 @@ public:
 		{
 			delete moduleButton;
 		}
-		//delete m_moduleButton;
 	}
 
 	void Init()
@@ -63,6 +59,15 @@ public:
 		}
 	}
 
+	void Enter()
+	{
+		selectedItem = nullptr;
+		isInModuleSettings = false;
+		selectedType = ItemType::All;
+		m_categoryBar->SetSelectedIndex(0);
+		needReset = true;
+	}
+
 private:
 
 	bool DrawModuleList()
@@ -89,6 +94,13 @@ private:
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 		ImGui::BeginChild("ModuleList", ImVec2(-padding + ImGui::GetStyle().WindowPadding.x, -padding + ImGui::GetStyle().WindowPadding.y), true, flags);
 		ImGui::SetCursorPos(ImVec2(padding, padding));
+
+		if (needReset)
+		{
+			ImGui::SetScrollHereY(0.0f);
+			needReset = false;
+		}
+
 		for (auto moduleCard : m_moduleCard)
 		{
 			auto* item = moduleCard->GetItem();
@@ -101,8 +113,8 @@ private:
 
 			if (moduleCard->Draw())
 			{
-				joinModuleSettings = true;
 				selectedItem = item;
+				joinModuleSettings = true;
 			}
 		}
 		ImGui::Dummy(ImVec2(0, 10));
@@ -113,7 +125,7 @@ private:
 	bool DrawModuleSettings() const
 	{
 		bool exit = false;
-		if(m_moduleSettings->Draw(selectedItem))
+		if(ModuleSettings::Draw(selectedItem))
 			exit = true;
 		return exit;
 	}
@@ -140,7 +152,8 @@ private:
 	ItemType selectedType = All;
 	ImGuiTextFilter *filter;
 	CategoryBar* m_categoryBar;
-	ModuleSettings* m_moduleSettings; //二级设置 
 	std::vector<ModuleCard*> m_moduleCard;
 	std::vector<ModuleButton*> m_moduleButtons;
+
+	bool needReset = false;
 };

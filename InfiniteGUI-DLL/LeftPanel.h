@@ -88,6 +88,12 @@ public:
 		ImGui::PopFont();
 	}
 
+	void Enter()
+	{
+		selectedIndex = 0;
+		selectedPanel->SetSelectedIndex(selectedIndex);
+	}
+
 	int GetSelectedIndex() const { return selectedIndex; }
 	void SetSelectedIndex(int index) { 
 		selectedIndex = index;

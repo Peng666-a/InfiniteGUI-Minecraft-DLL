@@ -12,6 +12,8 @@
 #include <windows.h>
 
 #include "Anim.h"
+#include "Notification.h"
+#include "NotificationItem.h"
 
 std::unordered_set<danmaku_id> pendingErase;
 void DanmakuItem::AddDanmaku(const std::string& username, const std::string& message)
@@ -34,9 +36,12 @@ void DanmakuItem::AddCaptain(const std::string& username, const std::string& cap
 {
     //std::lock_guard<std::mutex> lock(danmakuMutex);
     std::string giftMessage = username + u8" 开通了 " + captainName + " x " + captainCount;
+    std::string giftNotification = u8"感谢 " + username + u8" 开通的\n " + captainName + " x " + captainCount;
+
 
     bottomMessage = giftMessage;
     bottomMessageType = BTM_CAPTAIN;
+    NotificationItem::Instance().AddNotification(NotificationType_Info, giftNotification);
     dirtyState.contentDirty = true;
 }
 
@@ -44,9 +49,11 @@ void DanmakuItem::AddGift(const std::string& username, const std::string& giftNa
 {
     //std::lock_guard<std::mutex> lock(danmakuMutex);
     std::string giftMessage = username + u8" 赠送了 " + giftName + " x " + giftCount;
+    std::string giftNotification = u8"感谢 " + username + u8" 赠送的\n " + giftName + " x " + giftCount;
 
     bottomMessage = giftMessage;
     bottomMessageType = BTM_GIFT;
+    NotificationItem::Instance().AddNotification(NotificationType_Info, giftNotification);
     dirtyState.contentDirty = true;
 }
 

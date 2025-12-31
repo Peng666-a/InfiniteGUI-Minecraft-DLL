@@ -46,8 +46,8 @@ void GameStateDetector::DrawSettings(const float& bigPadding, const float& cente
 	ImGui::PopFont();
 	ImGui::SetCursorPosX(bigPadding);
 	ImGui::PushItemWidth(itemWidth);
-	ImGui::Checkbox(u8"仅在游戏内显示Gui", &hideItemInGui);
-	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"对于mc1.12及以下版本全屏时此功能将失效，请关闭，否则Gui无法正常显示。");
+	ImGui::Checkbox(u8"仅在游戏时显示Gui", &hideItemInGui);
+	ImGui::SameLine(); ImGuiStd::HelpMarker(u8"打开背包、暂停、打字等非游戏时Gui的显示。");
 }
 
 bool GameStateDetector::IsNeedHide() const 
@@ -101,6 +101,43 @@ bool IsClipCursorSmallerThanScreen(int margin = 8)
 	return false;
 }
 
+static bool IsCursorHidden(const CURSORINFO& ci)
+{
+	static const auto func = [&]() -> bool
+		{
+			static const std::array<LPCWSTR, 13> SysIds = {
+			   IDC_ARROW, IDC_IBEAM, IDC_WAIT, IDC_CROSS,
+			   IDC_UPARROW, IDC_SIZEALL, IDC_SIZENWSE,
+			   IDC_SIZENESW, IDC_SIZENS, IDC_SIZEWE,
+			   IDC_HAND, IDC_NO, IDC_APPSTARTING
+			};
+			// static来缓存加载后的位图，不需要重复加载，这里用到了lambda表达式
+			static const std::array<HCURSOR, 13> SysCursorList = {
+				[]() {
+					std::array<HCURSOR, 13> cursors{};
+					unsigned int index = 0;
+					for (auto id : SysIds)
+					{
+						cursors[index] = LoadCursor(nullptr, id);
+						index++;
+					}
+					return  cursors;
+				}()
+			};
+			return std::any_of(
+				SysCursorList.begin(),
+				SysCursorList.end(),
+				[&](const HCURSOR cursor)
+				{
+					return cursor == ci.hCursor;
+				}
+			);
+		};
+	// 0 表示光标隐藏，CURSOR_SHOWING (0x00000001) 表示光标可见
+	if ((ci.flags & CURSOR_SHOWING) != 0)
+		return !func();
+	return false;
+}
 
 bool GameStateDetector::IsMouseCursorVisible()
 {
@@ -111,7 +148,7 @@ bool GameStateDetector::IsMouseCursorVisible()
 	{
 		if (!(ci.flags & CURSOR_SHOWING)) return false;
 	}
-	return !IsClipCursorSmallerThanScreen(0);
+	return !IsCursorHidden(ci);
 }
 
 void GameStateDetector::ProcessMouseMovement(int dx, int dy)

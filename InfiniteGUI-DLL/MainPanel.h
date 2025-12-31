@@ -78,6 +78,11 @@ public:
 		//draw category bar
 	}
 
+	void Enter() const
+	{
+		m_modulesPanel->Enter();
+	}
+
 	void Init() const
 	{
 		m_modulesPanel->Init();
@@ -88,6 +93,7 @@ public:
 		switch (index)
 		{
 		case 0:
+			m_modulesPanel->Enter();
 			m_panelType = ModulePanel;
 			break;
 		case 1:

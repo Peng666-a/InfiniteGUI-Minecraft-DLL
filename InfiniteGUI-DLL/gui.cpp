@@ -84,6 +84,7 @@ static std::atomic_flag clipCursor = ATOMIC_FLAG_INIT;
 static RECT originalClip;
 void Gui::render()
 {
+	if(ImGui::GetCurrentContext() == nullptr) return;
 	ItemManager::Instance().RenderAllBeforeGui();
 	if (GuiFrameLimiter::Instance().ShouldUpdate() && ItemManager::Instance().IsDirty())
 	{

@@ -51,7 +51,7 @@ void FpsItem::RenderBeforeGui()
 {
 	frameCount++; //ÓÎÏ·Ö¡ÂÊ
 	auto now = Clock::now();
-	lastFrameTimeMs = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastFrameTime).count();
+	deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastFrameTime).count();
 	lastFrameTime = now;
 }
 

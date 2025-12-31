@@ -4,12 +4,12 @@
 #include "ImGuiStd.h"
 #include <nlohmann/json.hpp>
 struct ItemStyle {
-    float windowRounding;
-    float fontSize;
-    ImVec4 fontColor;
-    ImVec4 bgColor;
-    ImVec4 borderColor;
-    bool rainbowFont;
+    float windowRounding = 3.0f;
+    float fontSize = 20.0f;
+    ImVec4 fontColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    ImVec4 bgColor = ImVec4(0.0f, 0.0f, 0.0f, 0.8f);
+    ImVec4 borderColor = ImVec4(0.0f, 0.0f, 0.0f, 0.8f);
+    bool rainbowFont = false;
 };
 
 class WindowStyleModule {

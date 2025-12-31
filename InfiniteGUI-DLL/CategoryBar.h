@@ -64,6 +64,7 @@ public:
     }
 
     int GetSelectedIndex() const { return selectedButtonIndex; }
+    void SetSelectedIndex(int index) { selectedButtonIndex = index; }
     float GetButtonHeight() const { return buttonSize.y; }
 
     ImGuiTextFilter *GetFilter() { return &filter; }
