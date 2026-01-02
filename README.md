@@ -67,21 +67,23 @@
 本项目依赖以下第三方库：  
 
 - OpenGL / GLEW  
-- nlohmann/json（仅头文件库）  
+- nlohmann/json（仅头文件库）
+- stb
 
 ### ✅ 依赖安装方式一（推荐）：使用 vcpkg  
 
 #### 1️⃣ 安装 vcpkg（如果你还没装）
 - git clone https://github.com/microsoft/vcpkg  
 cd vcpkg  
-bootstrap-vcpkg.bat  
+./bootstrap-vcpkg.bat  
 
 #### 2️⃣ 使用 vcpkg 安装依赖
-- vcpkg install glew:x64-windows  
-vcpkg install nlohmann-json
+- ./vcpkg install glew:x64-windows  
+./vcpkg install nlohmann-json  
+./vcpkg install stb
 
 #### 3️⃣ 将 vcpkg 集成到 Visual Studio
-- vcpkg integrate install
+- ./vcpkg integrate install
 
 ### ✅ 依赖安装方式二：手动下载并加入项目
 #### 🔹 nlohmann/json（头文件库）  
@@ -106,6 +108,9 @@ vcpkg install nlohmann-json
 
 - glew32.lib  
 opengl32.lib
+
+#### 🔹 stb
+- https://github.com/nothings/stb
 
 ### 🧩 编译环境建议
 - Visual Studio 2022  
