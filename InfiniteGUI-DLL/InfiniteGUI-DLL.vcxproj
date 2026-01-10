@@ -176,6 +176,7 @@
     <ClInclude Include="fonts\IconFont.h" />
     <ClInclude Include="FpsItem.h" />
     <ClInclude Include="GameStateDetector.h" />
+    <ClInclude Include="GameWindowTool.h" />
     <ClInclude Include="GlobalConfig.h" />
     <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="GlobalWindowStyle.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="fonts.cpp" />
     <ClCompile Include="FpsItem.cpp" />
     <ClCompile Include="GameStateDetector.cpp" />
+    <ClCompile Include="GameWindowTool.cpp" />
     <ClCompile Include="GlobalConfig.cpp" />
     <ClCompile Include="GlobalWindowStyle.cpp" />
     <ClCompile Include="gui.cpp" />

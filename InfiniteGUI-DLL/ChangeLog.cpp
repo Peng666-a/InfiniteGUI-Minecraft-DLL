@@ -49,17 +49,22 @@ void ChangeLog::Init()
     AddContent(FIXBUG, u8"修复按键显示拖拽问题");
     AddContent(INFO, u8"发布第一支正式版本");
 
-    NewVersion("V1.0.1", "25.01.02");
+    NewVersion("V1.0.1", "26.01.02");
     AddContent(CHANGE, u8"动态模糊可在游戏暂停时关闭");
     AddContent(FIXBUG, u8"解决1.8全屏游戏状态出错的问题");
 
-    NewVersion("V1.0.2", "25.01.05");
+    NewVersion("V1.0.2", "26.01.05");
     AddContent(OPTIMIZE, u8"优化动态模糊的模糊度曲线");
     AddContent(ADD, u8"添加打开配置文件夹的按钮");
     AddContent(ADD, u8"实现窗口磁贴");
     AddContent(FIXBUG, u8"解决初始配置错乱的Bug");
 
-    
+    NewVersion("V1.0.3", "26.01.10");
+    AddContent(ADD, u8"实现无边框全屏");
+    AddContent(FIXBUG, u8"解决部分用户激活崩端问题");
+    AddContent(FIXBUG, u8"修复动态模糊花屏问题");
+    AddContent(FIXBUG, u8"修复强制疾跑误激活问题");
+
 } //我写这个真是个天才，这样就不用手敲Imgui代码了，天才天才天才天
 
 ChangeLog::ChangeLog()

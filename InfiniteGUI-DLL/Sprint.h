@@ -79,12 +79,11 @@ private:
 
     void GetWalking();
     void GetSneaking();
-    void SetSprinting();
+    void SetSprinting() const;
     bool isActivated = false;
     bool isWalking = false;
     SprintState lastState = Idle;
     SprintState state = Idle;
-    KeyState keyStateHelper;
     int inputMode = SC_SEND_INPUT;
     sprint_element color = { ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Text)) };
 };

@@ -19,7 +19,7 @@ public:
 	void Draw() const
 	{
 		bool exit = false;
-		ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings;
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
 		//ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.0f, 8.0f));
 		ImGui::BeginChild("GlobalSettings", ImVec2(-padding + ImGui::GetStyle().WindowPadding.x, -padding + ImGui::GetStyle().WindowPadding.y), true, flags);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 8.0f));
@@ -35,11 +35,6 @@ public:
 
 		// 每个输入框宽度（留点余量，避免顶到边）
 		float itemWidth = centerX - bigPadding * 4.0f;
-		for(auto& item : ItemManager::Instance().GetItems())
-		{
-			if(item->type == Hidden)
-				item->DrawSettings(bigPadding, centerX, itemWidth);
-		}
 
 		float startY = ImGui::GetCursorPosY();
 
@@ -50,7 +45,7 @@ public:
 		ImGui::PopFont();
 
 		ImGui::SetCursorPosX(bigPadding);
-		ImGui::BeginChild("ConfigSelector", ImVec2(centerX - bigPadding, -basePadding), true, ImGuiWindowFlags_NoScrollbar);
+		ImGui::BeginChild("ConfigSelector", ImVec2(centerX - bigPadding, 192.0f), true, ImGuiWindowFlags_NoScrollbar);
 		m_configSelector->Draw();
 		ImGui::EndChild();
 
@@ -63,13 +58,19 @@ public:
 		ImGui::PopFont();
 
 		ImGui::SetCursorPosX(bigPadding + centerX);
-		ImGui::BeginChild("FontSelector", ImVec2(centerX - bigPadding, -basePadding), true, ImGuiWindowFlags_NoScrollbar);
+		ImGui::BeginChild("FontSelector", ImVec2(centerX - bigPadding, 192.0f), true, ImGuiWindowFlags_NoScrollbar);
 		m_fontSelector->Draw();
 		ImGui::EndChild();
 
+		//ImGui::SetCursorPosX(0.0f);
+		for(auto& item : ItemManager::Instance().GetItems())
+		{
+			if(item->type == Hidden)
+				item->DrawSettings(bigPadding, centerX, itemWidth);
+		}
+
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
-
 	}
 private:
 	ConfigSelector *m_configSelector;

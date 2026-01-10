@@ -6,6 +6,14 @@
 #include <Shlwapi.h>
 #pragma comment(lib, "Shlwapi.lib")
 #include "StringConverter.h"
+
+inline bool DirectoryExists(const std::string& path)
+{
+    DWORD attr = GetFileAttributesA(path.c_str());
+    return (attr != INVALID_FILE_ATTRIBUTES) &&
+        (attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
 namespace FileUtils {
 
     inline std::string appDataPath;
@@ -25,8 +33,26 @@ namespace FileUtils {
         wcstombs(buffer, path, MAX_PATH);
         CoTaskMemFree(path);
 
-        std::string p = std::string(buffer) + "\\InfiniteGUI";
-        CreateDirectoryA(p.c_str(), NULL);
+
+        std::string p(buffer);
+
+        if (!DirectoryExists(p))
+        {
+            return "";
+        } //说明这个AppDataPath有问题
+
+        if (p == "C:\\Users\\")
+            return ""; //C:Users文件夹需要管理员权限才能动，不能作为AppDataPath
+
+        if (!p.empty() && p.back() == '\\')
+            p.pop_back(); //如果p中最后一个字符是\，则去掉，否则加上\InfiniteGUI
+
+        p += "\\InfiniteGUI";
+
+        if (!DirectoryExists(p))
+        {
+            CreateDirectoryA(p.c_str(), NULL);
+        }
 
         return p;
     }
@@ -69,12 +95,10 @@ namespace FileUtils {
     {
         modulePath = GetModulePath(hMod);
         soundPath = GetSoundPath();
-        //MessageBoxA(NULL, "StartGetAppDataPath", "appDataPath", MB_OK);
         appDataPath = GetAppDataPath();
-        //MessageBoxA(NULL, appDataPath.c_str(), "appDataPath", MB_OK);
         if(appDataPath.empty()) // 如果获取失败，则使用默认路径（可能是多用户操作系统）
             appDataPath = "C:\\InfiniteGUI";
-        //MessageBoxA(NULL, appDataPath.c_str(), "appDataPath", MB_OK);
+
         configPath = GetConfigPath();
         InitBasePath(modulePath);
     }

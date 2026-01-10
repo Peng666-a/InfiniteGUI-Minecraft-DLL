@@ -18,6 +18,7 @@
 #include "CPSDetector.h"
 #include "GameStateDetector.h"
 #include "GlobalWindowStyle.h"
+#include "GameWindowTool.h"
 
 #include "Menu.h"
 #include "NotificationItem.h"
@@ -54,6 +55,7 @@ void ItemManager::Init()
 
     AddItem(&GlobalWindowStyle::Instance());
     AddItem(&GameStateDetector::Instance());
+    AddItem(&GameWindowTool::Instance());
     AddItem(&CPSDetector::Instance());
 }
 

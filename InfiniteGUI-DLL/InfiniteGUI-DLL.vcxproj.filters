@@ -421,6 +421,9 @@
     <ClInclude Include="Keybox.h">
       <Filter>src\core\items\huds\keystrokes</Filter>
     </ClInclude>
+    <ClInclude Include="GameWindowTool.h">
+      <Filter>src\core\items\hidden</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -557,6 +560,9 @@
     </ClCompile>
     <ClCompile Include="KeystrokesItem.cpp">
       <Filter>src\core\items\huds\keystrokes</Filter>
+    </ClCompile>
+    <ClCompile Include="GameWindowTool.cpp">
+      <Filter>src\core\items\hidden</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

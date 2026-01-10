@@ -11,10 +11,67 @@ void Sprint::Toggle()
 }
 void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
 {
-    if (key == NULL || !GameStateDetector::Instance().IsInGame()) return;
-    if (state && !isRepeat) //按键按下
+    //if (key == NULL) return;
+    //if (state && !isRepeat) //按键按下
+    //{
+    //    if (key == keybinds.at(u8"激活键："))
+    //    {
+    //        isActivated = !isActivated;
+    //        if (isActivated)
+    //        {
+    //            color.color = ImVec4(0.1f, 1.0f, 0.1f, 1.0f); //绿色
+    //            if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_up.wav", soundVolume);
+    //            NotificationItem::Instance().AddNotification(NotificationType_Info, u8"强制疾跑：已激活。");
+    //        }
+    //        else
+    //        {
+    //            color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
+    //            if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
+    //            NotificationItem::Instance().AddNotification(NotificationType_Info, u8"强制疾跑：已关闭。");
+    //        }
+    //        dirtyState.contentDirty = true;
+    //        dirtyState.animating = true;
+    //    }
+
+    //}
+
+}
+
+void Sprint::GetSneaking()
+{
+    if (KeyState::GetKeyDown(keybinds.at(u8"潜行键：")) && GameStateDetector::Instance().IsInGame())
     {
-        if (key == keybinds.at(u8"激活键："))
+        state = Sneaking;
+    }
+}
+
+void Sprint::GetWalking()
+{
+    if (KeyState::GetKeyDown(keybinds.at(u8"前进键：")) && GameStateDetector::Instance().IsInGame())
+    {
+        state = isActivated ? Sprinting : Walking;
+    }
+}
+
+void Sprint::SetSprinting() const
+{
+    if (state == Sprinting)
+    {
+	    KeyState::SetKeyDown(keybinds.at(u8"疾跑键："), inputMode);
+    }
+    if (state != Sprinting && lastState == Sprinting)
+    {
+	    KeyState::SetKeyUp(keybinds.at(u8"疾跑键："), inputMode);
+    }
+}
+
+void Sprint::Update()
+{
+
+    if(!GameStateDetector::Instance().IsInGameWindow()) state = OutOfWindow;
+    else
+    {
+        if (GameStateDetector::Instance().IsInGame() && keyStateHelper.GetKeyClick(keybinds.at(u8"激活键：")))
         {
             isActivated = !isActivated;
             if (isActivated)
@@ -25,6 +82,8 @@ void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
             }
             else
             {
+                GetWalking();
+                SetSprinting();
                 color.color = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); //红色
                 if (isPlaySound) AudioManager::Instance().playSound("counter\\counter_down.wav", soundVolume);
                 NotificationItem::Instance().AddNotification(NotificationType_Info, u8"强制疾跑：已关闭。");
@@ -32,45 +91,6 @@ void Sprint::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
             dirtyState.contentDirty = true;
             dirtyState.animating = true;
         }
-
-    }
-
-}
-
-void Sprint::GetSneaking()
-{
-    if (keyStateHelper.GetKeyDown(keybinds.at(u8"潜行键：")) && GameStateDetector::Instance().IsInGame())
-    {
-        state = Sneaking;
-    }
-}
-
-void Sprint::GetWalking()
-{
-    if (keyStateHelper.GetKeyDown(keybinds.at(u8"前进键：")) && GameStateDetector::Instance().IsInGame())
-    {
-        state = isActivated ? Sprinting : Walking;
-    }
-}
-
-void Sprint::SetSprinting()
-{
-    if (state == Sprinting)
-    {
-        keyStateHelper.SetKeyDown(keybinds.at(u8"疾跑键："), inputMode);
-    }
-    if (state != Sprinting && lastState == Sprinting)
-    {
-        keyStateHelper.SetKeyUp(keybinds.at(u8"疾跑键："), inputMode);
-    }
-}
-
-void Sprint::Update()
-{
-
-    if(!GameStateDetector::Instance().IsInGameWindow()) state = OutOfWindow;
-    else
-    {
         state = Idle;
         GetWalking();
         GetSneaking();

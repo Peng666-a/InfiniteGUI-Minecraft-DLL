@@ -13,7 +13,6 @@ enum GameState {
 enum WindowState {
     NormalWindow,
     FullScreen,
-    BorderlessFullScreen,
 };
 
 class GameStateDetector : public UpdateModule, public Item, public RenderModule{
@@ -64,6 +63,7 @@ public:
     bool IsInGame() const;          // 在游戏世界中
     bool IsNeedHide() const;        // 是否需要隐藏信息项;
     GameState GetCurrentState() const;
+    WindowState GetWindowState() const;
     bool IsInGameWindow() const;
     void ProcessMouseMovement(int dx, int dy);
     bool IsCameraMoving() const;

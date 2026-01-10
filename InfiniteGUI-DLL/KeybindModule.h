@@ -6,6 +6,8 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include "ImguiStd.h"
+#include "KeyState.h"
+
 class KeybindModule
 {
 public:
@@ -67,4 +69,5 @@ protected:
     }
 
 	std::map<std::string, int> keybinds; //name, key
+    KeyState keyStateHelper;
 };

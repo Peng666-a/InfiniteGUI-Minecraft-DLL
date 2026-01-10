@@ -7,6 +7,8 @@
 #include <windows.h>
 
 #include "Anim.h"
+#include "GameStateDetector.h"
+#include "NotificationItem.h"
 
 void CounterItem::Toggle()
 {
@@ -14,20 +16,23 @@ void CounterItem::Toggle()
 
 void CounterItem::OnKeyEvent(bool state, bool isRepeat, WPARAM key)
 {
-    if(key == NULL) return;
+    if(key == NULL || !GameStateDetector::Instance().IsInGame()) return;
     if(state) //按键按下
     {
         if (key == keybinds.at(u8"增加快捷键："))
         {
             count++;
+            NotificationItem::Instance().AddNotification(NotificationType_Info, u8"计数器：+1。");
         }
         else if (key == keybinds.at(u8"减少快捷键："))
         {
             count--;
+            NotificationItem::Instance().AddNotification(NotificationType_Info, u8"计数器：-1。");
         }
         else if (key == keybinds.at(u8"清空快捷键："))
         {
             count = 0;
+            NotificationItem::Instance().AddNotification(NotificationType_Info, u8"计数器：清零。");
         }
         if (count > lastCount)
         {

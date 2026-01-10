@@ -46,8 +46,8 @@ void ConfigManager::Init()
 	Paths::root = FileUtils::configPath;
 	Paths::global = Paths::root + "\\global.json";
     Paths::profiles = Paths::root + "\\profiles";
+    std::filesystem::create_directories(Paths::root);
     std::filesystem::create_directories(Paths::profiles);
-
     RefreshProfileList();
     if (profiles.empty())
     {
@@ -181,6 +181,7 @@ bool ConfigManager::SaveGlobal() const
 
 bool ConfigManager::LoadGlobal()
 {
+
     // ---- Load Global config ----
     if (std::filesystem::exists(Paths::global))
     {
@@ -200,7 +201,6 @@ bool ConfigManager::SaveProfile() const
     // ---- Save Item Profile ----
     nlohmann::json j;
     ItemManager::Instance().Save(j);
-
     std::ofstream f(GetProfilePath(currentProfile));
     if (!f.is_open()) return false;
     f << j.dump(4);

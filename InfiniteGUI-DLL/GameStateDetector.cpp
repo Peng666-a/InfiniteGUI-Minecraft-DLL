@@ -6,7 +6,7 @@ void GameStateDetector::Toggle()
 {
 }
 
-bool IsClipCursorSmallerThanScreen(int margin = 8)
+static bool IsClipCursorSmallerThanScreen(int margin = 8)
 {
 	RECT clip;
 	if (!GetClipCursor(&clip))
@@ -37,6 +37,21 @@ bool IsClipCursorSmallerThanScreen(int margin = 8)
 	return false;
 }
 
+static bool IsFullScreen()
+{
+	const int screenW = GetSystemMetrics(SM_CXSCREEN);
+	const int screenH = GetSystemMetrics(SM_CYSCREEN);
+
+	
+	if (opengl_hook::screen_size.x == screenW &&
+		opengl_hook::screen_size.y == screenH )
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void GameStateDetector::Update()
 {
 	
@@ -46,11 +61,10 @@ void GameStateDetector::Update()
 		currentState = InGameMenu;
 	else
 		currentState = InGame;
-
-	if (IsClipCursorSmallerThanScreen(0))
-		windowState = NormalWindow;
-	else
+	if (IsFullScreen())
 		windowState = FullScreen;
+	else
+		windowState = NormalWindow;
 
 	isInGameWindow = opengl_hook::handle_window == GetForegroundWindow();
 
@@ -97,6 +111,11 @@ GameState GameStateDetector::GetCurrentState() const
 	return currentState;
 }
 
+WindowState GameStateDetector::GetWindowState() const
+{
+	return windowState;
+}
+
 bool GameStateDetector::IsInGameWindow() const
 {
 	return isInGameWindow;
@@ -104,7 +123,7 @@ bool GameStateDetector::IsInGameWindow() const
 
 bool GameStateDetector::IsInGame() const
 {
-	return (currentState == InGame);
+	return currentState == InGame;
 }
 
 static bool IsCursorHidden(const CURSORINFO& ci)
