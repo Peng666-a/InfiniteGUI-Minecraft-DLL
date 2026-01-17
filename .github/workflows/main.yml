@@ -11,13 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 官方维护的 setup-vcpkg，不再碰子模块
+    # 1. 固定旧版 vcpkg，避开 opengl 下载 msys2 问题
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
+        committish: '5b1214315250939f35588b618e2a0d0655e7a4b7'
 
-    # 2. 只装 64 位依赖，避免混合 triplet（用 & 解决 PowerShell 解析问题）
+    # 2. 只装 64 位依赖，PowerShell 转义防止空格报错
     - name: Install dependencies
       run: |
         & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
