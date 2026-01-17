@@ -1,26 +1,22 @@
 {
   "version": 3,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 19,
-    "patch": 0
-  },
   "configurePresets": [
     {
-      "name": "ninja-system",
-      "displayName": "Ninja + System libs",
+      "name": "ninja-vcpkg",
+      "displayName": "Ninja + vcpkg x64",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_PREFIX_PATH": "C:/vcpkg/installed/x64-windows;C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/SDK"
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "ninja-system-rel",
-      "configurePreset": "ninja-system",
+      "name": "ninja-vcpkg-rel",
+      "configurePreset": "ninja-vcpkg",
       "configuration": "Release"
     }
   ]
