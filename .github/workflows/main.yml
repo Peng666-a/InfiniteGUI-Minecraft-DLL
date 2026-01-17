@@ -2,26 +2,37 @@ name: Build DLL
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [ main ]
 
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      VCPKG_SKIP_PKGCONFIG_FIXUP: '1'          # 跳过 MSYS2 下载
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      CC:  cl                                  # 强制 MSVC
+      CXX: cl
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 不需要 vcpkg，系统已带 glew + OpenGL
+    - name: Setup vcpkg
+      uses: friendlyanon/setup-vcpkg@v1
+      with:
+        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
+
+    - name: Install dependencies
+      run: |
+        & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
+
     - name: Configure & Build
       uses: lukka/run-cmake@v10
       with:
-        configurePreset: 'ninja-system'
-        buildPreset: 'ninja-system-rel'
+        configurePreset: 'ninja-vcpkg'
+        buildPreset: 'ninja-vcpkg-rel'
 
-    # 2. 上传产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: InfiniteGUI-DLL-x64
         path: |
           build/Release/InfiniteGUI-DLL.dll
+          build/Release/glew32.dll
