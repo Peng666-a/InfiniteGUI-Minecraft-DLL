@@ -15,13 +15,13 @@ jobs:
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        committish: '5b1214315250939f35588b618e2a0d0655e7a4b7'
+        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
 
     # 2. 只装 64 位依赖，PowerShell 转义防止空格报错
     - name: Install dependencies
       run: |
         & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
-
+        
     # 3. CMake 配置 + 构建（使用 preset）
     - name: Configure & Build
       uses: lukka/run-cmake@v10
