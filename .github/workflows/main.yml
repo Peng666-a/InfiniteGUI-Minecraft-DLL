@@ -1,9 +1,9 @@
 name: Build DLL
 
 on:
-  workflow_dispatch:      # 仅手动触发，防止无限排队
-  push:
-    branches: [ main ]    # 如果想关掉自动，可删掉这一行
+  workflow_dispatch:      # 仅手动触发，不再自动排队
+  # push:                 # 如果想关掉自动，把这一行和 branches 都删掉或注释
+  #   branches: [ main ]
 
 jobs:
   build:
@@ -11,25 +11,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 安装并缓存 vcpkg
+    # 固定 vcpkg 版本，避开新版 opengl 下载 msys2 的问题
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
+        vcpkgGitCommitId: '5b1214315250939f35588b618e2a0d0655e7a4b7'
 
-    # 2. 安装依赖（glew + nlohmann-json + stb）
+    # 只装 64 位，且显式指定 triplet，避免混合 x86
     - name: Install dependencies
       run: |
-        ${{ github.workspace }}/vcpkg/vcpkg install glew:x64-windows nlohmann-json stb
+        "${{ github.workspace }}/vcpkg/vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
 
-    # 3. 用 CMake 配置并构建（使用 preset，无需写长命令）
+    # CMake 配置 + 构建（使用 preset）
     - name: Configure & Build
       uses: lukka/run-cmake@v10
       with:
         configurePreset: 'ninja-vcpkg'
         buildPreset: 'ninja-vcpkg-rel'
 
-    # 4. 上传生成的 DLL
+    # 上传产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
