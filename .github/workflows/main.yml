@@ -1,9 +1,9 @@
 name: Build DLL
 
 on:
-  workflow_dispatch:      # 手动按钮
+  workflow_dispatch:      # 仅手动触发，防止无限排队
   push:
-    branches: [ main ]    # 每次推送也自动编
+    branches: [ main ]    # 如果想关掉自动，可删掉这一行
 
 jobs:
   build:
@@ -11,20 +11,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 安装 vcpkg 并缓存依赖
+    # 1. 安装并缓存 vcpkg
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
 
-    # 2. 用 CMake 配置 + 构建（自动找 vcpkg 工具链）
-    - name: Build with CMake
+    # 2. 安装依赖（glew + nlohmann-json + stb）
+    - name: Install dependencies
+      run: |
+        ${{ github.workspace }}/vcpkg/vcpkg install glew:x64-windows nlohmann-json stb
+
+    # 3. 用 CMake 配置并构建（使用 preset，无需写长命令）
+    - name: Configure & Build
       uses: lukka/run-cmake@v10
       with:
         configurePreset: 'ninja-vcpkg'
         buildPreset: 'ninja-vcpkg-rel'
 
-    # 3. 把生成的 DLL 传回网页供下载
+    # 4. 上传生成的 DLL
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
