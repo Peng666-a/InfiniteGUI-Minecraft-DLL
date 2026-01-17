@@ -1,0 +1,34 @@
+name: Build DLL
+
+on:
+  workflow_dispatch:      # 手动按钮
+  push:
+    branches: [ main ]    # 每次推送也自动编
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    # 1. 安装 vcpkg 并缓存依赖
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
+
+    # 2. 用 CMake 配置 + 构建（自动找 vcpkg 工具链）
+    - name: Build with CMake
+      uses: lukka/run-cmake@v10
+      with:
+        configurePreset: 'ninja-vcpkg'
+        buildPreset: 'ninja-vcpkg-rel'
+
+    # 3. 把生成的 DLL 传回网页供下载
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: InfiniteGUI-DLL-x64
+        path: |
+          build/Release/InfiniteGUI-DLL.dll
+          build/Release/glew32.dll
