@@ -11,13 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 用 2022.11 版本，opengl 端口还不依赖 MSYS2
+    # 1. 使用真实存在的最新稳定版 commit
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        committish: '6f7ffeb18f99796233b958aaaf9a565f07edd089'
+        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
 
-    # 2. 只装这三样，不再触发 opengl 的 MSYS2 下载
+    # 2. 只装三件套，不再触发 opengl 的 MSYS2 下载
     - name: Install dependencies
       run: |
         & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
