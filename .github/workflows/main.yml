@@ -1,7 +1,7 @@
 name: Build DLL
 
 on:
-  workflow_dispatch:      # 仅手动触发，不再自动排队
+  workflow_dispatch:      # 仅手动触发
   # push:
   #   branches: [ main ]
 
@@ -11,18 +11,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 固定旧版 vcpkg，避开 opengl 下载 msys2 问题
+    # 1. 用 2022.11 版本，opengl 端口还不依赖 MSYS2
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
+        committish: '6f7ffeb18f99796233b958aaaf9a565f07edd089'
 
-    # 2. 只装 64 位依赖，PowerShell 转义防止空格报错
+    # 2. 只装这三样，不再触发 opengl 的 MSYS2 下载
     - name: Install dependencies
       run: |
         & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
-        
-    # 3. CMake 配置 + 构建（使用 preset）
+
+    # 3. CMake 配置 + 构建
     - name: Configure & Build
       uses: lukka/run-cmake@v10
       with:
