@@ -11,15 +11,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 2022.05.31 版 vcpkg，tag 真实存在，glew 端口还不依赖 opengl
+    # 1. 最新版 vcpkg（commit 真实存在）
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
 
-    # 2. 只装三件套，彻底避开 opengl 及其 MSYS2 下载
+    # 2. 跳过 pkg-config 修复，彻底避开 MSYS2 下载
     - name: Install dependencies
+      shell: pwsh
       run: |
+        $env:VCPKG_SKIP_PKGCONFIG_FIXUP = '1'
         & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
 
     # 3. CMake 配置 + 构建
