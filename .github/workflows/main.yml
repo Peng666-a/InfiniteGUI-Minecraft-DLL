@@ -11,25 +11,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 固定 vcpkg 版本，避开新版 opengl 下载 msys2 的问题
+    # 1. 让 action 自己克隆 vcpkg（不作为子模块）
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: '5b1214315250939f35588b618e2a0d0655e7a4b7'
+        doNotUpdateVcpkg: true
 
-    # 只装 64 位，且显式指定 triplet，避免混合 x86
+    # 2. 只装 64 位依赖，避免混合 triplet
     - name: Install dependencies
       run: |
         "${{ github.workspace }}/vcpkg/vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
 
-    # CMake 配置 + 构建（使用 preset）
+    # 3. CMake 配置 + 构建（使用 preset）
     - name: Configure & Build
       uses: lukka/run-cmake@v10
       with:
         configurePreset: 'ninja-vcpkg'
         buildPreset: 'ninja-vcpkg-rel'
 
-    # 上传产物
+    # 4. 上传产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
