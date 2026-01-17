@@ -2,43 +2,26 @@ name: Build DLL
 
 on:
   workflow_dispatch:
+  # push:
+  #   branches: [ main ]
 
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      # 关键：全域生效，让 run-cmake 起的子进程也能读到
-      VCPKG_SKIP_PKGCONFIG_FIXUP: '1'
-
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 钉住 501db0f 这版 vcpkg
-    - name: Setup vcpkg
-      uses: friendlyanon/setup-vcpkg@v1
-      with:
-        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
-
-    # 2. 安装端口（前面已经全域设了变量，这里不用再写）
-    - name: Install dependencies
-      shell: pwsh
-      run: vcpkg install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
-
-    # 3. CMake 配置 + 构建
+    # 1. 不需要 vcpkg，系统已带 glew + OpenGL
     - name: Configure & Build
       uses: lukka/run-cmake@v10
       with:
-        configurePreset: 'ninja-vcpkg'
-        buildPreset: 'ninja-vcpkg-rel'
-      env:
-        # 确保 run-cmake 用同一份 vcpkg 工具链，不会偷偷升级
-        VCPKG_ROOT: '${{ github.workspace }}/vcpkg'
+        configurePreset: 'ninja-system'
+        buildPreset: 'ninja-system-rel'
 
-    # 4. 上传产物
+    # 2. 上传产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: InfiniteGUI-DLL-x64
         path: |
           build/Release/InfiniteGUI-DLL.dll
-          build/Release/glew32.dll
