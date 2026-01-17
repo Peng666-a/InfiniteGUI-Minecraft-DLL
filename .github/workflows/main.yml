@@ -1,28 +1,28 @@
 name: Build DLL
 
 on:
-  workflow_dispatch:      # 仅手动触发
-  # push:
-  #   branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      # 关键：全域生效，让 run-cmake 起的子进程也能读到
+      VCPKG_SKIP_PKGCONFIG_FIXUP: '1'
+
     steps:
     - uses: actions/checkout@v4
 
-    # 1. 最新版 vcpkg（commit 真实存在）
+    # 1. 钉住 501db0f 这版 vcpkg
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
 
-    # 2. 跳过 pkg-config 修复，彻底避开 MSYS2 下载
+    # 2. 安装端口（前面已经全域设了变量，这里不用再写）
     - name: Install dependencies
       shell: pwsh
-      run: |
-        $env:VCPKG_SKIP_PKGCONFIG_FIXUP = '1'
-        & "${{ github.workspace }}\vcpkg\vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
+      run: vcpkg install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
 
     # 3. CMake 配置 + 构建
     - name: Configure & Build
@@ -30,6 +30,9 @@ jobs:
       with:
         configurePreset: 'ninja-vcpkg'
         buildPreset: 'ninja-vcpkg-rel'
+      env:
+        # 确保 run-cmake 用同一份 vcpkg 工具链，不会偷偷升级
+        VCPKG_ROOT: '${{ github.workspace }}/vcpkg'
 
     # 4. 上传产物
     - name: Upload artifact
