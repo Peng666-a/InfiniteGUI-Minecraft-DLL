@@ -15,7 +15,7 @@ jobs:
     - name: Setup vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        committish: '5b1214315250939f35588b618e2a0d0655e7a4b7'
+        committish: '501db0f17ef6df184fcdbfbe0f87cde2313b6ab1'
 
     # 2. 只装 64 位依赖，避免混合 triplet
     - name: Install dependencies
