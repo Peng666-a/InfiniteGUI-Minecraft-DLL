@@ -12,11 +12,10 @@ jobs:
     - uses: actions/checkout@v4
 
     # 关键：留空 vcpkgDirectory，action 会自动克隆
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
+        - name: Setup vcpkg
+      uses: friendlyanon/setup-vcpkg@v1
       with:
-        vcpkgGitCommitId: '5b1214315250939f35588b618e2a0d0655e7a4b7'
-
+        committish: '5b1214315250939f35588b618e2a0d0655e7a4b7'   # 同样固定旧版本
     - name: Install dependencies
       run: |
         "${{ github.workspace }}/vcpkg/vcpkg" install glew:x64-windows nlohmann-json:x64-windows stb:x64-windows
